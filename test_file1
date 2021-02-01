@@ -1,0 +1,29 @@
+
+int a = 1
+int b = +12312
+int c = -13123
+
+float a123 = 123.123
+float a_123 = +1231.123
+float abc_123 = -12313.123213
+
+char Abc = 'c'
+char ABC_ = '4'
+char 1bC_123 = '*'
+
+"string"
+
+"the quick brown fox jumps over the lazy dog"
+
+"hello world 123 _ float int char if else"
+
+"liberté egalité fraternité"
+
+int main(int argc, char* argv[]) {
+    srand(time(NULL));
+    int success = glfwInit();
+    if (!success) {
+        fprintf(stderr, "ERROR: glfwInit() failed.\n");
+        std::exit(EXIT_FAILURE);
+    }
+}
