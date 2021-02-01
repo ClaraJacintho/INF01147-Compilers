@@ -50,8 +50,8 @@ special_chars   return yytext;
 ">>"            return TK_OC_SL;
 "<<"            return TK_OC_SR;
 
-[0-9]+          return TK_LIT_INT;
-[0-9]*\.[0-9]+  return TK_LIT_FLOAT;
+[+-]?[0-9]+          return TK_LIT_INT;
+[+-]?[0-9]+\.[0-9]+  return TK_LIT_FLOAT;
 false           return TK_LIT_FALSE;
 true            return TK_LIT_TRUE;
 '.'             return TK_LIT_CHAR;
