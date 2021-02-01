@@ -4,12 +4,12 @@
 %{
     #include "tokens.h"
 
-    int getLineNumber(void) {
+    int get_line_number(void) {
         return yylineno;
     }
 %}
 
-special_chars   [,;:()[\]{}+-|*/<>=!&%#^.$]
+specialChars   [,;:()[\]{}+-|*/<>=!&%#^.$]
 
 %%
 
@@ -39,7 +39,7 @@ special_chars   [,;:()[\]{}+-|*/<>=!&%#^.$]
 "public"        return TK_PR_PUBLIC;
 "protected"     return TK_PR_PROTECTED;
 
-special_chars   return yytext;
+specialChars   return yytext;
 
 "<="            return TK_OC_LE;
 ">="            return TK_OC_GE;
