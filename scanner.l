@@ -9,7 +9,10 @@
     }
 %}
 
-specialChars   [,;:()[\]{}+-|*/<>=!&%#^.$]
+special_chars   [,;:()[\]{}+-|*/<>=!&%#^.$]
+identifier      [a-zA-Z][[a-zA-Z0-9_]*
+/*Special state "COMMENT" to ignore multiline comments*/
+%x COMMENT
 
 %%
 
@@ -52,13 +55,22 @@ specialChars   return yytext;
 
 [+-]?[0-9]+          return TK_LIT_INT;
 [+-]?[0-9]+\.[0-9]+  return TK_LIT_FLOAT;
-false           return TK_LIT_FALSE;
-true            return TK_LIT_TRUE;
-'.'             return TK_LIT_CHAR;
-".+"            return TK_LIT_STRING;
+"false"              return TK_LIT_FALSE;
+"true"               return TK_LIT_TRUE;
+\'.\'                return TK_LIT_CHAR;
+\".+\"               return TK_LIT_STRING;
 
-^[a-zA-Z][[a-zA-Z0-9_]* return TK_IDENTIFICADOR;
+identifier           return TK_IDENTIFICADOR;
 
-[ \t\r\n]       {}
+[ \t]           { };
+"//".*          { };
 
+"/*" { BEGIN(COMMENT); }
 
+<COMMENT>"*/" { BEGIN(INITIAL); }
+
+<COMMENT>(.|\n) ;
+
+<COMMENT><<EOF>>   return TK_ERROR; // multiline comment that doesnt end
+\'..+\'            return TK_ERROR; // char w/ mome than 1 character
+\".*               return TK_ERROR; //   string that doesnt end 
