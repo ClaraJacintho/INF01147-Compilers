@@ -71,10 +71,11 @@
 
 <COMMENT>(.) ;
 
-<COMMENT><<EOF>>   {printf("comment error"); return TOKEN_ERRO;} // multiline comment that doesnt end
-\'..+\'            {printf("char error more than one"); return TOKEN_ERRO;} // char w/ mome than 1 character
-\'.+\n               {printf("char error doest end"); return TOKEN_ERRO;} // char that doesnt end 
-\".+\n               {printf("string error"); return TOKEN_ERRO;} // string that doesnt end 
+<COMMENT><<EOF>>   {BEGIN(INITIAL); return TOKEN_ERRO;} // multiline comment that doesnt end
+\'..+\'		   {return TOKEN_ERRO;} // char w/ more than 1 character
+\'.[^\']*\n        {++line_number; return TOKEN_ERRO;} // char w/o end quote
+\"[^\"]*\n           {++line_number; return TOKEN_ERRO;} // string that doesnt end 
+[+-]?[0-9]+\.	   {return TOKEN_ERRO;} // float w/o num after point
 
 %%
 
