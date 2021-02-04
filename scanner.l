@@ -5,10 +5,6 @@
     #include <stdio.h>
 
     int line_number = 1;
-
-    int get_line_number(void) {
-        return line_number;
-    }
 %}
 
 /*Special state "COMMENT" to ignore multiline comments*/
@@ -76,5 +72,12 @@
 <COMMENT>(.) ;
 
 <COMMENT><<EOF>>   {printf("comment error"); return TOKEN_ERRO;} // multiline comment that doesnt end
-\'..+\'            {printf("char error"); return TOKEN_ERRO;} // char w/ mome than 1 character
-\".*               {printf("string error"); return TOKEN_ERRO;} // string that doesnt end 
+\'..+\'            {printf("char error more than one"); return TOKEN_ERRO;} // char w/ mome than 1 character
+\'.+\n               {printf("char error doest end"); return TOKEN_ERRO;} // char that doesnt end 
+\".+\n               {printf("string error"); return TOKEN_ERRO;} // string that doesnt end 
+
+%%
+
+int get_line_number(void) {
+    return line_number;
+}
