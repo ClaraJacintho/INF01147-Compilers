@@ -40,7 +40,7 @@
 "public"        return TK_PR_PUBLIC;
 "protected"     return TK_PR_PROTECTED;
 
- [,;:()[\]{}-|*/<>=!&%#^.$]   return yytext[0];
+ [,;:()[\]{}|*/<>=!&%#^.$-]   return yytext[0];
 
 "<="            return TK_OC_LE;
 ">="            return TK_OC_GE;
@@ -60,14 +60,17 @@
 
 [a-zA-Z][[a-zA-Z0-9_]*  return TK_IDENTIFICADOR;
 
-[ \t]           { };
-"//".*          { };
+[ \t]         { };
+"//".*        { };
 
-"/*" { BEGIN(COMMENT); }
+"/*"          { BEGIN(COMMENT); }
+
+\n	      { yylieno++; }
 
 <COMMENT>"*/" { BEGIN(INITIAL); }
 
-<COMMENT>(.|\n) ;
+<COMMENT>(.) ;
+<COMMENT> \n  { yylineo++; }
 
 <COMMENT><<EOF>>   return TOKEN_ERRO; // multiline comment that doesnt end
 \'..+\'            return TOKEN_ERRO; // char w/ mome than 1 character
