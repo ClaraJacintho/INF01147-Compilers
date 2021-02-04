@@ -1,11 +1,13 @@
-%option nounput yylineno
 /* definitions */
 
-%{
+%{ 
     #include "tokens.h"
+    #include <stdio.h>
+
+    int line_number = 1;
 
     int get_line_number(void) {
-        return yylineno;
+        return line_number;
     }
 %}
 
@@ -65,13 +67,13 @@
 
 "/*"          { BEGIN(COMMENT); }
 
-\n	      { yylieno++; }
+\n	      { line_number++; }
 
 <COMMENT>"*/" { BEGIN(INITIAL); }
 
 <COMMENT>(.) ;
-<COMMENT> \n  { yylineo++; }
+<COMMENT> \n  { line_number++; }
 
-<COMMENT><<EOF>>   return TOKEN_ERRO; // multiline comment that doesnt end
-\'..+\'            return TOKEN_ERRO; // char w/ mome than 1 character
-\".*               return TOKEN_ERRO; // string that doesnt end 
+<COMMENT><<EOF>>   {printf("comment EOF error"); return TOKEN_ERRO;} // multiline comment that doesnt end
+\'..+\'            {printf("char error");return TOKEN_ERRO}; // char w/ mome than 1 character
+\".*               {printf("string error"); return TOKEN_ERRO;} // string that doesnt end 

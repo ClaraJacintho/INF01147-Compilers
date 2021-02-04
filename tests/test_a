@@ -1,4 +1,3 @@
-
 int a = 1
 int b = +12312
 int c = -13123
@@ -18,12 +17,3 @@ char 1bC_123 = '*'
 "hello world 123 _ float int char if else"
 
 "liberté egalité fraternité"
-
-int main(int argc, char* argv[]) {
-    srand(time(NULL));
-    int success = glfwInit();
-    if (!success) {
-        fprintf(stderr, "ERROR: glfwInit() failed.\n");
-        std::exit(EXIT_FAILURE);
-    }
-}

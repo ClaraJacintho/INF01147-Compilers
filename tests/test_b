@@ -1,0 +1,22 @@
+void thisIsATest( int test ){
+    // this is a comment :)
+
+    if ( 4 % 2 == 0){
+        printf("this is a string with special chars: {}()[]");
+    } else {
+        printf(";/\#|@^")
+    }
+    /*
+        this is a multiline comment
+        
+        roses are red; violets are blue
+        unexpected '{' on line 32
+
+        char charmander = 'c'
+
+        if else return
+    
+    */
+
+    return true;
+}
