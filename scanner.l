@@ -9,7 +9,7 @@
     }
 %}
 
-special_chars   [,;:()[\]{}+-|*/<>=!&%#^.$]
+special_chars   [,;:()[\]{}-|*/<>=!&%#^.$]
 identifier      [a-zA-Z][[a-zA-Z0-9_]*
 /*Special state "COMMENT" to ignore multiline comments*/
 %x COMMENT
@@ -71,6 +71,6 @@ identifier           return TK_IDENTIFICADOR;
 
 <COMMENT>(.|\n) ;
 
-<COMMENT><<EOF>>   return TK_ERROR; // multiline comment that doesnt end
-\'..+\'            return TK_ERROR; // char w/ mome than 1 character
-\".*               return TK_ERROR; //   string that doesnt end 
+<COMMENT><<EOF>>   return TOKEN_ERRO; // multiline comment that doesnt end
+\'..+\'            return TOKEN_ERRO; // char w/ mome than 1 character
+\".*               return TOKEN_ERRO; //   string that doesnt end 
