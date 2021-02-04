@@ -67,13 +67,14 @@
 
 "/*"          { BEGIN(COMMENT); }
 
-\n	      { line_number++; }
+\n	      { ++line_number; }
 
 <COMMENT>"*/" { BEGIN(INITIAL); }
 
-<COMMENT>(.) ;
-<COMMENT> \n  { line_number++; }
+<COMMENT>"\n"  { ++line_number; }
 
-<COMMENT><<EOF>>   {printf("comment EOF error"); return TOKEN_ERRO;} // multiline comment that doesnt end
-\'..+\'            {printf("char error");return TOKEN_ERRO}; // char w/ mome than 1 character
+<COMMENT>(.) ;
+
+<COMMENT><<EOF>>   {printf("comment error"); return TOKEN_ERRO;} // multiline comment that doesnt end
+\'..+\'            {printf("char error"); return TOKEN_ERRO;} // char w/ mome than 1 character
 \".*               {printf("string error"); return TOKEN_ERRO;} // string that doesnt end 

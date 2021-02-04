@@ -6,9 +6,9 @@ lex.yy.c: scanner.l
 	flex scanner.l
 
 test:
-	./etapa1 <test/test_a
-	./etapa1 <test/test_b
-	./etapa1 <test/test_c
+	./etapa1 <tests/test_a
+	./etapa1 <tests/test_b
+	./etapa1 <tests/test_c
 
 clean:
 	rm lex.yy.c etapa1
