@@ -9,8 +9,6 @@
     }
 %}
 
-special_chars   [,;:()[\]{}-|*/<>=!&%#^.$]
-identifier      [a-zA-Z][[a-zA-Z0-9_]*
 /*Special state "COMMENT" to ignore multiline comments*/
 %x COMMENT
 
@@ -42,7 +40,7 @@ identifier      [a-zA-Z][[a-zA-Z0-9_]*
 "public"        return TK_PR_PUBLIC;
 "protected"     return TK_PR_PROTECTED;
 
-specialChars   return yytext;
+ [,;:()[\]{}-|*/<>=!&%#^.$]   return yytext[0];
 
 "<="            return TK_OC_LE;
 ">="            return TK_OC_GE;
@@ -60,7 +58,7 @@ specialChars   return yytext;
 \'.\'                return TK_LIT_CHAR;
 \".+\"               return TK_LIT_STRING;
 
-identifier           return TK_IDENTIFICADOR;
+[a-zA-Z][[a-zA-Z0-9_]*  return TK_IDENTIFICADOR;
 
 [ \t]           { };
 "//".*          { };
@@ -73,4 +71,4 @@ identifier           return TK_IDENTIFICADOR;
 
 <COMMENT><<EOF>>   return TOKEN_ERRO; // multiline comment that doesnt end
 \'..+\'            return TOKEN_ERRO; // char w/ mome than 1 character
-\".*               return TOKEN_ERRO; //   string that doesnt end 
+\".*               return TOKEN_ERRO; // string that doesnt end 

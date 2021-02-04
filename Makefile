@@ -5,5 +5,8 @@ all: lex.yy.c
 lex.yy.c: scanner.l
 	flex scanner.l
 
+test:
+	etapa1 test_a
+
 clean:
-	rm *.o lex.yy.c etapa1
+	rm lex.yy.c etapa1
