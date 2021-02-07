@@ -9,6 +9,7 @@ test:
 	./etapa1 <tests/test_a
 	./etapa1 <tests/test_b
 	./etapa1 <tests/test_c
+	./etapa1 <tests/test_d
 
 clean:
 	rm lex.yy.c etapa1

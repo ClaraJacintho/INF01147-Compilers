@@ -1,8 +1,5 @@
-/* definitions */
-
 %{ 
     #include "tokens.h"
-    #include <stdio.h>
 
     int line_number = 1;
 %}
@@ -59,11 +56,12 @@
 [a-zA-Z][[a-zA-Z0-9_]*  return TK_IDENTIFICADOR;
 
 [ \t]         { };
-"//".*        { };
+
+\n	      { ++line_number; }
 
 "/*"          { BEGIN(COMMENT); }
 
-\n	      { ++line_number; }
+"//".*        { };
 
 <COMMENT>"*/" { BEGIN(INITIAL); }
 
@@ -73,9 +71,10 @@
 
 <COMMENT><<EOF>>   {BEGIN(INITIAL); return TOKEN_ERRO;} // multiline comment that doesnt end
 \'..+\'		   {return TOKEN_ERRO;} // char w/ more than 1 character
-\'.[^\']*\n        {++line_number; return TOKEN_ERRO;} // char w/o end quote
-\"[^\"]*\n           {++line_number; return TOKEN_ERRO;} // string that doesnt end 
+\'.[^\'\n]*        {return TOKEN_ERRO;} // char w/o end quote
+\"[^\"\n]*         {return TOKEN_ERRO;} // string that doesnt end 
 [+-]?[0-9]+\.	   {return TOKEN_ERRO;} // float w/o num after point
+. 		   {return TOKEN_ERRO;} // Other characters that dont have mapping
 
 %%
 
