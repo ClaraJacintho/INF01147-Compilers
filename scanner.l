@@ -46,18 +46,19 @@
 ">>"            return TK_OC_SL;
 "<<"            return TK_OC_SR;
 
-[+-]?[0-9]+          return TK_LIT_INT;
-[+-]?[0-9]+\.[0-9]+  return TK_LIT_FLOAT;
-"false"              return TK_LIT_FALSE;
-"true"               return TK_LIT_TRUE;
-\'.\'                return TK_LIT_CHAR;
-\".+\"               return TK_LIT_STRING;
+[+-]?[0-9]+            return TK_LIT_INT;
+[+-]?[0-9]+\.[0-9]+    return TK_LIT_FLOAT;
+[+-]?[0-9]+[eE][0-9]+  return TK_LIT_FLOAT;
+"false"                return TK_LIT_FALSE;
+"true"                 return TK_LIT_TRUE;
+\'.\'                  return TK_LIT_CHAR;
+\".+\"                 return TK_LIT_STRING;
 
-[a-zA-Z][[a-zA-Z0-9_]*  return TK_IDENTIFICADOR;
+[a-zA-Z_][[a-zA-Z0-9_]*  return TK_IDENTIFICADOR;
 
 [ \t]         { };
 
-\n	      { ++line_number; }
+\n            { ++line_number; }
 
 "/*"          { BEGIN(COMMENT); }
 
@@ -65,16 +66,14 @@
 
 <COMMENT>"*/" { BEGIN(INITIAL); }
 
-<COMMENT>"\n"  { ++line_number; }
+<COMMENT>"\n" { ++line_number; }
 
 <COMMENT>(.) ;
 
-<COMMENT><<EOF>>   {BEGIN(INITIAL); return TOKEN_ERRO;} // multiline comment that doesnt end
-\'..+\'		   {return TOKEN_ERRO;} // char w/ more than 1 character
-\'.[^\'\n]*        {return TOKEN_ERRO;} // char w/o end quote
-\"[^\"\n]*         {return TOKEN_ERRO;} // string that doesnt end 
+"/*".*             {return TOKEN_ERRO;} // multiline comment that doesnt end
 [+-]?[0-9]+\.	   {return TOKEN_ERRO;} // float w/o num after point
-. 		   {return TOKEN_ERRO;} // Other characters that dont have mapping
+[+-]?[0-9]+[eE]	   {return TOKEN_ERRO;} // float w/o num after point
+. 		           {return TOKEN_ERRO;} // Other characters that dont have mapping
 
 %%
 

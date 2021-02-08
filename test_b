@@ -1,7 +1,7 @@
 void thisIsATest( int test ){
     // this is a comment :)
 
-    if ( 4 % 2 == 0){
+    if (4 % 2 == 0){
         printf("this is a string with special chars: {}()[]");
     } else {
         printf(";/\#|@^")

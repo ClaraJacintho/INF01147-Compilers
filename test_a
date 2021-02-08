@@ -10,6 +10,8 @@ char Abc = 'c'
 char ABC_ = '4'
 char 1bC_123 = '*'
 
+int _1231231=123123123
+
 "string"
 
 "the quick brown fox jumps over the lazy dog"
@@ -17,3 +19,25 @@ char 1bC_123 = '*'
 "hello world 123 _ float int char if else"
 
 "liberté egalité fraternité"
+
+5+5
+123.123+3
+123+123.123
+4.4+5.5
+
+
+5-5
+123.123-3
+123-123.123
+4.4-5.5
+
+4+6-7.4+8 // 4 +6 -7.4 8
+
+5e4-5e74
+234e234+234
+64E234+344234e23
+
+int a=5
+float b=-23423.0
+
+
