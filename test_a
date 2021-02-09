@@ -1,30 +1,38 @@
-int a = 1
-int b = +12312
-int c = -13123
+int float bool char string
+if then else
+while do
+input output
+return const static 
+foreach for
+switch case break continue
+class private public protected
+<= >= == != && || >> <<
 
-float a123 = 123.123
-float a_123 = +1231.123
-float abc_123 = -12313.123213
+#define TK_LIT_INT 291
+#define TK_LIT_FLOAT 292
+#define TK_LIT_FALSE 293
+#define TK_LIT_TRUE 294
+#define TK_LIT_CHAR 295
+#define TK_LIT_STRING 296
 
-char Abc = 'c'
-char ABC_ = '4'
-char 1bC_123 = '*'
+'c' '1' '>'
 
-int _1231231=123123123
+"string" "a string"
 
-"string"
+"protected words: int float do if else break"
 
-"the quick brown fox jumps over the lazy dog"
-
-"hello world 123 _ float int char if else"
+"123 >/(@)?! >="
 
 "liberté egalité fraternité"
+
+5 +5 -5
+5.0 +5.0 -5.0
+5.0e4 +5.5E3 -5.0e2
 
 5+5
 123.123+3
 123+123.123
 4.4+5.5
-
 
 5-5
 123.123-3
@@ -33,11 +41,11 @@ int _1231231=123123123
 
 4+6-7.4+8 // 4 +6 -7.4 8
 
-5e4-5e74
-234e234+234
-64E234+344234e23
+5.0e4-5.3e74
+234.0e234+234
+64.2E234+34423.2e423
 
-int a=5
-float b=-23423.0
-
+a=5
+b=-23423.0
+c=+13.2e54
 

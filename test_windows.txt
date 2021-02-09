@@ -1,0 +1,8 @@
+"i am a text file written on windows"
+
+"I have carriage returns! \r!"
+
+"still the lines should be counted correctly"
+
+int foo = 3
+float bar=5.0

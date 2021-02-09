@@ -1,4 +1,4 @@
-void thisIsATest( int test ){
+bool thisIsATest(int test){
     // this is a comment :)
 
     if (4 % 2 == 0){
