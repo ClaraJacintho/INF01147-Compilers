@@ -1,9 +1,13 @@
-%{ 
+%{
     #include "tokens.h"
 
     int line_number = 1;
 %}
 
+signed_num [+-]?[0-9]+
+num [0-9]
+alphabetic [a-zA-Z_]
+alphanumeric [a-zA-Z0-9_]
 /*Special state "COMMENT" to ignore multiline comments*/
 %x COMMENT
 
@@ -46,19 +50,25 @@
 ">>"            return TK_OC_SL;
 "<<"            return TK_OC_SR;
 
-[+-]?[0-9]+            return TK_LIT_INT;
-[+-]?[0-9]+\.[0-9]+    return TK_LIT_FLOAT;
-[+-]?[0-9]+[eE][0-9]+  return TK_LIT_FLOAT;
-"false"                return TK_LIT_FALSE;
-"true"                 return TK_LIT_TRUE;
-\'.\'                  return TK_LIT_CHAR;
-\".+\"                 return TK_LIT_STRING;
+{signed_num}            return TK_LIT_INT;
+{signed_num}\.{num}+    return TK_LIT_FLOAT;
+{signed_num}[eE]{num}+  return TK_LIT_FLOAT;
+"false"                 return TK_LIT_FALSE;
+"true"                  return TK_LIT_TRUE;
+\'.\'                   return TK_LIT_CHAR;
+\".+\"                  return TK_LIT_STRING;
 
-[a-zA-Z_][[a-zA-Z0-9_]*  return TK_IDENTIFICADOR;
+{signed_num}+{alphabetic}{alphanumeric}+           return TOKEN_ERRO; // identifier that starts w/ num
+{signed_num}+\.{num}*{alphabetic}{alphanumeric}*   return TOKEN_ERRO; // identifier that starts w/ num
+{signed_num}\.	                                   return TOKEN_ERRO; // float w/o num after point
+{signed_num}[eE]                                   return TOKEN_ERRO; // float w/o num after point
+\.{num}+                                           return TOKEN_ERRO; // float w/o leading num
+
+{alphabetic}{alphanumeric}*  return TK_IDENTIFICADOR;
 
 [ \t]         { };
 
-\n            { ++line_number; }
+[\r\n]            { ++line_number; }
 
 "/*"          { BEGIN(COMMENT); }
 
@@ -70,13 +80,12 @@
 
 <COMMENT>(.) ;
 
-"/*".*             {return TOKEN_ERRO;} // multiline comment that doesnt end
-[+-]?[0-9]+\.	   {return TOKEN_ERRO;} // float w/o num after point
-[+-]?[0-9]+[eE]	   {return TOKEN_ERRO;} // float w/o num after point
-. 		           {return TOKEN_ERRO;} // Other characters that dont have mapping
+<COMMENT><<EOF>>   {BEGIN(INITIAL); return TOKEN_ERRO;} // multiline comment that doesnt end
+. 		           return TOKEN_ERRO; // catch all other errors
 
 %%
 
 int get_line_number(void) {
     return line_number;
 }
+
