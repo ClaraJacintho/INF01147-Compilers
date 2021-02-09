@@ -1,5 +1,7 @@
 
-all: lex.yy.c
+all: etapa1
+
+etapa1:	lex.yy.c
 	gcc main.c lex.yy.c -o etapa1 -lfl
 
 lex.yy.c: scanner.l
