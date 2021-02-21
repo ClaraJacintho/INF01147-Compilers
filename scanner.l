@@ -1,5 +1,5 @@
 %{
-    #include "tokens.h"
+    #include "parser.tab.h"
 
     int line_number = 1;
 %}
@@ -35,9 +35,11 @@ alphanumeric [a-zA-Z0-9_]
 "break"         return TK_PR_BREAK;
 "continue"      return TK_PR_CONTINUE;
 "class"         return TK_PR_CLASS;
-"private"       return TK_PR_PUBLIC;
+"private"       return TK_PR_PRIVATE;
 "public"        return TK_PR_PUBLIC;
 "protected"     return TK_PR_PROTECTED;
+"end"           return TK_PR_END;
+"default"       return TK_PR_DEFAULT;
 
  [,;:()[\]{}|*/<>=!&%#^.$-]   return yytext[0];
 
