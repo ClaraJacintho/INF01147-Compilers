@@ -54,3 +54,5 @@ dkms.conf
 # Project-specific files
 lex.yy.c
 etapa1
+etapa2
+*.output

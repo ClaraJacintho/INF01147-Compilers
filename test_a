@@ -1,51 +1,12 @@
-int float bool char string
-if then else
-while do
-input output
-return const static 
-foreach for
-switch case break continue
-class private public protected
-<= >= == != && || >> <<
+int clara, mariana, jose, bete[10];
+static int pepe;
 
-#define TK_LIT_INT 291
-#define TK_LIT_FLOAT 292
-#define TK_LIT_FALSE 293
-#define TK_LIT_TRUE 294
-#define TK_LIT_CHAR 295
-#define TK_LIT_STRING 296
+int clara(float clara, int clara){
 
-'c' '1' '>'
+int clara <= 1; 
 
-"string" "a string"
+static bool foo;
 
-"protected words: int float do if else break"
+static const string a <= "im cool";
 
-"123 >/(@)?! >="
-
-"liberté egalité fraternité"
-
-5 +5 -5
-5.0 +5.0 -5.0
-5.0e4 +5.5E3 -5.0e2
-
-5+5
-123.123+3
-123+123.123
-4.4+5.5
-
-5-5
-123.123-3
-123-123.123
-4.4-5.5
-
-4+6-7.4+8 // 4 +6 -7.4 8
-
-5.0e4-5.3e74
-234.0e234+234
-64.2E234+34423.2e423
-
-a=5
-b=-23423.0
-c=+13.2e54
-
+}

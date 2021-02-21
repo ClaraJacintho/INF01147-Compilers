@@ -1,17 +1,23 @@
 
-all: etapa1
+all: etapa2
 
-etapa1:	lex.yy.c
-	gcc main.c lex.yy.c -o etapa1 -lfl
+etapa2:	main.o
+	gcc -o etapa2 main.o lex.yy.o parser.tab.o -lfl
+
+main.o: parser.tab.c lex.yy.c
+	gcc -c main.c lex.yy.c parser.tab.c
+
+parser.tab.c: parser.y
+	bison -d parser.y
 
 lex.yy.c: scanner.l
 	flex scanner.l
 
 test:
-	./etapa1 <test_a
-	./etapa1 <test_b
-	./etapa1 <test_c
-	./etapa1 <test_d
+	./etapa2 < test_a
+
+report: parser.y
+	bison --report-file="r.txt" parser.y
 
 clean:
-	rm lex.yy.c etapa1
+	rm lex.yy.* main.o parser.tab.* etapa2

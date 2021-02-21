@@ -1,6 +1,10 @@
 %{
+#include <stdio.h>
+#include <stdlib.h>
 int yylex(void);
-void yyerror (char const *s);
+int yyerror (char const *s);
+
+extern int get_line_number(void);
 %}
 
 %token TK_PR_INT
@@ -49,6 +53,43 @@ void yyerror (char const *s);
 
 %%
 
-programa:
+program : global_declaration program | function program |;
+
+global_declaration : type global_id_list ';'| TK_PR_STATIC type global_id_list ';';
+vector_declaration: TK_IDENTIFICADOR '['TK_LIT_INT']'
+global_var_id: TK_IDENTIFICADOR | vector_declaration;
+global_id_list : global_var_id ',' global_id_list| global_var_id;
+
+type : TK_PR_INT | TK_PR_FLOAT | TK_PR_BOOL | TK_PR_CHAR | TK_PR_STRING;
+literal : TK_LIT_INT | TK_LIT_FLOAT | TK_LIT_FALSE | TK_LIT_TRUE | TK_LIT_CHAR | TK_LIT_STRING
+
+function : function_header code_block
+function_header : type TK_IDENTIFICADOR '('params_list | TK_PR_STATIC type TK_IDENTIFICADOR '('params_list;
+params_list : ')' |params')' ;
+param: type TK_IDENTIFICADOR | TK_PR_CONST type TK_IDENTIFICADOR;
+params: param ',' param | param;
+
+code_block : '{' commands;
+commands : command ';' commands| '}';
+command : code_block | local_var | attribution | input | output;
+
+local_var_declaration : type local_var_list | TK_PR_STATIC type local_var_list | TK_PR_STATIC TK_PR_CONST type local_var_list
+local_var_list: TK_IDENTIFICADOR ',' local_var_list| TK_IDENTIFICADOR;
+declare_assignment : local_var_declaration TK_OC_LE TK_IDENTIFICADOR | local_var_declaration TK_OC_LE literal
+local_var : local_var_declaration | declare_assignment;
+
+attribution : var_attribution | vector_attribution;
+var_attribution : TK_IDENTIFICADOR '=' expression;
+vector_attribution : TK_IDENTIFICADOR '[' expression ']' '=' expression;
+
+input: TK_PR_INPUT TK_IDENTIFICADOR;
+output: TK_PR_OUTPUT TK_IDENTIFICADOR | TK_PR_OUTPUT literal;
+
+expression : type
 
 %%
+
+int yyerror(char const *s){
+	printf("Syntetic error at line %d! Error: %s", get_line_number(), s);
+	return 1;
+}	
