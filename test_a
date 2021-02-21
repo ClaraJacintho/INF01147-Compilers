@@ -9,4 +9,30 @@ static bool foo;
 
 static const string a <= "im cool";
 
+clara = int;
+clara[int] = int;
+
+clara(int, bool);
+
+input clara;
+
+output "foo";
+
+output clara;
+
+clara << 2;
+
+return int;
+
+break;
+
+continue;
+
+if (int) {}
+if (float) {} else {}
+
+for(i = int : int : i  = int) {}
+while(float) do  {}
+
+
 }

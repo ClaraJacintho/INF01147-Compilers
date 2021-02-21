@@ -69,9 +69,22 @@ params_list : ')' |params')' ;
 param: type TK_IDENTIFICADOR | TK_PR_CONST type TK_IDENTIFICADOR;
 params: param ',' param | param;
 
-code_block : '{' commands;
-commands : command ';' commands| '}';
-command : code_block | local_var | attribution | input | output;
+code_block : '{' commands '}';
+commands : command commands
+	 | ;
+command : code_block 
+	| local_var';' 
+	| attribution';' 
+	| input';'
+	| output';'
+	| shift';'
+	| function_call';'
+	| return';' 
+	| break';'
+	| continue';' 
+	| if 
+	| for
+	| while;
 
 local_var_declaration : type local_var_list | TK_PR_STATIC type local_var_list | TK_PR_STATIC TK_PR_CONST type local_var_list
 local_var_list: TK_IDENTIFICADOR ',' local_var_list| TK_IDENTIFICADOR;
@@ -84,6 +97,23 @@ vector_attribution : TK_IDENTIFICADOR '[' expression ']' '=' expression;
 
 input: TK_PR_INPUT TK_IDENTIFICADOR;
 output: TK_PR_OUTPUT TK_IDENTIFICADOR | TK_PR_OUTPUT literal;
+
+function_call : TK_IDENTIFICADOR '(' args ')'; 
+args : expression ',' args | expression |;
+
+shift_left : TK_IDENTIFICADOR TK_OC_SL TK_LIT_INT | TK_IDENTIFICADOR '[' expression ']' TK_OC_SL TK_LIT_INT;
+shift_right : TK_IDENTIFICADOR TK_OC_SR TK_LIT_INT | TK_IDENTIFICADOR '[' expression ']' TK_OC_SR TK_LIT_INT;
+shift : shift_left | shift_right;
+
+return : TK_PR_RETURN expression;
+break : TK_PR_BREAK;
+continue : TK_PR_CONTINUE;
+
+if : TK_PR_IF '(' expression ')' code_block
+   | TK_PR_IF '(' expression ')' code_block TK_PR_ELSE code_block;
+
+for : TK_PR_FOR '(' attribution ':' expression ':' attribution ')' code_block;
+while : TK_PR_WHILE '('expression')' TK_PR_DO code_block;
 
 expression : type
 

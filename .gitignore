@@ -52,7 +52,8 @@ Mkfile.old
 dkms.conf
 
 # Project-specific files
-lex.yy.c
+lex.yy.*
 etapa1
 etapa2
 *.output
+parser.tab.*
