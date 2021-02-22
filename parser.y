@@ -66,10 +66,10 @@ type : TK_PR_INT | TK_PR_FLOAT | TK_PR_BOOL | TK_PR_CHAR | TK_PR_STRING;
 literal : TK_LIT_INT | TK_LIT_FLOAT | TK_LIT_FALSE | TK_LIT_TRUE | TK_LIT_CHAR | TK_LIT_STRING
 
 function : function_header code_block
-function_header : type TK_IDENTIFICADOR '('params_list | TK_PR_STATIC type TK_IDENTIFICADOR '('params_list;
-params_list : ')' |params')' ;
+function_header : type TK_IDENTIFICADOR '('params_list')' | TK_PR_STATIC type TK_IDENTIFICADOR '('params_list')';
+params_list : params|;
 param: type TK_IDENTIFICADOR | TK_PR_CONST type TK_IDENTIFICADOR;
-params: param ',' param | param;
+params: param ',' params | param;
 
 code_block : '{' commands '}';
 commands : command commands
@@ -127,7 +127,7 @@ expression : logic_exp | logic_exp '?' expression ':' expression;
 id_exp_a : TK_IDENTIFICADOR | TK_IDENTIFICADOR'['expression']';
 lit_exp_a : TK_LIT_INT | TK_LIT_FLOAT;
 operand_exp_a : id_exp_a | lit_exp_a | function_call;
-operand_exp_l : exp_ar | TK_LIT_FALSE | TK_LIT_TRUE | operand_exp_l;
+operand_exp_l : TK_LIT_FALSE | TK_LIT_TRUE;
 
 unary_op : '+' | '-' | '!' | '?' | '&'| '*' | '#';
 
@@ -150,6 +150,6 @@ term : '(' expression ')' | operand;
 %%
 
 int yyerror(char const *s){
-	printf("Syntetic error at line %d! Error: %s", get_line_number(), s);
+	printf("%s on line %d\n", s, get_line_number());
 	return 1;
 }	

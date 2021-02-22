@@ -1,5 +1,6 @@
 %{
     #include "parser.tab.h"
+    #include <stdio.h>
 
     int line_number = 1;
 %}
@@ -41,7 +42,7 @@ alphanumeric [a-zA-Z0-9_]
 "end"           return TK_PR_END;
 "default"       return TK_PR_DEFAULT;
 
- [,;:()[\]{}|*/<>=!&%#^.$-]   return yytext[0];
+ [,;:()[\]{}|*/<>=!&%#^.$?-]   return yytext[0];
 
 "<="            return TK_OC_LE;
 ">="            return TK_OC_GE;
@@ -59,10 +60,10 @@ alphanumeric [a-zA-Z0-9_]
 \'.\'                                   return TK_LIT_CHAR;
 \".+\"                                  return TK_LIT_STRING;
 
-{signed_num}+{alphabetic}{alphanumeric}+           return TOKEN_ERRO; // identifier that starts w/ num
-{signed_num}+\.{num}*{alphabetic}{alphanumeric}*   return TOKEN_ERRO; // identifier that starts w/ num
-{signed_num}\.	                                   return TOKEN_ERRO; // float w/o num after point
-\.{num}+                                           return TOKEN_ERRO; // float w/o leading num
+{signed_num}+{alphabetic}{alphanumeric}+          {printf("Erro id st num %c", yytext[0]);  return TOKEN_ERRO;} // identifier that starts w/ num
+{signed_num}+\.{num}*{alphabetic}{alphanumeric}*  { printf("Erro id start flo %c", yytext[0]); return TOKEN_ERRO;} // identifier that starts w/ num
+{signed_num}\.	                                  { printf("Erro no num af opoint %c", yytext[0]); return TOKEN_ERRO;} // float w/o num after point
+\.{num}+                                          { printf("Erro wo lead num%c", yytext[0]); return TOKEN_ERRO;} // float w/o leading num
 
 {alphabetic}{alphanumeric}*  return TK_IDENTIFICADOR;
 
@@ -82,7 +83,7 @@ alphanumeric [a-zA-Z0-9_]
 
 <COMMENT><<EOF>>   {BEGIN(INITIAL); return TOKEN_ERRO;} // multiline comment that doesnt end
 
-. 		           return TOKEN_ERRO; // catch all other errors
+.                  {printf("Erro %c", yytext[0]); return TOKEN_ERRO;} // catch all other errors
 
 %%
 

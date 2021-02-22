@@ -11,11 +11,11 @@ int clara(float clara, int clara){
     static const string a <= "im cool";
 
     // assignment
-    clara = int;
-    clara[int] = int;
+    clara = pepe;
+    clara[5] = 9;
 
     // function call
-    clara(int, bool);
+    clara(7, true != false);
 
     // IO
     input clara;
@@ -27,7 +27,7 @@ int clara(float clara, int clara){
     pepe[5] >> 5;
 
     // PR
-    return int;
+    return clara == true ? foo == faa : pepe != 2;
     break;
     continue;
 
@@ -35,8 +35,30 @@ int clara(float clara, int clara){
     if (true) {}
     if (false) {} else {}
 
-    for(i = 5 : clara > 2 : i = i + 1) {}
+    for(i = 5 : clara == 2 : i = i * 1) {}
     while(1 && 2) do  {}
-
-
 }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
