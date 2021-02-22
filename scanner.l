@@ -42,7 +42,7 @@ alphanumeric [a-zA-Z0-9_]
 "end"           return TK_PR_END;
 "default"       return TK_PR_DEFAULT;
 
- [,;:()[\]{}|*/<>=!&%#^.$?-]   return yytext[0];
+ [,;:()[\]{}|*/<>=!&%#^.$?+-]   return yytext[0];
 
 "<="            return TK_OC_LE;
 ">="            return TK_OC_GE;

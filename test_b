@@ -9,18 +9,18 @@ string search(int clara, float nana, bool jose){
 	if(test==true){
 		float l <= 1.0e3;
 		for(i = 0 : i < l : i = i*2){
-			print(8, true, 59+12);
+			print(8, true, 59 + 12);
 		}
 	} else {
 		if(clara * 90){
 			l >> 2; 
-			clara[5-7] << +34;
+			clara[5- 7] << +34;
 		}
 		return clara;
 	}
 
 	while(69 < 420) do {
-		print("nice");
+		print(23424);
 	} 
 
 }

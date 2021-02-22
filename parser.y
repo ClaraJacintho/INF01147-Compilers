@@ -134,7 +134,7 @@ unary_op : '+' | '-' | '!' | '?' | '&'| '*' | '#';
 operand: operand_exp_a | operand_exp_l | unary_op term;
 
 logic_ops : '|' | '&' | TK_OC_OR | TK_OC_AND;
-compare_ops : TK_OC_LE | TK_OC_GE | TK_OC_EQ | TK_OC_NE;
+compare_ops : '>' | '<' | TK_OC_LE | TK_OC_GE | TK_OC_EQ | TK_OC_NE;
 sum: '+' | '-';
 mul: '*' | '/' | '%';
 exponent: '^';
@@ -144,7 +144,7 @@ compare_exp : compare_exp compare_ops sum_exp | sum_exp;
 sum_exp : sum_exp sum mul_exp | mul_exp;
 mul_exp : mul_exp mul exponent_exp | exponent_exp;
 exponent_exp : exponent_exp exponent term | term;
-term : '(' expression ')' | operand;
+term : '(' expression ')' |  operand ;
 
 
 %%
