@@ -7,6 +7,8 @@ int yyerror (char const *s);
 extern int get_line_number(void);
 %}
 
+%define parse.error verbose
+
 %token TK_PR_INT
 %token TK_PR_FLOAT
 %token TK_PR_BOOL
@@ -115,16 +117,35 @@ if : TK_PR_IF '(' expression ')' code_block
 for : TK_PR_FOR '(' attribution ':' expression ':' attribution ')' code_block;
 while : TK_PR_WHILE '('expression')' TK_PR_DO code_block;
 
-expression : type
+// for priority, follow the example:
+// E → E+T | T
+// T → T*F | F
+// F → (E) | id
+// priority low to high: ternary logic compare +- /%* ^ ()
+expression : logic_exp | logic_exp '?' expression ':' expression;
 
 id_exp_a : TK_IDENTIFICADOR | TK_IDENTIFICADOR'['expression']';
 lit_exp_a : TK_LIT_INT | TK_LIT_FLOAT;
 operand_exp_a : id_exp_a | lit_exp_a | function_call;
 operand_exp_l : exp_ar | TK_LIT_FALSE | TK_LIT_TRUE | operand_exp_l;
 
-unary_op : '+' | '-' | '!' | | '?' | '&'| '*' | '#';
+unary_op : '+' | '-' | '!' | '?' | '&'| '*' | '#';
 
-un_exp : unary_op operand_exp_a
+operand: operand_exp_a | operand_exp_l | unary_op term;
+
+logic_ops : '|' | '&' | TK_OC_OR | TK_OC_AND;
+compare_ops : TK_OC_LE | TK_OC_GE | TK_OC_EQ | TK_OC_NE;
+sum: '+' | '-';
+mul: '*' | '/' | '%';
+exponent: '^';
+
+logic_exp : logic_exp logic_ops compare_exp| compare_exp;
+compare_exp : compare_exp compare_ops sum_exp | sum_exp;
+sum_exp : sum_exp sum mul_exp | mul_exp;
+mul_exp : mul_exp mul exponent_exp | exponent_exp;
+exponent_exp : exponent_exp exponent term | term;
+term : '(' expression ')' | operand;
+
 
 %%
 
