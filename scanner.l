@@ -5,8 +5,8 @@
     int line_number = 1;
 %}
 
-signed_num [+-]?[0-9]+
-num [0-9]
+num [0-9]+
+single_num [0-9]
 alphabetic [a-zA-Z_]
 alphanumeric [a-zA-Z0-9_]
 /*Special state "COMMENT" to ignore multiline comments*/
@@ -53,16 +53,16 @@ alphanumeric [a-zA-Z0-9_]
 ">>"            return TK_OC_SL;
 "<<"            return TK_OC_SR;
 
-{signed_num}                            return TK_LIT_INT;
-{signed_num}\.{num}+([eE]{signed_num})? return TK_LIT_FLOAT;
+{num}                            return TK_LIT_INT;
+{num}\.{single_num}+([eE]{num})? return TK_LIT_FLOAT;
 "false"                                 return TK_LIT_FALSE;
 "true"                                  return TK_LIT_TRUE;
 \'.\'                                   return TK_LIT_CHAR;
 \".+\"                                  return TK_LIT_STRING;
 
-{signed_num}+{alphabetic}{alphanumeric}+          {printf("Erro id st num %c", yytext[0]);  return TOKEN_ERRO;} // identifier that starts w/ num
-{signed_num}+\.{num}*{alphabetic}{alphanumeric}*  { printf("Erro id start flo %c", yytext[0]); return TOKEN_ERRO;} // identifier that starts w/ num
-{signed_num}\.	                                  { printf("Erro no num af opoint %c", yytext[0]); return TOKEN_ERRO;} // float w/o num after point
+{num}+{alphabetic}{alphanumeric}+          {printf("Erro id st num %c", yytext[0]);  return TOKEN_ERRO;} // identifier that starts w/ num
+{num}+\.{num}*{alphabetic}{alphanumeric}*  { printf("Erro id start flo %c", yytext[0]); return TOKEN_ERRO;} // identifier that starts w/ num
+{num}\.	                                  { printf("Erro no num af opoint %c", yytext[0]); return TOKEN_ERRO;} // float w/o num after point
 \.{num}+                                          { printf("Erro wo lead num%c", yytext[0]); return TOKEN_ERRO;} // float w/o leading num
 
 {alphabetic}{alphanumeric}*  return TK_IDENTIFICADOR;
