@@ -117,6 +117,15 @@ while : TK_PR_WHILE '('expression')' TK_PR_DO code_block;
 
 expression : type
 
+id_exp_a : TK_IDENTIFICADOR | TK_IDENTIFICADOR'['expression']';
+lit_exp_a : TK_LIT_INT | TK_LIT_FLOAT;
+operand_exp_a : id_exp_a | lit_exp_a | function_call;
+operand_exp_l : exp_ar | TK_LIT_FALSE | TK_LIT_TRUE | operand_exp_l;
+
+unary_op : '+' | '-' | '!' | | '?' | '&'| '*' | '#';
+
+un_exp : unary_op operand_exp_a
+
 %%
 
 int yyerror(char const *s){
