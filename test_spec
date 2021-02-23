@@ -235,6 +235,57 @@ clara = ?clara;
 // # acesso a um identificador como uma tabela hash
 clara = #clara;
 
+// Binarios
+// + soma
+clara = a + b;
+clara = 5++5+-5;
+clara = id[5]+identificador;
 
+// - subtracao
+clara = 5-7-+6--7;
+clara = a - b;
+
+// * mult
+clara = a * b;
+clara = -7 * +5 * 7;
+
+// / div
+clara = a / b;
+clara = 5 /0; //hehe
+clara = -5 + 5;
+
+// % resto
+clara = 5 %5;
+clara = -6 % 3;
+
+// | bitwise or
+clara = 101001 | 1001010;
+clara = a | 234;
+
+// & bitwise and
+clara = 10101 & 101010;
+clara = 2321 & 1231;
+clara = id[23--7] & 234;
+
+// ^ exp
+clara = 4 ^ 5;
+clara = true ^ false; //lol
+clara = 123 ^id[3];
+
+// relacionais
+clara = a > b;
+clara = a < b;
+clara = a <= b;
+clara = a >= b;
+clara = a == b;
+clara = a != b;
+
+// logicos
+clara = a && b;
+clara = a || b;
+
+// ternario expressao ? : expressao : expressao
+clara = true ? printf(azeaze) : print(sdfsdf);
+if(true ? 5+5 : true | false) {print(lol);}
 
 }

@@ -62,7 +62,7 @@ program : global_declaration program | function program |;
 
 // utils
 type : TK_PR_INT | TK_PR_FLOAT | TK_PR_BOOL | TK_PR_CHAR | TK_PR_STRING;
-literal : TK_LIT_INT | TK_LIT_FLOAT | TK_LIT_FALSE | TK_LIT_TRUE | TK_LIT_CHAR | TK_LIT_STRING
+literal : TK_LIT_INT | TK_LIT_FLOAT | TK_LIT_FALSE | TK_LIT_TRUE | TK_LIT_CHAR | TK_LIT_STRING;
 
 // global declarations
 global_declaration : type global_id_list ';'| TK_PR_STATIC type global_id_list ';';
@@ -100,12 +100,12 @@ command : code_block';'
 	| while;
 
 // local vars
-var_type : type | TK_PR_STATIC type | TK_PR_CONST type | TK_PR_STATIC TK_PR_CONST type
-init_types : TK_IDENTIFICADOR '[' expression ']' | TK_IDENTIFICADOR 
-var_init : TK_IDENTIFICADOR TK_OC_LE init_types | TK_IDENTIFICADOR TK_OC_LE literal
-var : TK_IDENTIFICADOR | var_init
+var_type : type | TK_PR_STATIC type | TK_PR_CONST type | TK_PR_STATIC TK_PR_CONST type;
+init_types : TK_IDENTIFICADOR '[' expression ']' | TK_IDENTIFICADOR;
+var_init : TK_IDENTIFICADOR TK_OC_LE init_types | TK_IDENTIFICADOR TK_OC_LE literal;
+var : TK_IDENTIFICADOR | var_init;
 local_var_list: var ',' local_var_list| var;
-local_var : var_type local_var_list
+local_var : var_type local_var_list;
 
 // attribution
 attribution : var_attribution | vector_attribution;
@@ -163,7 +163,7 @@ exponent: '^';
 
 // expression definition
 logic_exp : logic_exp logic_ops compare_exp| compare_exp;
-compare_exp : compare_exp compare_ops sum_exp | sum_exp;
+compare_exp : compare_exp compare_ops sum_exp| sum_exp;
 sum_exp : sum_exp sum mul_exp | mul_exp;
 mul_exp : mul_exp mul exponent_exp | exponent_exp;
 exponent_exp : exponent_exp exponent term | term;
