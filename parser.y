@@ -67,8 +67,8 @@ literal : TK_LIT_INT | TK_LIT_FLOAT | TK_LIT_FALSE | TK_LIT_TRUE | TK_LIT_CHAR |
 
 function : function_header code_block
 function_header : type TK_IDENTIFICADOR '('params_list')' | TK_PR_STATIC type TK_IDENTIFICADOR '('params_list')';
-params_list : params|;
-param: type TK_IDENTIFICADOR | TK_PR_CONST type TK_IDENTIFICADOR;
+params_list : params|
+param: type TK_IDENTIFICADOR | TK_PR_CONST type TK_IDENTIFICADOR |TK_PR_STATIC type TK_IDENTIFICADOR | TK_PR_STATIC TK_PR_CONST type TK_IDENTIFICADOR;
 params: param ',' params | param;
 
 code_block : '{' commands '}';
@@ -134,7 +134,7 @@ unary_op : '+' | '-' | '!' | '?' | '&'| '*' | '#';
 operand: operand_exp_a | operand_exp_l | unary_op term;
 
 logic_ops : '|' | '&' | TK_OC_OR | TK_OC_AND;
-compare_ops : '>' | '<' | TK_OC_LE | TK_OC_GE | TK_OC_EQ | TK_OC_NE;
+compare_ops : '<' | '>' | TK_OC_LE | TK_OC_GE | TK_OC_EQ | TK_OC_NE;
 sum: '+' | '-';
 mul: '*' | '/' | '%';
 exponent: '^';

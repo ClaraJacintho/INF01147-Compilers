@@ -16,7 +16,8 @@ lex.yy.c: scanner.l
 test:
 	./etapa2 < test_a
 	./etapa2 < test_b
-
+	./etapa2 < test_c
+	./etapa2 < test_d
 report: parser.y
 	bison --report-file="r.txt" parser.y
 
