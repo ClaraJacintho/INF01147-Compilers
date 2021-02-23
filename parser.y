@@ -85,7 +85,7 @@ code_block : '{' commands '}';
 // ------------------------------------ commands ------------------------------------
 commands : command commands
 	 | ;
-command : code_block 
+command : code_block';'
 	| local_var';' 
 	| attribution';' 
 	| input';'
@@ -100,11 +100,12 @@ command : code_block
 	| while;
 
 // local vars
-local_var_declaration : type local_var_list | TK_PR_STATIC type local_var_list | TK_PR_STATIC TK_PR_CONST type local_var_list
-local_var_list: TK_IDENTIFICADOR ',' local_var_list| TK_IDENTIFICADOR;
-declare_assignment : local_var_declaration TK_OC_LE TK_IDENTIFICADOR | local_var_declaration TK_OC_LE literal
-declare_assignment_list : declare_assignment ',' declare_assignment_list | declare_assignment;
-local_var : local_var_declaration | declare_assignment_list;
+var_type : type | TK_PR_STATIC type | TK_PR_CONST type | TK_PR_STATIC TK_PR_CONST type
+init_types : TK_IDENTIFICADOR '[' expression ']' | TK_IDENTIFICADOR 
+var_init : TK_IDENTIFICADOR TK_OC_LE init_types | TK_IDENTIFICADOR TK_OC_LE literal
+var : TK_IDENTIFICADOR | var_init
+local_var_list: var ',' local_var_list| var;
+local_var : var_type local_var_list
 
 // attribution
 attribution : var_attribution | vector_attribution;
