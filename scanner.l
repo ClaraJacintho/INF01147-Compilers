@@ -50,8 +50,8 @@ alphanumeric [a-zA-Z0-9_]
 "!="            return TK_OC_NE;
 "&&"            return TK_OC_AND;
 "||"            return TK_OC_OR;
-">>"            return TK_OC_SL;
-"<<"            return TK_OC_SR;
+">>"            return TK_OC_SR;
+"<<"            return TK_OC_SL;
 
 {num}                            return TK_LIT_INT;
 {num}\.{single_num}+([eE]{num})? return TK_LIT_FLOAT;

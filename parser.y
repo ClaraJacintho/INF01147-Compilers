@@ -55,23 +55,34 @@ extern int get_line_number(void);
 
 %%
 
+// ------------------------------------ main blocks ------------------------------------
+
+// initial symbol
 program : global_declaration program | function program |;
 
+// utils
+type : TK_PR_INT | TK_PR_FLOAT | TK_PR_BOOL | TK_PR_CHAR | TK_PR_STRING;
+literal : TK_LIT_INT | TK_LIT_FLOAT | TK_LIT_FALSE | TK_LIT_TRUE | TK_LIT_CHAR | TK_LIT_STRING
+
+// global declarations
 global_declaration : type global_id_list ';'| TK_PR_STATIC type global_id_list ';';
 vector_declaration: TK_IDENTIFICADOR '['TK_LIT_INT']'
 global_var_id: TK_IDENTIFICADOR | vector_declaration;
 global_id_list : global_var_id ',' global_id_list| global_var_id;
 
-type : TK_PR_INT | TK_PR_FLOAT | TK_PR_BOOL | TK_PR_CHAR | TK_PR_STRING;
-literal : TK_LIT_INT | TK_LIT_FLOAT | TK_LIT_FALSE | TK_LIT_TRUE | TK_LIT_CHAR | TK_LIT_STRING
 
+// function declaration
 function : function_header code_block
 function_header : type TK_IDENTIFICADOR '('params_list')' | TK_PR_STATIC type TK_IDENTIFICADOR '('params_list')';
 params_list : params|
-param: type TK_IDENTIFICADOR | TK_PR_CONST type TK_IDENTIFICADOR |TK_PR_STATIC type TK_IDENTIFICADOR | TK_PR_STATIC TK_PR_CONST type TK_IDENTIFICADOR;
+param: type TK_IDENTIFICADOR 
+	| TK_PR_CONST type TK_IDENTIFICADOR 
+	|TK_PR_STATIC type TK_IDENTIFICADOR 
+	| TK_PR_STATIC TK_PR_CONST type TK_IDENTIFICADOR;
 params: param ',' params | param;
-
 code_block : '{' commands '}';
+
+// ------------------------------------ commands ------------------------------------
 commands : command commands
 	 | ;
 command : code_block 
@@ -88,28 +99,38 @@ command : code_block
 	| for
 	| while;
 
+// local vars
 local_var_declaration : type local_var_list | TK_PR_STATIC type local_var_list | TK_PR_STATIC TK_PR_CONST type local_var_list
 local_var_list: TK_IDENTIFICADOR ',' local_var_list| TK_IDENTIFICADOR;
 declare_assignment : local_var_declaration TK_OC_LE TK_IDENTIFICADOR | local_var_declaration TK_OC_LE literal
-local_var : local_var_declaration | declare_assignment;
+declare_assignment_list : declare_assignment ',' declare_assignment_list | declare_assignment;
+local_var : local_var_declaration | declare_assignment_list;
 
+// attribution
 attribution : var_attribution | vector_attribution;
 var_attribution : TK_IDENTIFICADOR '=' expression;
 vector_attribution : TK_IDENTIFICADOR '[' expression ']' '=' expression;
 
+// io
 input: TK_PR_INPUT TK_IDENTIFICADOR;
 output: TK_PR_OUTPUT TK_IDENTIFICADOR | TK_PR_OUTPUT literal;
 
+// fuction call
 function_call : TK_IDENTIFICADOR '(' args ')'; 
 args : expression ',' args | expression |;
 
+// shift
 shift_left : TK_IDENTIFICADOR TK_OC_SL TK_LIT_INT | TK_IDENTIFICADOR '[' expression ']' TK_OC_SL TK_LIT_INT;
 shift_right : TK_IDENTIFICADOR TK_OC_SR TK_LIT_INT | TK_IDENTIFICADOR '[' expression ']' TK_OC_SR TK_LIT_INT;
 shift : shift_left | shift_right;
 
+// PRs
 return : TK_PR_RETURN expression;
 break : TK_PR_BREAK;
 continue : TK_PR_CONTINUE;
+
+
+// ------------------------------------ expressions ------------------------------------
 
 if : TK_PR_IF '(' expression ')' code_block
    | TK_PR_IF '(' expression ')' code_block TK_PR_ELSE code_block;
@@ -124,21 +145,22 @@ while : TK_PR_WHILE '('expression')' TK_PR_DO code_block;
 // priority low to high: ternary logic compare +- /%* ^ ()
 expression : logic_exp | logic_exp '?' expression ':' expression;
 
+// operands
 id_exp_a : TK_IDENTIFICADOR | TK_IDENTIFICADOR'['expression']';
 lit_exp_a : TK_LIT_INT | TK_LIT_FLOAT;
 operand_exp_a : id_exp_a | lit_exp_a | function_call;
 operand_exp_l : TK_LIT_FALSE | TK_LIT_TRUE;
-
-unary_op : '+' | '-' | '!' | '?' | '&'| '*' | '#';
-
 operand: operand_exp_a | operand_exp_l | unary_op term;
 
+// operators
+unary_op : '+' | '-' | '!' | '?' | '&'| '*' | '#';
 logic_ops : '|' | '&' | TK_OC_OR | TK_OC_AND;
 compare_ops : '<' | '>' | TK_OC_LE | TK_OC_GE | TK_OC_EQ | TK_OC_NE;
 sum: '+' | '-';
 mul: '*' | '/' | '%';
 exponent: '^';
 
+// expression definition
 logic_exp : logic_exp logic_ops compare_exp| compare_exp;
 compare_exp : compare_exp compare_ops sum_exp | sum_exp;
 sum_exp : sum_exp sum mul_exp | mul_exp;
