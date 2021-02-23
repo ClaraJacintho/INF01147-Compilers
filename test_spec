@@ -36,15 +36,15 @@ char tot(int a, bool b, char c){}
 
 //O tipo pode estar precedido opcionalmente pela palavra reservada static. 
 static bool a(){}
-bool c(static int clara){};
+bool c(static int clara){}
 
 //Cada parametro e definido pelo seu tipo e nome, e nao pode ser do tipo vetor.
 // O tipo de um parametro pode ser opcionalmente precedido da palavra 
 // reservada const. 
 
-bool copo(int a, bool b, char c){};
-bool faca(const int bool, const int c){};
-string faca(static int a, static const int b, int c){};
+bool copo(int a, bool b, char c){}
+bool faca(const int b, const int c){}
+string faca(static int a, static const int b, int c){}
 
 // O corpo da funcao e um bloco de comandos.
 int a(){ a << 2; input clara; output 5; }
@@ -102,11 +102,11 @@ int a <= 1, b <= a, c <= true, d <= "string", e <= 'e', f <= false;
 // de um identificador simples; segundo caso de um identificador que e um vetor): ´
 // identificador = expressao
 
-clara = ?coisa : print(baby_shark) : print(do_do_do_do);
+clara = ?coisa ? print(baby_shark) : print(do_do_do_do);
 
 // identificador[expressao] = expressao
-clara[4] = 5+-5
-clara[45+-0+(8^(true))] = #clara
+clara[4] = 5+-5;
+clara[45+-0+(8^(true))] = #clara;
 
 // ~~~~~~~~ Comandos de Entrada e Saıda ~~~~~~~~
 // Para entrada de dados, o comando tem a palavra reservada
@@ -140,7 +140,7 @@ clara[5+5*(6)] << 4;
 // ~~~~~~~~ Comando de Retorno, Break, Continue ~~~~~~~~
 // Retorno e a palavra reservada return seguida de uma expressao.
 return clara;
-return 5+(5)
+return 5+(5);
 // Os comandos break e continue sao simples. 
 break;
 continue;
@@ -155,7 +155,7 @@ continue;
 // incluem o if com o else opcional, assim:
 // if (expressao) bloco
 if (clara) {}
-if (clara) {return 5*+5};
+if (clara) {return 5*+5;}
 
 //if (expressao) bloco else bloco
 if(false){}else{}
@@ -198,12 +198,12 @@ clara = print(5);
 // ou precedencia diferente daquela tradicional. A associativi- ˆ
 // dade e a esquerda. 
 
-clara = 5 + 6 * 7 - +clara[identificador] *-6/clara%43
-clara = (45+7)*7
+clara = 5 + 6 * 7 - +clara[identificador] *-6/clara%43;
+clara = (45+7)*7;
 
 // Expressoes logicas podem ser formadas atraves dos ope-
 // radores relacionais aplicados a expressoes aritmeticas, 
-clara = 5+5 ||5*6
+clara = 5+5 ||5*6;
 
 // ou de operadores logicos aplicados a expressoes logicas, recursi- 
 // vamente. Outras expressoes podem ser formadas conside-
@@ -215,25 +215,25 @@ clara = 5+5 ||5*6
 
 // Unarios (todos prefixados)
 // + sinal positivo explıcito
-clara = + 4
+clara = + 4;
 
 // - inverte o sinal
-clara = - 4
+clara = - 4;
 
 // ! negacao logica
-clara = !clara
+clara = !clara;
 
 // & acesso ao endereco da variavel
-clara = &clara
+clara = &clara;
 
 // * acesso ao valor do ponteiro
-clara = *clara
+clara = *clara;
 
 // ? avalia uma expressao para true ou false
-clara = ?clara
+clara = ?clara;
 
 // # acesso a um identificador como uma tabela hash
-clara = #clara
+clara = #clara;
 
 
 

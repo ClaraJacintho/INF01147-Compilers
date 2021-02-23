@@ -16,6 +16,7 @@ test:
 	./etapa2 < test_c
 	./etapa2 < test_d
 	./etapa2 < test_e
+	./etapa2 < test_spec
 
 report: parser.y
 	bison --report-file="r.txt" parser.y
