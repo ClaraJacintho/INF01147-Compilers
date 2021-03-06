@@ -21,7 +21,4 @@ typedef struct lex_val_t {
 
 } lex_val_t;
 
-typedef struct node_t {
-
-
-} node_t;
+lex_val_t* get_lit_lex_val(int line, int type, char *val);

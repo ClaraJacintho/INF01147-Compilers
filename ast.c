@@ -1,8 +1,9 @@
 #include "ast.h"
 #include "parser.tab.h"
 #include <stdio.h>
+#include <stdlib.h>
 
-lex_val_t get_lit_lex_val(int line, int type, int val){
+lex_val_t *get_lit_lex_val(int line, int type, char *val){
     lex_val_t *lex = (lex_val_t*)malloc(sizeof(lex_val_t));
     lex->line = line;
     switch (type)
@@ -21,10 +22,11 @@ lex_val_t get_lit_lex_val(int line, int type, int val){
             break;
         case TK_LIT_FALSE:
             printf("I am false");
-            yylval.lex_val->val.b = 0;
+            lex->val.b = 0;
             break;
     default:
         printf("Oh no");
         break;
     }
+    return lex;
 }

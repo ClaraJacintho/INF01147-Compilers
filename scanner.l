@@ -5,7 +5,7 @@
 
     int line_number = 1;
 
-    void get_lex_val(int token);
+    void get_lex_val(int token, int type);
 %}
 
 num [0-9]+
@@ -56,12 +56,12 @@ alphanumeric [a-zA-Z0-9_]
 ">>"            return TK_OC_SR;
 "<<"            return TK_OC_SL;
 
-{num}                            return TK_LIT_INT;
-{num}\.{single_num}+([eE]{num})? return TK_LIT_FLOAT;
-"false"                                 return TK_LIT_FALSE;
-"true"                                  return TK_LIT_TRUE;
-\'.\'                                   return TK_LIT_CHAR;
-\".+\"                                  return TK_LIT_STRING;
+{num}                            {get_lex_val(TK_LIT_INT,    LIT);return TK_LIT_INT;}
+{num}\.{single_num}+([eE]{num})? {get_lex_val(TK_LIT_FLOAT,  LIT);return TK_LIT_FLOAT;}
+"false"                          {get_lex_val(TK_LIT_FALSE,  LIT);return TK_LIT_FALSE;}
+"true"                           {get_lex_val(TK_LIT_TRUE,   LIT);return TK_LIT_TRUE;}
+\'.\'                            {get_lex_val(TK_LIT_CHAR,   LIT);return TK_LIT_CHAR;}
+\".+\"                           {get_lex_val(TK_LIT_STRING, LIT);return TK_LIT_STRING;}
 
 {num}+{alphabetic}{alphanumeric}+          {printf("Erro id st num %c", yytext[0]);  return TOKEN_ERRO;} // identifier that starts w/ num
 {num}+\.{num}*{alphabetic}{alphanumeric}*  { printf("Erro id start flo %c", yytext[0]); return TOKEN_ERRO;} // identifier that starts w/ num
@@ -95,13 +95,9 @@ int get_line_number(void) {
 }
 
 void get_lex_val(int token, int type){
-   int line = get_line_number();
-
+    int line = get_line_number();
     switch(type){
         case LIT: get_lit_lex_val(line, token, yytext); break;
     }
-       
-
-
 }
 
