@@ -1,3 +1,8 @@
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+
+
 #define MAX_CHILDREN 4
 
 extern  void exporta (void *arvore);
@@ -34,7 +39,7 @@ typedef enum node_type_t {
 typedef struct node_t{
     lex_val_t *lex_val;
     node_type_t type;
-    node_t *children[MAX_CHILDREN];
-    node_t *next;
+    struct node *children[MAX_CHILDREN];
+    struct node *next;
 
 } node_t;

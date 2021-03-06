@@ -2,7 +2,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 void exporta (void *arvore) {
-
+	print_node_label(arvore);
 }
 
 
@@ -27,7 +27,7 @@ node_t* insert_command_node(node_t** n1, node_t *n2){
     }
 }
 
-node_t create_node(lex_val_t val, node_type_t type){
+node_t create_node(lex_val_t *val, node_type_t type){
     node_t *node = (node_t*)malloc(sizeof(node_t));
     memset(node, 0, sizeof(node_t));
     node->lex_val = val;

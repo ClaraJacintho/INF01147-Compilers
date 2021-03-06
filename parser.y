@@ -64,6 +64,11 @@ extern int get_line_number(void);
 
 %type<lex_val> function_header
 
+%type<node> program
+%type<node> function
+%type<node> code_block
+
+
 
 %%
 
