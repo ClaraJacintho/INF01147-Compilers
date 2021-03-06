@@ -15,7 +15,7 @@ typedef enum token_t{
     LIT,
 } token_t;
 
-typedef union {
+typedef union val_t{
         int   n;
         float f; 
         char  c;  
@@ -43,3 +43,8 @@ typedef struct node_t{
     struct node *next;
 
 } node_t;
+
+void print_node_label(void *arvore);
+node_t* insert_command_node(node_t** n1, node_t *n2);
+node_t create_node(lex_val_t *val, node_type_t type);
+void add_child(node_t** node, node_t* child);

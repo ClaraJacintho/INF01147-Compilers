@@ -6,6 +6,8 @@ int yylex(void);
 int yyerror (char const *s);
 
 extern int get_line_number(void);
+
+extern void *arvore;
 %}
 
 %union{
@@ -75,9 +77,9 @@ extern int get_line_number(void);
 // ------------------------------------ main blocks ------------------------------------
 
 // initial symbol
-program : global_declaration program { $$ = $2}
+program : global_declaration program { $$ = $2;}
 		| function program { $$ = insert_command_node($1, $2); arvore = (void*) $$;  }
-		| {$$ = NULL};
+		| {$$ = NULL;};
 
 // utils
 type : TK_PR_INT | TK_PR_FLOAT | TK_PR_BOOL | TK_PR_CHAR | TK_PR_STRING;
@@ -91,9 +93,9 @@ global_id_list : global_var_id ',' global_id_list| global_var_id;
 
 
 // function declaration
-function : function_header code_block { $$ = create_node($1, FUNC); add_child($$, $2)}
-function_header : type TK_IDENTIFICADOR '('params_list')' {$$ = $2}
-				| TK_PR_STATIC type TK_IDENTIFICADOR '('params_list')' {$$ = $3};
+function : function_header code_block { $$ = create_node($1, FUNC); add_child($$, $2);}
+function_header : type TK_IDENTIFICADOR '('params_list')' {$$ = $2;}
+				| TK_PR_STATIC type TK_IDENTIFICADOR '('params_list')' {$$ = $3;};
 params_list : params |
 param: type TK_IDENTIFICADOR 
 	| TK_PR_CONST type TK_IDENTIFICADOR;
