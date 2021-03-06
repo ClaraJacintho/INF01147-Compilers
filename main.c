@@ -1,21 +1,14 @@
 /*
-  Função principal para realização da E3.
-  Não modifique este arquivo.
+Função principal para realização da análise sintática.
+Este arquivo será posterioremente substituído, não acrescente nada.
 */
 #include <stdio.h>
-extern int yyparse(void);
+#include "parser.tab.h" //arquivo gerado com bison -d parser.y
 extern int yylex_destroy(void);
-
-void *arvore = NULL;
-void exporta (void *arvore);
-void libera (void *arvore);
 
 int main (int argc, char **argv)
 {
-  int ret = yyparse(); 
-  exporta (arvore);
-  libera(arvore);
-  arvore = NULL;
+  int ret = yyparse();
   yylex_destroy();
   return ret;
 }

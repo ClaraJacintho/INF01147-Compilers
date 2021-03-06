@@ -8,6 +8,13 @@ int yyerror (char const *s);
 extern int get_line_number(void);
 %}
 
+%union{
+    node_t* node;
+    lex_val_t* lex_val; 
+}
+
+%define parse.error verbose
+
 %token TK_PR_INT
 %token TK_PR_FLOAT
 %token TK_PR_BOOL
@@ -35,29 +42,37 @@ extern int get_line_number(void);
 %token TK_PR_PROTECTED
 %token TK_PR_END
 %token TK_PR_DEFAULT
-%token TK_OC_LE
-%token TK_OC_GE
-%token TK_OC_EQ
-%token TK_OC_NE
-%token TK_OC_AND
-%token TK_OC_OR
-%token TK_OC_SL
-%token TK_OC_SR
-%token TK_LIT_INT
-%token TK_LIT_FLOAT
-%token TK_LIT_FALSE
-%token TK_LIT_TRUE
-%token TK_LIT_CHAR
-%token TK_LIT_STRING
-%token TK_IDENTIFICADOR
+
+
+%token<lex_val> TK_OC_LE
+%token<lex_val> TK_OC_GE
+%token<lex_val> TK_OC_EQ
+%token<lex_val> TK_OC_NE
+%token<lex_val> TK_OC_AND
+%token<lex_val> TK_OC_OR
+%token<lex_val> TK_OC_SL
+%token<lex_val> TK_OC_SR
+%token<lex_val> TK_LIT_INT
+%token<lex_val> TK_LIT_FLOAT
+%token<lex_val> TK_LIT_FALSE
+%token<lex_val> TK_LIT_TRUE
+%token<lex_val> TK_LIT_CHAR
+%token<lex_val> TK_LIT_STRING
+%token<lex_val> TK_IDENTIFICADOR
+
 %token TOKEN_ERRO
+
+%type<lex_val> function_header
+
 
 %%
 
 // ------------------------------------ main blocks ------------------------------------
 
 // initial symbol
-program : global_declaration program | function program |;
+program : global_declaration program { $$ = $2}
+		| function program { $$ = insert_command_node($1, $2); arvore = (void*) $$;  }
+		| {$$ = NULL};
 
 // utils
 type : TK_PR_INT | TK_PR_FLOAT | TK_PR_BOOL | TK_PR_CHAR | TK_PR_STRING;
@@ -71,9 +86,10 @@ global_id_list : global_var_id ',' global_id_list| global_var_id;
 
 
 // function declaration
-function : function_header code_block
-function_header : type TK_IDENTIFICADOR '('params_list')' | TK_PR_STATIC type TK_IDENTIFICADOR '('params_list')';
-params_list : params|
+function : function_header code_block { $$ = create_node($1, FUNC); add_child($$, $2)}
+function_header : type TK_IDENTIFICADOR '('params_list')' {$$ = $2}
+				| TK_PR_STATIC type TK_IDENTIFICADOR '('params_list')' {$$ = $3};
+params_list : params |
 param: type TK_IDENTIFICADOR 
 	| TK_PR_CONST type TK_IDENTIFICADOR;
 

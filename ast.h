@@ -1,3 +1,5 @@
+#define MAX_CHILDREN 4
+
 extern  void exporta (void *arvore);
 extern void libera (void *arvore);
 
@@ -8,17 +10,31 @@ typedef enum token_t{
     LIT,
 } token_t;
 
-typedef struct lex_val_t {
-    int line;
-    token_t type;
-    union {
+typedef union {
         int   n;
         float f; 
         char  c;  
         char *s;
         int   b; // C sucks
-    } val;
+} val_t;
+
+typedef struct lex_val_t {
+    int line;
+    token_t type;
+    val_t val;
 
 } lex_val_t;
 
-lex_val_t* get_lit_lex_val(int line, int type, char *val);
+typedef enum node_type_t {
+    COMMAND,
+    FUNC,
+    IF
+} node_type_t;
+
+typedef struct node_t{
+    lex_val_t *lex_val;
+    node_type_t type;
+    node_t *children[MAX_CHILDREN];
+    node_t *next;
+
+} node_t;
