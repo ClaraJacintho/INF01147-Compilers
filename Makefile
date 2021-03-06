@@ -1,14 +1,18 @@
 
-all: etapa2
+all: etapa3
 
-etapa2: parser.tab.c lex.yy.c
+etapa3: parser.tab.c lex.yy.c
 	gcc -c lex.yy.c parser.tab.c
-	gcc main.c -o etapa2 lex.yy.o parser.tab.o -lfl
+	gcc main.c -o ast.o etapa2 lex.yy.o parser.tab.o -lfl
+
 parser.tab.c: parser.y
 	bison -d parser.y
 
 lex.yy.c: scanner.l
 	flex scanner.l
+
+ast.o:
+	gcc -c ast.c -o ast.o -Wall
 
 test:
 	./etapa2 < test_a

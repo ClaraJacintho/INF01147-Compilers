@@ -1,6 +1,7 @@
 %{
 #include <stdio.h>
 #include <stdlib.h>
+#include "ast.h"
 int yylex(void);
 int yyerror (char const *s);
 
@@ -76,9 +77,8 @@ function : function_header code_block
 function_header : type TK_IDENTIFICADOR '('params_list')' | TK_PR_STATIC type TK_IDENTIFICADOR '('params_list')';
 params_list : params|
 param: type TK_IDENTIFICADOR 
-	| TK_PR_CONST type TK_IDENTIFICADOR 
-	|TK_PR_STATIC type TK_IDENTIFICADOR 
-	| TK_PR_STATIC TK_PR_CONST type TK_IDENTIFICADOR;
+	| TK_PR_CONST type TK_IDENTIFICADOR;
+
 params: param ',' params | param;
 code_block : '{' commands '}';
 

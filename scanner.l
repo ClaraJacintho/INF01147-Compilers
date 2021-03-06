@@ -1,8 +1,11 @@
 %{
     #include "parser.tab.h"
+    #include "ast.h"
     #include <stdio.h>
 
     int line_number = 1;
+
+    void get_lex_val(int token);
 %}
 
 num [0-9]+
@@ -89,5 +92,16 @@ alphanumeric [a-zA-Z0-9_]
 
 int get_line_number(void) {
     return line_number;
+}
+
+void get_lex_val(int token, int type){
+   int line = get_line_number();
+
+    switch(type){
+        case LIT: get_lit_lex_val(line, token, yytext); break;
+    }
+       
+
+
 }
 
