@@ -1,3 +1,48 @@
-0x7fffcabd3730, 0x7fffcabd36f0
-0x7fffcabd3730 [label="tutu"];
-0x7fffcabd36f0 [label="{"];
+0x7ffff20449f0, 0x7ffff20446f0
+0x7ffff20449f0, 0x7ffff2044e70
+0x7ffff20446f0, 0x7ffff2044730
+0x7ffff20446f0, 0x7ffff20447f0
+0x7ffff20447f0, 0x7ffff2044830
+0x7ffff20447f0, 0x7ffff20448f0
+0x7ffff20448f0, 0x7ffff2044930
+0x7ffff2044e70, 0x7ffff2044bb0
+0x7ffff2044e70, 0x7ffff20452f0
+0x7ffff2044bb0, 0x7ffff2044bf0
+0x7ffff2044bb0, 0x7ffff2044cd0
+0x7ffff2044cd0, 0x7ffff2044c90
+0x7ffff2044cd0, 0x7ffff2044db0
+0x7ffff2044db0, 0x7ffff2044d70
+0x7ffff20452f0, 0x7ffff2045050
+0x7ffff2045050, 0x7ffff2045010
+0x7ffff2045050, 0x7ffff2045130
+0x7ffff2045130, 0x7ffff20450f0
+0x7ffff2045130, 0x7ffff20451f0
+0x7ffff20451f0, 0x7ffff2045230
+0x7ffff20449f0 [label="tutu"];
+0x7ffff20446f0 [label="input"];
+0x7ffff2044730 [label="hhhh"];
+0x7ffff20447f0 [label="input"];
+0x7ffff2044830 [label="tttt"];
+0x7ffff20448f0 [label="input"];
+0x7ffff2044930 [label="vvvv"];
+0x7ffff2044e70 [label="tata"];
+0x7ffff2044bb0 [label="output"];
+0x7ffff2044bf0 [label="bb"];
+0x7ffff2044cd0 [label="output"];
+0x7ffff2044c90 [label="1231231"];
+0x7ffff2044db0 [label="output"];
+0x7ffff2044d70 [label=""peepeepoopoo";
+}
+int ezrez(int a){
+    output true;
+    output 23423.23423e234234;
+    input rere;
+}
+"];
+0x7ffff20452f0 [label="ezrez"];
+0x7ffff2045050 [label="output"];
+0x7ffff2045010 [label="0"];
+0x7ffff2045130 [label="output"];
+0x7ffff20450f0 [label="inf"];
+0x7ffff20451f0 [label="input"];
+0x7ffff2045230 [label="rere"];

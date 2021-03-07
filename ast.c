@@ -20,7 +20,7 @@ lex_val_t *get_lex_val(int line, token_t type, char *name){
 
 void exporta (void *arvore) {
     print_edges(arvore);
-	print_node_labels(arvore);
+    print_node_labels(arvore);
 }
 
 void print_edges(void *arvore){
@@ -36,17 +36,18 @@ void print_edges(void *arvore){
 
 void print_edge(node_t *node){
     int i;
-   
-    for(i = 0; i < MAX_CHILDREN; i++){
-        if(node->children[i] != NULL) {
-            printf("%p, %p\n", node, node->children[i]);
-        } else {
-            break;
-        }  
-    }
+    if (node != NULL){
+        for(i = 0; i < MAX_CHILDREN; i++){
+            if(node->children[i] != NULL) {
+                printf("%p, %p\n", node, node->children[i]);
+            } else {
+                break;
+            }  
+        }
 
-    if(node->next != NULL){
-        printf("%p, %p\n", node, node->next);
+        if(node->next != NULL){
+            printf("%p, %p\n", node, node->next);
+        }
     }
 }
 
@@ -55,9 +56,9 @@ void print_node_labels(void *arvore){
     if (arvore != NULL){
         print_label((node_t *)arvore);
         for(i = 0; i < MAX_CHILDREN; i++){
-            print_label(((node_t *)arvore)->children[i]);
+            print_node_labels(((node_t *)arvore)->children[i]);
         }
-        print_label(((node_t *)arvore)->next);
+        print_node_labels(((node_t *)arvore)->next);
     }
 }
 
@@ -65,8 +66,27 @@ void print_label(node_t* node){
     if(node != NULL) {
         printf("%p [label=\"", node);
         switch(node->type){
+            case IN: printf("input"); break;
+            case OUT: printf("output"); break;
+            case IDENT:
             case FUNC:
                 printf("%s", node->lex_val->val.name);
+                break;
+            case LIT_BOOL:
+            case LIT_INT:
+                printf("%i", node->lex_val->val.n);
+                break;
+            case LIT_FLOAT:
+                printf("%f", node->lex_val->val.f);
+                break;
+            case LIT_CHAR:
+                printf("%c", node->lex_val->val.c);
+                break;
+            case LIT_STR:
+                printf("%s", node->lex_val->val.s);
+                break;
+            default:
+                printf("%i", node->type);
         }
         printf("\"];\n");
     }

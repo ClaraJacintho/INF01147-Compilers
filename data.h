@@ -28,6 +28,15 @@ typedef struct lex_val_s {
 
 typedef enum node_type_s {
     FUNC,
+    COMMANDS,
+    IDENT,
+    LIT_INT,
+    LIT_FLOAT,
+    LIT_BOOL,
+    LIT_CHAR,
+    LIT_STR,
+    IN,
+    OUT,
 } node_type_t;
 
 typedef struct node_s{

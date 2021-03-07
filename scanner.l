@@ -6,6 +6,7 @@
 
     int line_number = 1;
     int get_line_number(void);
+    char* unquote(char *str);
 %}
 
 num [0-9]+
@@ -61,12 +62,12 @@ alphanumeric [a-zA-Z0-9_]
 "false"                          {yylval.lex_val =  get_lit_lex_val(get_line_number(), (val_t)0); return TK_LIT_FALSE;}
 "true"                           {yylval.lex_val =  get_lit_lex_val(get_line_number(), (val_t)0); return TK_LIT_TRUE;}
 \'.\'                            {yylval.lex_val =  get_lit_lex_val(get_line_number(), (val_t)yytext[0]); return TK_LIT_CHAR;}
-\".+\"                           {yylval.lex_val =  get_lit_lex_val(get_line_number(), (val_t)yytext); return TK_LIT_STRING;} // TODO REMOVE ""
+\".+\"                           {yylval.lex_val =  get_lit_lex_val(get_line_number(), (val_t)unquote(strdup(yytext))); return TK_LIT_STRING;} // TODO REMOVE ""
 
-{num}+{alphabetic}{alphanumeric}+          {printf("Erro id st num %c", yytext[0]);  return TOKEN_ERRO;} // identifier that starts w/ num
-{num}+\.{num}*{alphabetic}{alphanumeric}*  { printf("Erro id start flo %c", yytext[0]); return TOKEN_ERRO;} // identifier that starts w/ num
+{num}+{alphabetic}{alphanumeric}+         {printf("Erro id st num %c", yytext[0]);  return TOKEN_ERRO;} // identifier that starts w/ num
+{num}+\.{num}*{alphabetic}{alphanumeric}* { printf("Erro id start flo %c", yytext[0]); return TOKEN_ERRO;} // identifier that starts w/ num
 {num}\.	                                  { printf("Erro no num af opoint %c", yytext[0]); return TOKEN_ERRO;} // float w/o num after point
-\.{num}+                                          { printf("Erro wo lead num%c", yytext[0]); return TOKEN_ERRO;} // float w/o leading num
+\.{num}+                                  { printf("Erro wo lead num%c", yytext[0]); return TOKEN_ERRO;} // float w/o leading num
 
 {alphabetic}{alphanumeric}*  {yylval.lex_val = get_lex_val(get_line_number(), ID, strdup(yytext)); return TK_IDENTIFICADOR;}
 
@@ -92,4 +93,14 @@ alphanumeric [a-zA-Z0-9_]
 
 int get_line_number(void) {
     return line_number;
+}
+
+char *unquote(char *str) {
+    int len = strlen(str);
+    int i, pos = 0;
+    for (i = 1; i < len; i++, pos++) {
+        str[pos] = str[i];
+    }
+    str[pos-1] = '\0';
+    return str;
 }

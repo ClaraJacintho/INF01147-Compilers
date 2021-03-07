@@ -1,5 +1,17 @@
 int clara;
 
 int tutu(int a){
-
+    input hhhh;
+    input tttt;
+    input vvvv;
+}
+int tata(int a){
+    output bb;
+    output 1231231;
+    output "peepeepoopoo";
+}
+int ezrez(int a){
+    output true;
+    output 23423.23423e234234;
+    input rere;
 }

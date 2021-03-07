@@ -64,9 +64,9 @@ extern void *arvore;
 %token<lex_val> TK_IDENTIFICADOR
 
 %type<lex_val> function_header 
-'+'
-'{'
-'('
+',' ';' ':' '('')' '[' ']' '{''}' '+' 
+'-' '|' '*' '/' '<' '>' '=' '!' '&' 
+'%' '#' '^' '.' '$' '?'
 //unary_op
 //logic_ops
 //compare_ops
@@ -75,20 +75,23 @@ extern void *arvore;
 //exponent
 
 %type<node> 
-program function code_block
-// command
-// local_var 
-// attribution 
-// input
-// output
-// shift
-// function_call
-// return
-// break
-// continue
-// if 
-// for
-// while
+program function 
+commands
+code_block
+command
+local_var 
+attribution 
+input
+output
+shift
+function_call
+return
+break
+continue
+if 
+for
+while
+literal
 
 %%
 
@@ -101,7 +104,12 @@ program : global_declaration program { $$ = $2;}
 
 // utils
 type : TK_PR_INT | TK_PR_FLOAT | TK_PR_BOOL | TK_PR_CHAR | TK_PR_STRING;
-literal : TK_LIT_INT | TK_LIT_FLOAT | TK_LIT_FALSE | TK_LIT_TRUE | TK_LIT_CHAR | TK_LIT_STRING;
+literal : TK_LIT_INT 	 {$$ = create_node($1, LIT_INT);}
+		| TK_LIT_FLOAT   {$$ = create_node($1, LIT_FLOAT);}
+		| TK_LIT_FALSE   {$$ = create_node($1, LIT_BOOL);}
+		| TK_LIT_TRUE    {$$ = create_node($1, LIT_BOOL);}
+		| TK_LIT_CHAR    {$$ = create_node($1, LIT_CHAR);}
+		| TK_LIT_STRING  {$$ = create_node($1, LIT_STR);};
 
 // global declarations
 global_declaration : type global_id_list ';'| TK_PR_STATIC type global_id_list ';';
@@ -119,24 +127,24 @@ param: type TK_IDENTIFICADOR
 	| TK_PR_CONST type TK_IDENTIFICADOR;
 
 params: param ',' params | param;
-code_block : '{' commands '}'  { $$ = create_node($1, FUNC);}; 
+code_block : '{' commands '}'  {$$ = $2;}; 
 
 // ------------------------------------ commands ------------------------------------
-commands : command commands
-	 | ;
-command : code_block';'
-	| local_var';' 
-	| attribution';' 
-	| input';'
-	| output';'
-	| shift';'
-	| function_call';'
-	| return';' 
-	| break';'
-	| continue';' 
-	| if 
-	| for
-	| while;
+commands : command commands {$$ = insert_command_node(&$1, $2);}
+	 | {$$ = NULL;};
+command : code_block';' {$$ = $1;}
+	| local_var';' 		{$$ = $1;}
+	| attribution';' 	{$$ = $1;}
+	| input';'			{$$ = $1;}
+	| output';' 		{$$ = $1;}
+	| shift';'			{$$ = $1;}
+	| function_call';'	{$$ = $1;}
+	| return';' 		{$$ = $1;}
+	| break';'			{$$ = $1;}
+	| continue';' 		{$$ = $1;}
+	| if 				{$$ = $1;}
+	| for				{$$ = $1;}
+	| while				{$$ = $1;};
 
 // local vars
 var_type : type | TK_PR_STATIC type | TK_PR_CONST type | TK_PR_STATIC TK_PR_CONST type;
@@ -145,15 +153,15 @@ var_init : TK_IDENTIFICADOR TK_OC_LE init_types | TK_IDENTIFICADOR TK_OC_LE lite
 var : TK_IDENTIFICADOR | var_init;
 local_var_list: var ',' local_var_list| var;
 local_var : var_type local_var_list;
-
 // attribution
 attribution : var_attribution | vector_attribution;
 var_attribution : TK_IDENTIFICADOR '=' expression;
 vector_attribution : TK_IDENTIFICADOR '[' expression ']' '=' expression;
 
 // io
-input: TK_PR_INPUT TK_IDENTIFICADOR;
-output: TK_PR_OUTPUT TK_IDENTIFICADOR | TK_PR_OUTPUT literal;
+input: TK_PR_INPUT TK_IDENTIFICADOR   {$$ = create_node(NULL, IN); add_child(&$$, create_node($2, IDENT));};
+output: TK_PR_OUTPUT TK_IDENTIFICADOR {$$ = create_node(NULL, OUT); add_child(&$$, create_node($2, IDENT));}
+		| TK_PR_OUTPUT literal 		  {$$ = create_node(NULL, OUT); add_child(&$$, $2);};
 
 // fuction call
 function_call : TK_IDENTIFICADOR '(' args ')'; 
