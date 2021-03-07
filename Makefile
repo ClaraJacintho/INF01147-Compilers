@@ -1,9 +1,9 @@
-
 all: etapa3
 
-etapa3: parser.tab.c lex.yy.c ast.o
-	gcc -c lex.yy.c parser.tab.c
-	gcc main.c -o etapa3 ast.o lex.yy.o parser.tab.o -lfl
+etapa3: ast.o parser.tab.c lex.yy.c 
+	gcc -c main.c lex.yy.c 
+	gcc -c parser.tab.c
+	gcc -o etapa3 main.o ast.o lex.yy.o parser.tab.o -lfl -Wall
 
 parser.tab.c: parser.y
 	bison -d parser.y
@@ -21,9 +21,6 @@ test:
 	./etapa2 < test_d
 	./etapa2 < test_e
 	./etapa2 < test_spec
-
-report: parser.y
-	bison --report-file="r.txt" parser.y
 
 clean:
 	rm -f lex.yy.* main.o ast.o parser.tab.* parser.output etapa3

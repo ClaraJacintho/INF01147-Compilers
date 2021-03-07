@@ -1,50 +1,51 @@
 %{
+#include "data.h"
+#include "ast.h"
 #include <stdio.h>
 #include <stdlib.h>
-#include "ast.h"
+
 int yylex(void);
 int yyerror (char const *s);
 
 extern int get_line_number(void);
-
 extern void *arvore;
 %}
 
 %union{
-    node_t* node;
-    lex_val_t* lex_val; 
+	lex_val_t* lex_val; 
+    node_t* node;  
 }
 
 %define parse.error verbose
 
-%token TK_PR_INT
-%token TK_PR_FLOAT
-%token TK_PR_BOOL
-%token TK_PR_CHAR
-%token TK_PR_STRING
-%token TK_PR_IF
-%token TK_PR_THEN
-%token TK_PR_ELSE
-%token TK_PR_WHILE
-%token TK_PR_DO
-%token TK_PR_INPUT
-%token TK_PR_OUTPUT
-%token TK_PR_RETURN
-%token TK_PR_CONST
-%token TK_PR_STATIC
-%token TK_PR_FOREACH
-%token TK_PR_FOR
-%token TK_PR_SWITCH
-%token TK_PR_CASE
-%token TK_PR_BREAK
-%token TK_PR_CONTINUE
-%token TK_PR_CLASS
-%token TK_PR_PRIVATE
-%token TK_PR_PUBLIC
-%token TK_PR_PROTECTED
-%token TK_PR_END
-%token TK_PR_DEFAULT
-
+%token<node> TK_PR_INT
+%token<node> TK_PR_FLOAT
+%token<node> TK_PR_BOOL
+%token<node> TK_PR_CHAR
+%token<node> TK_PR_STRING
+%token<node> TK_PR_IF
+%token<node> TK_PR_THEN
+%token<node> TK_PR_ELSE
+%token<node> TK_PR_WHILE
+%token<node> TK_PR_DO
+%token<node> TK_PR_INPUT
+%token<node> TK_PR_OUTPUT
+%token<node> TK_PR_RETURN
+%token<node> TK_PR_CONST
+%token<node> TK_PR_STATIC
+%token<node> TK_PR_FOREACH
+%token<node> TK_PR_FOR
+%token<node> TK_PR_SWITCH
+%token<node> TK_PR_CASE
+%token<node> TK_PR_BREAK
+%token<node> TK_PR_CONTINUE
+%token<node> TK_PR_CLASS
+%token<node> TK_PR_PRIVATE
+%token<node> TK_PR_PUBLIC
+%token<node> TK_PR_PROTECTED
+%token<node> TK_PR_END
+%token<node> TK_PR_DEFAULT
+%token<node> TOKEN_ERRO
 
 %token<lex_val> TK_OC_LE
 %token<lex_val> TK_OC_GE
@@ -62,15 +63,32 @@ extern void *arvore;
 %token<lex_val> TK_LIT_STRING
 %token<lex_val> TK_IDENTIFICADOR
 
-%token TOKEN_ERRO
+%type<lex_val> function_header 
+'+'
+'{'
+'('
+//unary_op
+//logic_ops
+//compare_ops
+//sum
+//mul
+//exponent
 
-%type<lex_val> function_header
-
-%type<node> program
-%type<node> function
-%type<node> code_block
-
-
+%type<node> 
+program function code_block
+// command
+// local_var 
+// attribution 
+// input
+// output
+// shift
+// function_call
+// return
+// break
+// continue
+// if 
+// for
+// while
 
 %%
 
@@ -78,7 +96,7 @@ extern void *arvore;
 
 // initial symbol
 program : global_declaration program { $$ = $2;}
-		| function program { $$ = insert_command_node($1, $2); arvore = (void*) $$;  }
+		| function program { $$ = insert_command_node(&$1, $2); arvore = (void*) $$;  }
 		| {$$ = NULL;};
 
 // utils
@@ -93,7 +111,7 @@ global_id_list : global_var_id ',' global_id_list| global_var_id;
 
 
 // function declaration
-function : function_header code_block { $$ = create_node($1, FUNC); add_child($$, $2);}
+function : function_header code_block { $$ = create_node($1, FUNC); add_child(&$$, $2);}
 function_header : type TK_IDENTIFICADOR '('params_list')' {$$ = $2;}
 				| TK_PR_STATIC type TK_IDENTIFICADOR '('params_list')' {$$ = $3;};
 params_list : params |
@@ -101,7 +119,7 @@ param: type TK_IDENTIFICADOR
 	| TK_PR_CONST type TK_IDENTIFICADOR;
 
 params: param ',' params | param;
-code_block : '{' commands '}';
+code_block : '{' commands '}'  { $$ = create_node($1, FUNC);}; 
 
 // ------------------------------------ commands ------------------------------------
 commands : command commands

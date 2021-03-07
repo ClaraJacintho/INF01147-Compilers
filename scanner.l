@@ -1,11 +1,11 @@
 %{
-    #include "parser.tab.h"
+    #include "data.h"
     #include "ast.h"
+    #include "parser.tab.h"
     #include <stdio.h>
 
     int line_number = 1;
-
-    void get_lex(val_t val, token_t toke_type);
+    int get_line_number(void);
 %}
 
 num [0-9]+
@@ -45,30 +45,30 @@ alphanumeric [a-zA-Z0-9_]
 "end"           return TK_PR_END;
 "default"       return TK_PR_DEFAULT;
 
- [,;:()[\]{}|*/<>=!&%#^.$?+-]   {get_lex((val_t)strdup(yytext), SP_CHAR); return yytext[0];}
+ [,;:()[\]{}|*/<>=!&%#^.$?+-]   {yylval.lex_val = get_lex_val(get_line_number(), SP_CHAR, strdup(yytext)); return yytext[0];}
 
-"<="            {get_lex((val_t)strdup(yytext), OP); return TK_OC_LE;}
-">="            {get_lex((val_t)strdup(yytext), OP); return TK_OC_GE;}
-"=="            {get_lex((val_t)strdup(yytext), OP); return TK_OC_EQ;}
-"!="            {get_lex((val_t)strdup(yytext), OP); return TK_OC_NE;}
-"&&"            {get_lex((val_t)strdup(yytext), OP); return TK_OC_AND;}
-"||"            {get_lex((val_t)strdup(yytext), OP); return TK_OC_OR;}
-">>"            {get_lex((val_t)strdup(yytext), OP); return TK_OC_SR;}
-"<<"            {get_lex((val_t)strdup(yytext), OP); return TK_OC_SL;}
+"<="            {yylval.lex_val = get_lex_val(get_line_number(), OP, strdup(yytext)); return TK_OC_LE;}
+">="            {yylval.lex_val = get_lex_val(get_line_number(), OP, strdup(yytext));return TK_OC_GE;}
+"=="            {yylval.lex_val = get_lex_val(get_line_number(), OP, strdup(yytext));return TK_OC_EQ;}
+"!="            {yylval.lex_val = get_lex_val(get_line_number(), OP, strdup(yytext));return TK_OC_NE;}
+"&&"            {yylval.lex_val = get_lex_val(get_line_number(), OP, strdup(yytext));return TK_OC_AND;}
+"||"            {yylval.lex_val = get_lex_val(get_line_number(), OP, strdup(yytext));return TK_OC_OR;}
+">>"            {yylval.lex_val = get_lex_val(get_line_number(), OP, strdup(yytext));return TK_OC_SR;}
+"<<"            {yylval.lex_val = get_lex_val(get_line_number(), OP, strdup(yytext));return TK_OC_SL;}
 
-{num}                            {get_lex((val_t)atoi(yytext), LIT);        return TK_LIT_INT;}
-{num}\.{single_num}+([eE]{num})? {get_lex((val_t)atof(yytext), LIT);        return TK_LIT_FLOAT;}
-"false"                          {get_lex((val_t)0, LIT);                   return TK_LIT_FALSE;}
-"true"                           {get_lex((val_t)1, LIT);                   return TK_LIT_TRUE;}
-\'.\'                            {get_lex((val_t)strdup(yytext[1]), LIT);   return TK_LIT_CHAR;}
-\".+\"                           {get_lex((val_t)strdup(yytext), LIT);      return TK_LIT_STRING;} // TODO remove ""
+{num}                            {yylval.lex_val =  get_lit_lex_val(get_line_number(), (val_t)atoi(yytext)); return TK_LIT_INT;}
+{num}\.{single_num}+([eE]{num})? {yylval.lex_val =  get_lit_lex_val(get_line_number(), (val_t)(float)atof(yytext)); return TK_LIT_FLOAT;} // This is bad. Im sorry
+"false"                          {yylval.lex_val =  get_lit_lex_val(get_line_number(), (val_t)0); return TK_LIT_FALSE;}
+"true"                           {yylval.lex_val =  get_lit_lex_val(get_line_number(), (val_t)0); return TK_LIT_TRUE;}
+\'.\'                            {yylval.lex_val =  get_lit_lex_val(get_line_number(), (val_t)yytext[0]); return TK_LIT_CHAR;}
+\".+\"                           {yylval.lex_val =  get_lit_lex_val(get_line_number(), (val_t)yytext); return TK_LIT_STRING;} // TODO REMOVE ""
 
-{num}+{alphabetic}{alphanumeric}+           {printf("Erro id st num %c", yytext[0]);  return TOKEN_ERRO;}       // identifier that starts w/ num
-{num}+\.{num}*{alphabetic}{alphanumeric}*   {printf("Erro id start flo %c", yytext[0]); return TOKEN_ERRO;}     // identifier that starts w/ num
-{num}\.                                     {printf("Erro no num af opoint %c", yytext[0]); return TOKEN_ERRO;} // float w/o num after point
-\.{num}+                                    {printf("Erro wo lead num%c", yytext[0]); return TOKEN_ERRO;}       // float w/o leading num
+{num}+{alphabetic}{alphanumeric}+          {printf("Erro id st num %c", yytext[0]);  return TOKEN_ERRO;} // identifier that starts w/ num
+{num}+\.{num}*{alphabetic}{alphanumeric}*  { printf("Erro id start flo %c", yytext[0]); return TOKEN_ERRO;} // identifier that starts w/ num
+{num}\.	                                  { printf("Erro no num af opoint %c", yytext[0]); return TOKEN_ERRO;} // float w/o num after point
+\.{num}+                                          { printf("Erro wo lead num%c", yytext[0]); return TOKEN_ERRO;} // float w/o leading num
 
-{alphabetic}{alphanumeric}*  {get_lex(strdup(yytext), ID); return TK_IDENTIFICADOR;}
+{alphabetic}{alphanumeric}*  {yylval.lex_val = get_lex_val(get_line_number(), ID, strdup(yytext)); return TK_IDENTIFICADOR;}
 
 [ \t]         { };
 
@@ -92,14 +92,4 @@ alphanumeric [a-zA-Z0-9_]
 
 int get_line_number(void) {
     return line_number;
-}
-
-void get_lex(val_t val, token_t toke_type){
-    yylval.lex_val = (lex_val_t*)malloc(sizeof(lex_val_t));
-    memset(yylval.lex_val, 0, sizeof(lex_val_t));
-    int line = get_line_number();
-
-    yylval.lex_val->line = line;
-    yylval.lex_val->type = toke_type;
-    yylval.lex_val->val = val;
 }

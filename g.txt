@@ -1,0 +1,6 @@
+digraph G {
+n0 -> n1;
+n0 [label="tutu"];
+n1 [label="{"];
+
+}
