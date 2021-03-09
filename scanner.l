@@ -60,7 +60,7 @@ alphanumeric [a-zA-Z0-9_]
 {num}                            {yylval.lex_val =  get_lit_lex_val(get_line_number(), (val_t)atoi(yytext)); return TK_LIT_INT;}
 {num}\.{single_num}+([eE]{num})? {yylval.lex_val =  get_lit_lex_val(get_line_number(), (val_t)(float)atof(yytext)); return TK_LIT_FLOAT;} // This is bad. Im sorry
 "false"                          {yylval.lex_val =  get_lit_lex_val(get_line_number(), (val_t)0); return TK_LIT_FALSE;}
-"true"                           {yylval.lex_val =  get_lit_lex_val(get_line_number(), (val_t)0); return TK_LIT_TRUE;}
+"true"                           {yylval.lex_val =  get_lit_lex_val(get_line_number(), (val_t)1); return TK_LIT_TRUE;}
 \'.\'                            {yylval.lex_val =  get_lit_lex_val(get_line_number(), (val_t)yytext[0]); return TK_LIT_CHAR;}
 \".+\"                           {yylval.lex_val =  get_lit_lex_val(get_line_number(), (val_t)unquote(strdup(yytext))); return TK_LIT_STRING;} // TODO REMOVE ""
 

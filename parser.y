@@ -174,8 +174,8 @@ shift : shift_left | shift_right;
 
 // PRs
 return : TK_PR_RETURN expression;
-break : TK_PR_BREAK;
-continue : TK_PR_CONTINUE;
+break : TK_PR_BREAK {$$ = create_node(NULL, BREAK);};
+continue : TK_PR_CONTINUE {$$ = create_node(NULL, CONTINUE);};
 
 
 // ------------------------------------ expressions ------------------------------------

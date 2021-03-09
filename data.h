@@ -37,6 +37,8 @@ typedef enum node_type_s {
     LIT_STR,
     IN,
     OUT,
+    BREAK,
+    CONTINUE,
 } node_type_t;
 
 typedef struct node_s{

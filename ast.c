@@ -85,6 +85,13 @@ void print_label(node_t* node){
             case LIT_STR:
                 printf("%s", node->lex_val->val.s);
                 break;
+            case BREAK:
+                printf("break");
+                break;
+            case CONTINUE:
+                printf("continue");
+                break;
+            
             default:
                 printf("%i", node->type);
         }
