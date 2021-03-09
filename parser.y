@@ -75,6 +75,7 @@ mul
 exponent
 
 %type<node> 
+id_with_vector
 logic_exp
 compare_exp
 sum_exp
@@ -163,17 +164,17 @@ command : code_block';' {$$ = $1;}
 	| while				{$$ = $1;};
 
 // local vars
-var_type : type | TK_PR_STATIC type | TK_PR_CONST type | TK_PR_STATIC TK_PR_CONST type;
-init_types : TK_IDENTIFICADOR vector_index | TK_IDENTIFICADOR;
-var_init : TK_IDENTIFICADOR TK_OC_LE init_types | TK_IDENTIFICADOR TK_OC_LE literal;
-var : TK_IDENTIFICADOR | var_init;
-local_var_list: var ',' local_var_list| var;
-local_var : var_type local_var_list;
+var_type : type | TK_PR_STATIC type | TK_PR_CONST type | TK_PR_STATIC TK_PR_CONST type; //todo
+init_types : TK_IDENTIFICADOR vector_index | TK_IDENTIFICADOR; //todo
+var_init : TK_IDENTIFICADOR TK_OC_LE init_types | TK_IDENTIFICADOR TK_OC_LE literal; //todo
+var : TK_IDENTIFICADOR | var_init; //todo
+local_var_list: var ',' local_var_list| var; //todo
+local_var : var_type local_var_list; //todo
 
 // attribution
-attribution : var_attribution | vector_attribution;
-var_attribution : TK_IDENTIFICADOR '=' expression;
-vector_attribution : TK_IDENTIFICADOR vector_index '=' expression;
+attribution : var_attribution | vector_attribution; //todo
+var_attribution : TK_IDENTIFICADOR '=' expression; //todo
+vector_attribution : TK_IDENTIFICADOR vector_index '=' expression; //todo
 
 // io
 input: TK_PR_INPUT TK_IDENTIFICADOR   {$$ = create_node(NULL, IN); add_child(&$$, create_node($2, IDENT));};
@@ -187,31 +188,34 @@ args : expression ',' args {$$ = insert_command_node(&$1, $3);}
 	| expression {$$ = $1;}
 	| {$$ = NULL;};
 
+
+id_with_vector : TK_IDENTIFICADOR vector_index {$$ = create_node($1, IDENT); add_child(&$$, $2);};
+
 // shift
 shift_left : TK_IDENTIFICADOR TK_OC_SL TK_LIT_INT {$$ = create_node($2, SHIFT); add_child(&$$, create_node($1, IDENT)); add_child(&$$, create_node($3, LIT_INT));}; 
-			| TK_IDENTIFICADOR vector_index TK_OC_SL TK_LIT_INT;
+			| id_with_vector TK_OC_SL TK_LIT_INT {$$ = create_node($3, SHIFT); add_child(&$$, $1); add_child(&$$, create_node($3, LIT_INT));};
 
 
 shift_right : TK_IDENTIFICADOR TK_OC_SR TK_LIT_INT {$$ = create_node($2, SHIFT); add_child(&$$, create_node($1, IDENT)); add_child(&$$, create_node($3, LIT_INT));};
-			| TK_IDENTIFICADOR vector_index TK_OC_SR TK_LIT_INT;
+			| id_with_vector TK_OC_SR TK_LIT_INT {$$ = create_node($3, SHIFT); add_child(&$$, $1); add_child(&$$, create_node($3, LIT_INT));};
 
 shift : shift_left {$$ = $1;}
 	| shift_right {$$ = $1;};
 
 // PRs
-return : TK_PR_RETURN expression;
-break : TK_PR_BREAK {$$ = create_node(NULL, BREAK);};
+return : TK_PR_RETURN expression; //todo
+break : TK_PR_BREAK {$$ = create_node(NULL, BREAK);}; 
 continue : TK_PR_CONTINUE {$$ = create_node(NULL, CONTINUE);};
 
 
 // ------------------------------------ expressions ------------------------------------
 
-if : TK_PR_IF '(' expression ')' code_block
-   | TK_PR_IF '(' expression ')' code_block TK_PR_ELSE code_block;
+if : TK_PR_IF '(' expression ')' code_block //todo
+   | TK_PR_IF '(' expression ')' code_block TK_PR_ELSE code_block; //todo
 
-for : TK_PR_FOR '(' attribution ':' expression ':' attribution ')' code_block;
+for : TK_PR_FOR '(' attribution ':' expression ':' attribution ')' code_block; //todo
 
-while : TK_PR_WHILE '('expression')' TK_PR_DO code_block;
+while : TK_PR_WHILE '('expression')' TK_PR_DO code_block; //todo
 
 // for priority, follow the example:
 // E → E+T | T
@@ -223,7 +227,7 @@ expression : logic_exp {$$ = $1;}
 		| logic_exp '?' expression ':' expression {$$ = create_node(NULL, TERN_OP); add_child(&$$, $1); add_child(&$$, $3); add_child(&$$, $5);}; 
 
 
-vector_index: '['expression']' {$$ = create_node(NULL, VECTOR); add_child(&$$, $2);};
+vector_index: '['expression']' {$$ = create_node($1, VECTOR); add_child(&$$, $2);};
 
 // operands
 id_exp_a : TK_IDENTIFICADOR {$$ = create_node($1, IDENT);}

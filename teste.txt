@@ -1,1 +1,25 @@
-syntax error, unexpected TK_IDENTIFICADOR, expecting TK_LIT_INT on line 4
+0x5616e8d0dc70, 0x5616e8d0d630
+0x5616e8d0d630, 0x5616e8d0d5f0
+0x5616e8d0d630, 0x5616e8d0dbb0
+0x5616e8d0d5f0, 0x5616e8d0d4d0
+0x5616e8d0d5f0, 0x5616e8d0d570
+0x5616e8d0dbb0, 0x5616e8d0db70
+0x5616e8d0db70, 0x5616e8d0d8b0
+0x5616e8d0db70, 0x5616e8d0da30
+0x5616e8d0db70, 0x5616e8d0db30
+0x5616e8d0d8b0, 0x5616e8d0d7b0
+0x5616e8d0d8b0, 0x5616e8d0d870
+0x5616e8d0da30, 0x5616e8d0d9f0
+0x5616e8d0dc70 [label="main"];
+0x5616e8d0d630 [label="call foo"];
+0x5616e8d0d5f0 [label="+"];
+0x5616e8d0d4d0 [label="5"];
+0x5616e8d0d570 [label="5"];
+0x5616e8d0dbb0 [label="call clar"];
+0x5616e8d0db70 [label="? : "];
+0x5616e8d0d8b0 [label="&"];
+0x5616e8d0d7b0 [label="a"];
+0x5616e8d0d870 [label="b"];
+0x5616e8d0da30 [label="call print"];
+0x5616e8d0d9f0 [label="g"];
+0x5616e8d0db30 [label="bagulho"];

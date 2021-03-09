@@ -1,4 +1,28 @@
 digraph G {
-n0 -> n1 -> n2;
+n0 -> n1;
+n1 -> n2;
+n1 -> n3;
+n2 -> n4;
+n2 -> n5;
+n3 -> n6;
+n6 -> n7;
+n6 -> n8;
+n6 -> n9;
+n7 -> n10;
+n7 -> n11;
+n8 -> n12;
+n0 [label="main"];
+n1 [label="call foo"];
+n2 [label="+"];
+n4 [label="5"];
+n5 [label="5"];
+n3 [label="call clar"];
+n6 [label="? : "];
+n7 [label="&"];
+n10 [label="a"];
+n11 [label="b"];
+n8 [label="call print"];
+n12 [label="g"];
+n9 [label="bagulho"];
 
 }
