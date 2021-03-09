@@ -39,6 +39,12 @@ typedef enum node_type_s {
     OUT,
     BREAK,
     CONTINUE,
+    SHIFT,
+    VECTOR,
+    UN_OP,
+    BIN_OP,
+    FUNC_CALL,
+    TERN_OP,
 } node_type_t;
 
 typedef struct node_s{

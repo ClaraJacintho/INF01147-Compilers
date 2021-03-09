@@ -67,14 +67,30 @@ extern void *arvore;
 ',' ';' ':' '('')' '[' ']' '{''}' '+' 
 '-' '|' '*' '/' '<' '>' '=' '!' '&' 
 '%' '#' '^' '.' '$' '?'
-//unary_op
-//logic_ops
-//compare_ops
-//sum
-//mul
-//exponent
+unary_op
+logic_ops
+compare_ops
+sum
+mul
+exponent
 
 %type<node> 
+logic_exp
+compare_exp
+sum_exp
+mul_exp
+exponent_exp
+term
+expression
+args
+operand
+operand_exp_a
+operand_exp_l
+vector_index
+lit_exp_a
+id_exp_a
+shift_left
+shift_right
 program function 
 commands
 code_block
@@ -148,15 +164,16 @@ command : code_block';' {$$ = $1;}
 
 // local vars
 var_type : type | TK_PR_STATIC type | TK_PR_CONST type | TK_PR_STATIC TK_PR_CONST type;
-init_types : TK_IDENTIFICADOR '[' expression ']' | TK_IDENTIFICADOR;
+init_types : TK_IDENTIFICADOR vector_index | TK_IDENTIFICADOR;
 var_init : TK_IDENTIFICADOR TK_OC_LE init_types | TK_IDENTIFICADOR TK_OC_LE literal;
 var : TK_IDENTIFICADOR | var_init;
 local_var_list: var ',' local_var_list| var;
 local_var : var_type local_var_list;
+
 // attribution
 attribution : var_attribution | vector_attribution;
 var_attribution : TK_IDENTIFICADOR '=' expression;
-vector_attribution : TK_IDENTIFICADOR '[' expression ']' '=' expression;
+vector_attribution : TK_IDENTIFICADOR vector_index '=' expression;
 
 // io
 input: TK_PR_INPUT TK_IDENTIFICADOR   {$$ = create_node(NULL, IN); add_child(&$$, create_node($2, IDENT));};
@@ -164,13 +181,22 @@ output: TK_PR_OUTPUT TK_IDENTIFICADOR {$$ = create_node(NULL, OUT); add_child(&$
 		| TK_PR_OUTPUT literal 		  {$$ = create_node(NULL, OUT); add_child(&$$, $2);};
 
 // fuction call
-function_call : TK_IDENTIFICADOR '(' args ')'; 
-args : expression ',' args | expression |;
+function_call : TK_IDENTIFICADOR '(' args ')' {$$ = create_node($1, FUNC_CALL); add_child(&$$, $3);}; 
+
+args : expression ',' args {$$ = insert_command_node(&$1, $3);} 
+	| expression {$$ = $1;}
+	| {$$ = NULL;};
 
 // shift
-shift_left : TK_IDENTIFICADOR TK_OC_SL TK_LIT_INT | TK_IDENTIFICADOR '[' expression ']' TK_OC_SL TK_LIT_INT;
-shift_right : TK_IDENTIFICADOR TK_OC_SR TK_LIT_INT | TK_IDENTIFICADOR '[' expression ']' TK_OC_SR TK_LIT_INT;
-shift : shift_left | shift_right;
+shift_left : TK_IDENTIFICADOR TK_OC_SL TK_LIT_INT {$$ = create_node($2, SHIFT); add_child(&$$, create_node($1, IDENT)); add_child(&$$, create_node($3, LIT_INT));}; 
+			| TK_IDENTIFICADOR vector_index TK_OC_SL TK_LIT_INT;
+
+
+shift_right : TK_IDENTIFICADOR TK_OC_SR TK_LIT_INT {$$ = create_node($2, SHIFT); add_child(&$$, create_node($1, IDENT)); add_child(&$$, create_node($3, LIT_INT));};
+			| TK_IDENTIFICADOR vector_index TK_OC_SR TK_LIT_INT;
+
+shift : shift_left {$$ = $1;}
+	| shift_right {$$ = $1;};
 
 // PRs
 return : TK_PR_RETURN expression;
@@ -184,6 +210,7 @@ if : TK_PR_IF '(' expression ')' code_block
    | TK_PR_IF '(' expression ')' code_block TK_PR_ELSE code_block;
 
 for : TK_PR_FOR '(' attribution ':' expression ':' attribution ')' code_block;
+
 while : TK_PR_WHILE '('expression')' TK_PR_DO code_block;
 
 // for priority, follow the example:
@@ -191,14 +218,30 @@ while : TK_PR_WHILE '('expression')' TK_PR_DO code_block;
 // T → T*F | F
 // F → (E) | id
 // priority low to high: ternary logic compare +- /%* ^ ()
-expression : logic_exp | logic_exp '?' expression ':' expression;
+
+expression : logic_exp {$$ = $1;}
+		| logic_exp '?' expression ':' expression {$$ = create_node(NULL, TERN_OP); add_child(&$$, $1); add_child(&$$, $3); add_child(&$$, $5);}; 
+
+
+vector_index: '['expression']' {$$ = create_node(NULL, VECTOR); add_child(&$$, $2);};
 
 // operands
-id_exp_a : TK_IDENTIFICADOR | TK_IDENTIFICADOR'['expression']';
-lit_exp_a : TK_LIT_INT | TK_LIT_FLOAT;
-operand_exp_a : id_exp_a | lit_exp_a | function_call;
-operand_exp_l : TK_LIT_FALSE | TK_LIT_TRUE;
-operand: operand_exp_a | operand_exp_l | unary_op term;
+id_exp_a : TK_IDENTIFICADOR {$$ = create_node($1, IDENT);}
+		| TK_IDENTIFICADOR vector_index {$$ = create_node($1, IDENT); add_child(&$$, $2);};
+
+lit_exp_a : TK_LIT_INT {$$ = create_node($1, LIT_INT);}
+		| TK_LIT_FLOAT {$$ = create_node($1, LIT_FLOAT);};
+
+operand_exp_a : id_exp_a  {$$ = $1;}
+		| lit_exp_a {$$ = $1;}
+		| function_call {$$ = $1;};
+
+operand_exp_l : TK_LIT_FALSE {$$ = create_node($1, LIT_BOOL);}
+			| TK_LIT_TRUE {$$ = create_node($1, LIT_BOOL);};
+
+operand: operand_exp_a {$$ = $1;}
+		| operand_exp_l {$$ = $1;}
+		| unary_op term {$$ = create_node($1, UN_OP); add_child(&$$, $2);};
 
 // operators
 unary_op : '+' | '-' | '!' | '?' | '&'| '*' | '#';
@@ -209,12 +252,23 @@ mul: '*' | '/' | '%';
 exponent: '^';
 
 // expression definition
-logic_exp : logic_exp logic_ops compare_exp| compare_exp;
-compare_exp : compare_exp compare_ops sum_exp| sum_exp;
-sum_exp : sum_exp sum mul_exp | mul_exp;
-mul_exp : mul_exp mul exponent_exp | exponent_exp;
-exponent_exp : exponent_exp exponent term | term;
-term : '(' expression ')' |  operand ;
+logic_exp : logic_exp logic_ops compare_exp {$$ = create_node($2, BIN_OP); add_child(&$$, $1); add_child(&$$, $3);}
+	| compare_exp {$$ = $1;};
+
+compare_exp : compare_exp compare_ops sum_exp {$$ = create_node($2, BIN_OP); add_child(&$$, $1); add_child(&$$, $3);}
+	| sum_exp {$$ = $1;};
+
+sum_exp : sum_exp sum mul_exp {$$ = create_node($2, BIN_OP); add_child(&$$, $1); add_child(&$$, $3);}
+	| mul_exp {$$ = $1;};
+
+mul_exp : mul_exp mul exponent_exp {$$ = create_node($2, BIN_OP); add_child(&$$, $1); add_child(&$$, $3);}
+	| exponent_exp {$$ = $1;};
+
+exponent_exp : exponent_exp exponent term {$$ = create_node($2, BIN_OP); add_child(&$$, $1); add_child(&$$, $3);}
+	| term {$$ = $1;};
+
+term : '(' expression ')' {$$ = $2;}
+	|  operand {$$ = $1;};
 
 
 %%

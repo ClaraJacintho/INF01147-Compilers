@@ -68,11 +68,20 @@ void print_label(node_t* node){
         switch(node->type){
             case IN: printf("input"); break;
             case OUT: printf("output"); break;
+            case SHIFT:
             case IDENT:
+            case UN_OP:
+            case BIN_OP:
             case FUNC:
                 printf("%s", node->lex_val->val.name);
                 break;
             case LIT_BOOL:
+                if (node->lex_val->val.b){
+                    printf("true");
+                } else {
+                    printf("false");
+                }
+                break;
             case LIT_INT:
                 printf("%i", node->lex_val->val.n);
                 break;
@@ -91,7 +100,16 @@ void print_label(node_t* node){
             case CONTINUE:
                 printf("continue");
                 break;
-            
+            case VECTOR:
+                printf("[]");
+                break;
+            case FUNC_CALL:
+                printf("call %s", node->lex_val->val.name);
+                break;
+            case TERN_OP:
+                printf("? : ");
+                break;
+
             default:
                 printf("%i", node->type);
         }
