@@ -20,7 +20,7 @@ void print_label(node_t* node);
 void free_nodes(node_t *node);
 void free_lex_val(lex_val_t* lex_val, node_type_t node_type);
 
-node_t* insert_command_node(node_t** n1, node_t *n2);
+node_t* insert_node_next(node_t** n1, node_t *n2);
 node_t* create_node(lex_val_t *val, node_type_t type);
 void add_child(node_t** node, node_t* child);
 

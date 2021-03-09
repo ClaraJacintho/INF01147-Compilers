@@ -123,7 +123,7 @@ vector_attribution
 
 // initial symbol
 program : global_declaration program { $$ = $2;}
-		| function program { $$ = insert_command_node(&$1, $2); arvore = (void*) $$;  }
+		| function program { $$ = insert_node_next(&$1, $2); arvore = (void*) $$;  }
 		| {$$ = NULL;};
 
 // utils
@@ -137,8 +137,9 @@ literal : TK_LIT_INT 	 {$$ = create_node($1, LIT_INT);}
 
 // global declarations
 global_declaration : type global_id_list ';'| TK_PR_STATIC type global_id_list ';';
-vector_declaration: TK_IDENTIFICADOR '['TK_LIT_INT']'
-global_var_id: TK_IDENTIFICADOR | vector_declaration;
+vector_declaration: TK_IDENTIFICADOR '['TK_LIT_INT']' {free($1);free($3);}
+global_var_id: TK_IDENTIFICADOR {free($1);}
+			| vector_declaration;
 global_id_list : global_var_id ',' global_id_list| global_var_id;
 
 
@@ -147,14 +148,14 @@ function : function_header code_block { $$ = create_node($1, FUNC); add_child(&$
 function_header : type TK_IDENTIFICADOR '('params_list')' {$$ = $2;}
 				| TK_PR_STATIC type TK_IDENTIFICADOR '('params_list')' {$$ = $3;};
 params_list : params |
-param: type TK_IDENTIFICADOR 
-	| TK_PR_CONST type TK_IDENTIFICADOR;
+param: type TK_IDENTIFICADOR {free($2);}
+	| TK_PR_CONST type TK_IDENTIFICADOR {free($3);};
 
 params: param ',' params | param;
 code_block : '{' commands '}'  {$$ = $2;}; 
 
 // ------------------------------------ commands ------------------------------------
-commands : command commands {$$ = insert_command_node(&$1, $2);}
+commands : command commands {$$ = insert_node_next(&$1, $2);}
 	 | {$$ = NULL;};
 command : code_block';' {$$ = $1;}
 	| local_var';' 		{$$ = $1;}
@@ -184,7 +185,7 @@ var_init : TK_IDENTIFICADOR TK_OC_LE init_types {$$ = create_node($2, INIT); add
 
 var : TK_IDENTIFICADOR {$$ = NULL;}
 	| var_init {$$ = $1;}; 
-local_var_list: var ',' local_var_list {insert_command_node(&$1, $3);}
+local_var_list: var ',' local_var_list {insert_node_next(&$1, $3);}
 			| var {$$ = $1;}; 
 local_var : var_type local_var_list {$$ = $2;}; 
 
@@ -202,7 +203,7 @@ output: TK_PR_OUTPUT TK_IDENTIFICADOR {$$ = create_node(NULL, OUT); add_child(&$
 // fuction call
 function_call : TK_IDENTIFICADOR '(' args ')' {$$ = create_node($1, FUNC_CALL); add_child(&$$, $3);}; 
 
-args : expression ',' args {$$ = insert_command_node(&$1, $3);} 
+args : expression ',' args {$$ = insert_node_next(&$1, $3);} 
 	| expression {$$ = $1;}
 	| {$$ = NULL;};
 

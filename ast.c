@@ -45,33 +45,13 @@ void free_nodes(node_t *node){
         }
         
         if(node->lex_val != NULL){
-            free_lex_val(node->lex_val, node->type);
+            free(node->lex_val);
         }
         
         free(node);
     }
 }
 
-void free_lex_val(lex_val_t* lex_val, node_type_t node_type){
-    printf("node type %i\n", node_type);
-    switch (lex_val->type){
-                case LIT: {
-                    if(node_type == LIT_STR){
-                        printf("%s \n", lex_val->val.s);
-                        free(lex_val->val.s);
-                        break;
-                    }
-                }
-                case ID:
-                case OP:
-                    printf("%s \n", lex_val->val.name);
-                    free(lex_val->val.name);
-                default: break;
-    }
-    printf("freeeeeeeeeeeee\n");
-    free(lex_val);          
-    printf("frooooooooooooo\n");
-}   
 
 void print_edges(void *arvore){
     int i;
@@ -185,7 +165,7 @@ void print_label(node_t* node){
     
 }
 
-node_t* insert_command_node(node_t** n1, node_t *n2){
+node_t* insert_node_next(node_t** n1, node_t *n2){
     if(*n1 != NULL){
         (*n1)->next = n2;
         return *n1;
@@ -198,10 +178,6 @@ node_t *create_node(lex_val_t *val, node_type_t type){
     node_t *node = (node_t*)malloc(sizeof(node_t));
     memset(node, 0, sizeof(node_t));
     node->lex_val = val;
-     if(type == LIT_STR){
-        printf("AAA\n");
-        printf("%s\n", node->lex_val->val.name);
-    }
     node->type = type;
     return node;
 }
