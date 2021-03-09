@@ -55,5 +55,8 @@ dkms.conf
 lex.yy.*
 etapa1
 etapa2
+etapa3
 *.output
 parser.tab.*
+*.png
+*.txt

@@ -193,11 +193,11 @@ id_with_vector : TK_IDENTIFICADOR vector_index {$$ = create_node($1, IDENT); add
 
 // shift
 shift_left : TK_IDENTIFICADOR TK_OC_SL TK_LIT_INT {$$ = create_node($2, SHIFT); add_child(&$$, create_node($1, IDENT)); add_child(&$$, create_node($3, LIT_INT));}; 
-			| id_with_vector TK_OC_SL TK_LIT_INT {$$ = create_node($3, SHIFT); add_child(&$$, $1); add_child(&$$, create_node($3, LIT_INT));};
+			| id_with_vector TK_OC_SL TK_LIT_INT {$$ = create_node($2, SHIFT); add_child(&$$, $1); add_child(&$$, create_node($3, LIT_INT));};
 
 
 shift_right : TK_IDENTIFICADOR TK_OC_SR TK_LIT_INT {$$ = create_node($2, SHIFT); add_child(&$$, create_node($1, IDENT)); add_child(&$$, create_node($3, LIT_INT));};
-			| id_with_vector TK_OC_SR TK_LIT_INT {$$ = create_node($3, SHIFT); add_child(&$$, $1); add_child(&$$, create_node($3, LIT_INT));};
+			| id_with_vector TK_OC_SR TK_LIT_INT {$$ = create_node($2, SHIFT); add_child(&$$, $1); add_child(&$$, create_node($3, LIT_INT));};
 
 shift : shift_left {$$ = $1;}
 	| shift_right {$$ = $1;};
