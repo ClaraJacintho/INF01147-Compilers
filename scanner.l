@@ -46,9 +46,13 @@ alphanumeric [a-zA-Z0-9_]
 "end"           return TK_PR_END;
 "default"       return TK_PR_DEFAULT;
 
- [,;:()[\]{}|*/<>=!&%#^.$?+-]   {yylval.lex_val = get_lex_val(get_line_number(), SP_CHAR, strdup(yytext)); return yytext[0];}
 
-"<="            {yylval.lex_val = get_lex_val(get_line_number(), OP, strdup(yytext)); return TK_OC_LE;}
+ [|*/<>=?%^#+-] {yylval.lex_val = get_lex_val(get_line_number(), SP_CHAR, strdup(yytext)); return yytext[0];}  // special char operators
+
+
+ [,;:()[\]{}!&.$] return yytext[0];  // non op spec. chars
+
+"<="            {yylval.lex_val = get_lex_val(get_line_number(), OP, strdup(yytext));return TK_OC_LE;}
 ">="            {yylval.lex_val = get_lex_val(get_line_number(), OP, strdup(yytext));return TK_OC_GE;}
 "=="            {yylval.lex_val = get_lex_val(get_line_number(), OP, strdup(yytext));return TK_OC_EQ;}
 "!="            {yylval.lex_val = get_lex_val(get_line_number(), OP, strdup(yytext));return TK_OC_NE;}
@@ -62,7 +66,7 @@ alphanumeric [a-zA-Z0-9_]
 "false"                          {yylval.lex_val =  get_lit_lex_val(get_line_number(), (val_t)0); return TK_LIT_FALSE;}
 "true"                           {yylval.lex_val =  get_lit_lex_val(get_line_number(), (val_t)1); return TK_LIT_TRUE;}
 \'.\'                            {yylval.lex_val =  get_lit_lex_val(get_line_number(), (val_t)yytext[0]); return TK_LIT_CHAR;}
-\".+\"                           {yylval.lex_val =  get_lit_lex_val(get_line_number(), (val_t)unquote(strdup(yytext))); return TK_LIT_STRING;} // TODO REMOVE ""
+\"[^"]+\"                           {yylval.lex_val =  get_lit_lex_val(get_line_number(), (val_t)unquote(strdup(yytext))); return TK_LIT_STRING;} // TODO REMOVE ""
 
 {num}+{alphabetic}{alphanumeric}+         {printf("Erro id st num %c", yytext[0]);  return TOKEN_ERRO;} // identifier that starts w/ num
 {num}+\.{num}*{alphabetic}{alphanumeric}* { printf("Erro id start flo %c", yytext[0]); return TOKEN_ERRO;} // identifier that starts w/ num

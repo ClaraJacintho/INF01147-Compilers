@@ -1,16 +1,14 @@
-int clara;
-
-int tutu(int a){
+int tutu(){
     input hhhh;
     input tttt;
     input vvvv;
 }
-int tata(int a){
+int tata(){
     output bb;
     output 1231231;
     output "peepeepoopoo";
 }
-int ezrez(int a){
+int ezrez(){
     output true;
     output 23423.23423e234234;
     input rere;

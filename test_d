@@ -1,29 +1,8 @@
-
-int toto(static const char tete, static int tutu, int titi, const char tototo){
+int toto(const char tete, int tutu, int titi, const char tototo){
 	
-	{
-		down_in = africa;
-		int trois <= "lol";
-		test = (((((5)))));
-		{ test = 234; };
-	};
-
-	if(true){
-		if(false){
-			no = ttttt();
-		}
-		if(5-7){
-			ppp = #ooo;
-			if(ertert){
-				a = b==c;
-			}else{
-				f = *f;
-			}
-		} else { toto = 42345; }
-	}else{
-		ah = beh;
-		i = 5 + -5 * +5 ? ?true + &false + *toot - -6 : #clara - +4;
-	}
+	
+	i = 5 + -5 * +5 ? ?true + &false + *toot - -6 : #clara - +4;
+	
 
 }
 

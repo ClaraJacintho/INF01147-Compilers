@@ -116,7 +116,6 @@ var
 local_var_list   
 var_attribution 
 vector_attribution
-do
 
 %%
 
@@ -180,10 +179,10 @@ var_type : type | TK_PR_STATIC type | TK_PR_CONST type | TK_PR_STATIC TK_PR_CONS
 init_types : id_with_vector    {$$ = $1;}
 			| TK_IDENTIFICADOR {$$ = create_node($1, IDENT);};
 
-var_init : TK_IDENTIFICADOR TK_OC_LE init_types {$$ = create_node($1, INIT); add_child(&$$, create_node($1, IDENT)); add_child(&$$, $3);}
-		| TK_IDENTIFICADOR TK_OC_LE literal 	{$$ = create_node($1, INIT); add_child(&$$, create_node($1, IDENT)); add_child(&$$, $3);};
+var_init : TK_IDENTIFICADOR TK_OC_LE init_types {$$ = create_node($2, INIT); add_child(&$$, create_node($1, IDENT)); add_child(&$$, $3);}
+		| TK_IDENTIFICADOR TK_OC_LE literal 	{$$ = create_node($2, INIT); add_child(&$$, create_node($1, IDENT)); add_child(&$$, $3);};
 
-var : TK_IDENTIFICADOR {$$ = create_node($1,IDENT);}
+var : TK_IDENTIFICADOR {$$ = NULL;}
 	| var_init {$$ = $1;}; 
 local_var_list: var ',' local_var_list {insert_command_node(&$1, $3);}
 			| var {$$ = $1;}; 
@@ -233,8 +232,7 @@ else: TK_PR_ELSE code_block {$$ = create_node(NULL, ELSE); add_child(&$$, $2);};
 
 for : TK_PR_FOR '(' attribution ':' expression ':' attribution ')' code_block { $$ = create_node(NULL, FOR); add_child(&$$, $3); add_child(&$$, $5); add_child(&$$, $7);add_child(&$$, $9);}; 
 
-while : TK_PR_WHILE '('expression')'  do {$$ = create_node(NULL, WHILE); add_child(&$$, $3); add_child(&$$, $5);};
-do: TK_PR_DO code_block {$$ = create_node(NULL, DO); add_child(&$$, $2);};
+while : TK_PR_WHILE '('expression')'  TK_PR_DO code_block {$$ = create_node(NULL, WHILE); add_child(&$$, $3); add_child(&$$, $6);};
 // for priority, follow the example:
 // E → E+T | T
 // T → T*F | F

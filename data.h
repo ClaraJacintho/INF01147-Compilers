@@ -51,8 +51,7 @@ typedef enum node_type_s {
     IF,
     ELSE,
     FOR,
-    WHILE,
-    DO
+    WHILE
 } node_type_t;
 
 typedef struct node_s{

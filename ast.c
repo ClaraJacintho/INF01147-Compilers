@@ -23,6 +23,56 @@ void exporta (void *arvore) {
     print_node_labels(arvore);
 }
 
+void libera (void *arvore){
+    free_nodes((node_t*)arvore);
+}
+
+void free_nodes(node_t *node){
+    int i;
+    if (node != NULL){
+        for(i = 0; i < MAX_CHILDREN; i++){
+            if(node->children[i] != NULL) {
+                free_nodes(node->children[i]);
+                node->children[i] = NULL;
+            } else {
+                break;
+            }  
+        }
+
+        if(node->next != NULL){
+            free_nodes(node->next);
+            node->next = NULL;
+        }
+        
+        if(node->lex_val != NULL){
+            free_lex_val(node->lex_val, node->type);
+        }
+        
+        free(node);
+    }
+}
+
+void free_lex_val(lex_val_t* lex_val, node_type_t node_type){
+    printf("node type %i\n", node_type);
+    switch (lex_val->type){
+                case LIT: {
+                    if(node_type == LIT_STR){
+                        printf("%s \n", lex_val->val.s);
+                        free(lex_val->val.s);
+                        break;
+                    }
+                }
+                case ID:
+                case OP:
+                    printf("%s \n", lex_val->val.name);
+                    free(lex_val->val.name);
+                default: break;
+    }
+    printf("freeeeeeeeeeeee\n");
+    free(lex_val);          
+    printf("frooooooooooooo\n");
+}   
+
 void print_edges(void *arvore){
     int i;
     if (arvore != NULL){
@@ -126,9 +176,6 @@ void print_label(node_t* node){
             case WHILE:
                 printf("while");
                 break;
-            case DO:
-                printf("do");
-                break;
 
             default:
                 printf("%i", node->type);
@@ -151,6 +198,10 @@ node_t *create_node(lex_val_t *val, node_type_t type){
     node_t *node = (node_t*)malloc(sizeof(node_t));
     memset(node, 0, sizeof(node_t));
     node->lex_val = val;
+     if(type == LIT_STR){
+        printf("AAA\n");
+        printf("%s\n", node->lex_val->val.name);
+    }
     node->type = type;
     return node;
 }
