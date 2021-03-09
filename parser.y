@@ -106,9 +106,17 @@ return
 break
 continue
 if 
+else
 for
 while
 literal
+init_types 
+var_init 
+var
+local_var_list   
+var_attribution 
+vector_attribution
+do
 
 %%
 
@@ -163,18 +171,29 @@ command : code_block';' {$$ = $1;}
 	| for				{$$ = $1;}
 	| while				{$$ = $1;};
 
+
+id_with_vector : TK_IDENTIFICADOR vector_index {$$ = create_node($1, IDENT); add_child(&$$, $2);};
+
 // local vars
-var_type : type | TK_PR_STATIC type | TK_PR_CONST type | TK_PR_STATIC TK_PR_CONST type; //todo
-init_types : TK_IDENTIFICADOR vector_index | TK_IDENTIFICADOR; //todo
-var_init : TK_IDENTIFICADOR TK_OC_LE init_types | TK_IDENTIFICADOR TK_OC_LE literal; //todo
-var : TK_IDENTIFICADOR | var_init; //todo
-local_var_list: var ',' local_var_list| var; //todo
-local_var : var_type local_var_list; //todo
+var_type : type | TK_PR_STATIC type | TK_PR_CONST type | TK_PR_STATIC TK_PR_CONST type; 
+
+init_types : id_with_vector    {$$ = $1;}
+			| TK_IDENTIFICADOR {$$ = create_node($1, IDENT);};
+
+var_init : TK_IDENTIFICADOR TK_OC_LE init_types {$$ = create_node($1, INIT); add_child(&$$, create_node($1, IDENT)); add_child(&$$, $3);}
+		| TK_IDENTIFICADOR TK_OC_LE literal 	{$$ = create_node($1, INIT); add_child(&$$, create_node($1, IDENT)); add_child(&$$, $3);};
+
+var : TK_IDENTIFICADOR {$$ = create_node($1,IDENT);}
+	| var_init {$$ = $1;}; 
+local_var_list: var ',' local_var_list {insert_command_node(&$1, $3);}
+			| var {$$ = $1;}; 
+local_var : var_type local_var_list {$$ = $2;}; 
 
 // attribution
-attribution : var_attribution | vector_attribution; //todo
-var_attribution : TK_IDENTIFICADOR '=' expression; //todo
-vector_attribution : TK_IDENTIFICADOR vector_index '=' expression; //todo
+attribution : var_attribution {$$ = $1;}
+			| vector_attribution {$$ = $1;}; 
+var_attribution : TK_IDENTIFICADOR '=' expression {$$ = create_node($2, ATTR); add_child(&$$, create_node($1, IDENT)); add_child(&$$, $3);}; 
+vector_attribution : id_with_vector '=' expression {$$ = create_node($2, ATTR); add_child(&$$, $1); add_child(&$$, $3);}; 
 
 // io
 input: TK_PR_INPUT TK_IDENTIFICADOR   {$$ = create_node(NULL, IN); add_child(&$$, create_node($2, IDENT));};
@@ -188,9 +207,6 @@ args : expression ',' args {$$ = insert_command_node(&$1, $3);}
 	| expression {$$ = $1;}
 	| {$$ = NULL;};
 
-
-id_with_vector : TK_IDENTIFICADOR vector_index {$$ = create_node($1, IDENT); add_child(&$$, $2);};
-
 // shift
 shift_left : TK_IDENTIFICADOR TK_OC_SL TK_LIT_INT {$$ = create_node($2, SHIFT); add_child(&$$, create_node($1, IDENT)); add_child(&$$, create_node($3, LIT_INT));}; 
 			| id_with_vector TK_OC_SL TK_LIT_INT {$$ = create_node($2, SHIFT); add_child(&$$, $1); add_child(&$$, create_node($3, LIT_INT));};
@@ -203,20 +219,22 @@ shift : shift_left {$$ = $1;}
 	| shift_right {$$ = $1;};
 
 // PRs
-return : TK_PR_RETURN expression; //todo
+return : TK_PR_RETURN expression {$$ = create_node(NULL, RETURN); add_child(&$$, $2);}; 
 break : TK_PR_BREAK {$$ = create_node(NULL, BREAK);}; 
 continue : TK_PR_CONTINUE {$$ = create_node(NULL, CONTINUE);};
 
 
 // ------------------------------------ expressions ------------------------------------
 
-if : TK_PR_IF '(' expression ')' code_block //todo
-   | TK_PR_IF '(' expression ')' code_block TK_PR_ELSE code_block; //todo
+if : TK_PR_IF '(' expression ')' code_block {$$ = create_node(NULL, IF); add_child(&$$, $3); add_child(&$$, $5);}
+   | TK_PR_IF '(' expression ')' code_block else {$$ = create_node(NULL, IF); add_child(&$$, $3); add_child(&$$, $5);add_child(&$$, $6);};
 
-for : TK_PR_FOR '(' attribution ':' expression ':' attribution ')' code_block; //todo
+else: TK_PR_ELSE code_block {$$ = create_node(NULL, ELSE); add_child(&$$, $2);}; 
 
-while : TK_PR_WHILE '('expression')' TK_PR_DO code_block; //todo
+for : TK_PR_FOR '(' attribution ':' expression ':' attribution ')' code_block { $$ = create_node(NULL, FOR); add_child(&$$, $3); add_child(&$$, $5); add_child(&$$, $7);add_child(&$$, $9);}; 
 
+while : TK_PR_WHILE '('expression')'  do {$$ = create_node(NULL, WHILE); add_child(&$$, $3); add_child(&$$, $5);};
+do: TK_PR_DO code_block {$$ = create_node(NULL, DO); add_child(&$$, $2);};
 // for priority, follow the example:
 // E → E+T | T
 // T → T*F | F

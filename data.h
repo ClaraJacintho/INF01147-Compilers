@@ -45,6 +45,14 @@ typedef enum node_type_s {
     BIN_OP,
     FUNC_CALL,
     TERN_OP,
+    RETURN,
+    INIT,
+    ATTR,
+    IF,
+    ELSE,
+    FOR,
+    WHILE,
+    DO
 } node_type_t;
 
 typedef struct node_s{

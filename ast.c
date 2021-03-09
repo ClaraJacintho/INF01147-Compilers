@@ -68,6 +68,8 @@ void print_label(node_t* node){
         switch(node->type){
             case IN: printf("input"); break;
             case OUT: printf("output"); break;
+            case INIT:
+            case ATTR:
             case SHIFT:
             case IDENT:
             case UN_OP:
@@ -108,6 +110,24 @@ void print_label(node_t* node){
                 break;
             case TERN_OP:
                 printf("? : ");
+                break;
+            case RETURN:
+                printf("return");
+                break;
+            case IF:
+                printf("if");
+                break;
+            case ELSE:
+                printf("else");
+                break;
+            case FOR:
+                printf("for");
+                break;
+            case WHILE:
+                printf("while");
+                break;
+            case DO:
+                printf("do");
                 break;
 
             default:
