@@ -183,9 +183,10 @@ init_types : id_with_vector    {$$ = $1;}
 var_init : TK_IDENTIFICADOR TK_OC_LE init_types {$$ = create_node($2, INIT); add_child(&$$, create_node($1, IDENT)); add_child(&$$, $3);}
 		| TK_IDENTIFICADOR TK_OC_LE literal 	{$$ = create_node($2, INIT); add_child(&$$, create_node($1, IDENT)); add_child(&$$, $3);};
 
-var : TK_IDENTIFICADOR {$$ = NULL;}
-	| var_init {$$ = $1;}; 
-local_var_list: var ',' local_var_list {insert_node_next(&$1, $3);}
+var : TK_IDENTIFICADOR {$$ = create_node($1, NOT_INIT);} // Creates a node that wont actually be on the tree
+	| var_init {$$ = $1;};
+
+local_var_list: var ',' local_var_list {$$ = insert_node_next(&$1, $3);}
 			| var {$$ = $1;}; 
 local_var : var_type local_var_list {$$ = $2;}; 
 
@@ -229,7 +230,7 @@ continue : TK_PR_CONTINUE {$$ = create_node(NULL, CONTINUE);};
 if : TK_PR_IF '(' expression ')' code_block {$$ = create_node(NULL, IF); add_child(&$$, $3); add_child(&$$, $5);}
    | TK_PR_IF '(' expression ')' code_block else {$$ = create_node(NULL, IF); add_child(&$$, $3); add_child(&$$, $5);add_child(&$$, $6);};
 
-else: TK_PR_ELSE code_block {$$ = create_node(NULL, ELSE); add_child(&$$, $2);}; 
+else: TK_PR_ELSE code_block {$$ = $2;}; 
 
 for : TK_PR_FOR '(' attribution ':' expression ':' attribution ')' code_block { $$ = create_node(NULL, FOR); add_child(&$$, $3); add_child(&$$, $5); add_child(&$$, $7);add_child(&$$, $9);}; 
 
@@ -241,7 +242,7 @@ while : TK_PR_WHILE '('expression')'  TK_PR_DO code_block {$$ = create_node(NULL
 // priority low to high: ternary logic compare +- /%* ^ ()
 
 expression : logic_exp {$$ = $1;}
-		| logic_exp '?' expression ':' expression {$$ = create_node(NULL, TERN_OP); add_child(&$$, $1); add_child(&$$, $3); add_child(&$$, $5);}; 
+		| logic_exp '?' expression ':' expression {$$ = create_node(NULL, TERN_OP); add_child(&$$, $1); add_child(&$$, $3); add_child(&$$, $5);free($2);}; 
 
 
 vector_index: '['expression']' {$$ = create_node($1, VECTOR); add_child(&$$, $2);};

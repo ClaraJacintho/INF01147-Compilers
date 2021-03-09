@@ -147,14 +147,14 @@ void print_label(node_t* node){
             case IF:
                 printf("if");
                 break;
-            case ELSE:
-                printf("else");
-                break;
             case FOR:
                 printf("for");
                 break;
             case WHILE:
                 printf("while");
+                break;
+            case NOT_INIT:
+                printf("ERROR");
                 break;
 
             default:
@@ -166,8 +166,19 @@ void print_label(node_t* node){
 }
 
 node_t* insert_node_next(node_t** n1, node_t *n2){
-    if(*n1 != NULL){
-        (*n1)->next = n2;
+    if(*n1 != NULL && (*n1)->type != NOT_INIT){
+        while(n2 != NULL && n2->type == NOT_INIT){
+            n2 = n2->next; // forward untill the next attribuition
+        }
+        if((*n1)->next != NULL){
+            node_t* aux = (*n1);
+            while(aux->next != NULL){
+                aux = aux->next;
+            }
+            aux->next = n2;
+        } else {
+            (*n1)->next = n2;
+        }
         return *n1;
     } else {
         return n2;

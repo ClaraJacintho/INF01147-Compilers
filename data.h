@@ -49,9 +49,9 @@ typedef enum node_type_s {
     INIT,
     ATTR,
     IF,
-    ELSE,
     FOR,
-    WHILE
+    WHILE,
+    NOT_INIT,
 } node_type_t;
 
 typedef struct node_s{

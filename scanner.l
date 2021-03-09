@@ -47,10 +47,10 @@ alphanumeric [a-zA-Z0-9_]
 "default"       return TK_PR_DEFAULT;
 
 
- [|*/<>=?%^&#+-] {yylval.lex_val = get_lex_val(get_line_number(), SP_CHAR, strdup(yytext)); return yytext[0];}  // special char operators
+ [|*/<>=?!%^&#+-] {yylval.lex_val = get_lex_val(get_line_number(), SP_CHAR, strdup(yytext)); return yytext[0];}  // special char operators
 
 
- [,;:()[\]{}!.$] return yytext[0];  // non op spec. chars
+ [,;:()[\]{}.$] return yytext[0];  // non op spec. chars
 
 "<="            {yylval.lex_val = get_lex_val(get_line_number(), OP, strdup(yytext));return TK_OC_LE;}
 ">="            {yylval.lex_val = get_lex_val(get_line_number(), OP, strdup(yytext));return TK_OC_GE;}
