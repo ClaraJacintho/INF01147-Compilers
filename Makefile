@@ -17,7 +17,7 @@ ast.o:
 test:
 	./etapa3 < test_a
 	./etapa3 < test_b
-	./etapa3< test_c
+	./etapa3 < test_c
 	./etapa3 < test_d
 	./etapa3 < test_e
 	./etapa3 < test_spec
