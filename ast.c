@@ -33,25 +33,35 @@ void free_nodes(node_t *node){
         for(i = 0; i < MAX_CHILDREN; i++){
             if(node->children[i] != NULL) {
                 free_nodes(node->children[i]);
-                node->children[i] = NULL;
-            } else {
-                break;
-            }  
+                //node->children[i] = NULL;
+            }
         }
 
         if(node->next != NULL){
             free_nodes(node->next);
-            node->next = NULL;
+            //node->next = NULL;
         }
         
         if(node->lex_val != NULL){
+            
+            if(node->type != LIT_INT && node->type != LIT_FLOAT && node->type != LIT_BOOL && node->type != LIT_CHAR){
+                free(node->lex_val->val.s);
+            }
+            
             free(node->lex_val);
+  
         }
         
         free(node);
     }
 }
 
+void free_lex_val(lex_val_t* lex_val){
+    if(lex_val != NULL){
+            free(lex_val->val.s);
+            free(lex_val);
+    }
+}
 
 void print_edges(void *arvore){
     int i;
@@ -166,12 +176,22 @@ void print_label(node_t* node){
 }
 
 node_t* insert_node_next(node_t** n1, node_t *n2){
+    
+     node_t* aux2;
     if(*n1 != NULL && (*n1)->type != NOT_INIT){
         while(n2 != NULL && n2->type == NOT_INIT){
+            aux2 = n2;
             n2 = n2->next; // forward untill the next attribuition
+            if(aux2->lex_val != NULL){
+                free(aux2->lex_val->val.name);
+                free(aux2->lex_val);
+            }
+            free(aux2);
         }
+
+        // get last of list:
+        node_t* aux = (*n1);
         if((*n1)->next != NULL){
-            node_t* aux = (*n1);
             while(aux->next != NULL){
                 aux = aux->next;
             }
@@ -181,9 +201,17 @@ node_t* insert_node_next(node_t** n1, node_t *n2){
         }
         return *n1;
     } else {
+        if(*n1 != NULL){
+            if((*n1)->lex_val != NULL){
+                free((*n1)->lex_val->val.name);
+                free((*n1)->lex_val);
+            }
+            free(*n1);;
+        }
         return n2;
     }
 }
+
 
 node_t *create_node(lex_val_t *val, node_type_t type){
     node_t *node = (node_t*)malloc(sizeof(node_t));

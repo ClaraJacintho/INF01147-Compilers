@@ -36,7 +36,7 @@ char tot(int a, bool b, char c){}
 
 //O tipo pode estar precedido opcionalmente pela palavra reservada static. 
 static bool a(){}
-bool c(static int clara){}
+bool c(int clara){}
 
 //Cada parametro e definido pelo seu tipo e nome, e nao pode ser do tipo vetor.
 // O tipo de um parametro pode ser opcionalmente precedido da palavra 
@@ -44,7 +44,7 @@ bool c(static int clara){}
 
 bool copo(int a, bool b, char c){}
 bool faca(const int b, const int c){}
-string faca(static int a, static const int b, int c){}
+string faca(int a, const int b, int c){}
 
 // O corpo da funcao e um bloco de comandos.
 int a(){ a << 2; input clara; output 5; }

@@ -60,3 +60,5 @@ etapa3
 parser.tab.*
 *.png
 *.txt
+*.dot
+E2/

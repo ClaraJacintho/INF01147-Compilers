@@ -1,7 +1,7 @@
 int test, tree, top[12431234];
 static string floof;
 
-static float test(int a, static float b, static const char c, const string d){
+static float test(int a, float b, const char c, const string d){
 
 //	 clara = a + (b+6-5*4^toot||nada)&(c == (*u + &u  % (#clara * (!pipi||?pipi))));
 

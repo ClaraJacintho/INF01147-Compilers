@@ -18,11 +18,13 @@ extern void *arvore;
 
 %define parse.error verbose
 
-%token<node> TK_PR_INT
-%token<node> TK_PR_FLOAT
-%token<node> TK_PR_BOOL
-%token<node> TK_PR_CHAR
-%token<node> TK_PR_STRING
+%token TK_PR_INT
+%token TK_PR_FLOAT
+%token TK_PR_BOOL
+%token TK_PR_CHAR
+%token TK_PR_STRING
+%token TK_PR_CONST
+%token TK_PR_STATIC
 %token<node> TK_PR_IF
 %token<node> TK_PR_THEN
 %token<node> TK_PR_ELSE
@@ -31,8 +33,6 @@ extern void *arvore;
 %token<node> TK_PR_INPUT
 %token<node> TK_PR_OUTPUT
 %token<node> TK_PR_RETURN
-%token<node> TK_PR_CONST
-%token<node> TK_PR_STATIC
 %token<node> TK_PR_FOREACH
 %token<node> TK_PR_FOR
 %token<node> TK_PR_SWITCH
@@ -137,8 +137,8 @@ literal : TK_LIT_INT 	 {$$ = create_node($1, LIT_INT);}
 
 // global declarations
 global_declaration : type global_id_list ';'| TK_PR_STATIC type global_id_list ';';
-vector_declaration: TK_IDENTIFICADOR '['TK_LIT_INT']' {free($1);free($3);}
-global_var_id: TK_IDENTIFICADOR {free($1);}
+vector_declaration: TK_IDENTIFICADOR '['TK_LIT_INT']' {free_lex_val($1);free($3);}
+global_var_id: TK_IDENTIFICADOR {free_lex_val($1);}
 			| vector_declaration;
 global_id_list : global_var_id ',' global_id_list| global_var_id;
 
@@ -148,8 +148,8 @@ function : function_header code_block { $$ = create_node($1, FUNC); add_child(&$
 function_header : type TK_IDENTIFICADOR '('params_list')' {$$ = $2;}
 				| TK_PR_STATIC type TK_IDENTIFICADOR '('params_list')' {$$ = $3;};
 params_list : params |
-param: type TK_IDENTIFICADOR {free($2);}
-	| TK_PR_CONST type TK_IDENTIFICADOR {free($3);};
+param: type TK_IDENTIFICADOR {free_lex_val($2);}
+	| TK_PR_CONST type TK_IDENTIFICADOR {free_lex_val($3);};
 
 params: param ',' params | param;
 code_block : '{' commands '}'  {$$ = $2;}; 
@@ -242,10 +242,10 @@ while : TK_PR_WHILE '('expression')'  TK_PR_DO code_block {$$ = create_node(NULL
 // priority low to high: ternary logic compare +- /%* ^ ()
 
 expression : logic_exp {$$ = $1;}
-		| logic_exp '?' expression ':' expression {$$ = create_node(NULL, TERN_OP); add_child(&$$, $1); add_child(&$$, $3); add_child(&$$, $5);free($2);}; 
+		| logic_exp '?' expression ':' expression {$$ = create_node(NULL, TERN_OP); add_child(&$$, $1); add_child(&$$, $3); add_child(&$$, $5);free_lex_val($2);}; 
 
 
-vector_index: '['expression']' {$$ = create_node($1, VECTOR); add_child(&$$, $2);};
+vector_index: '['expression']' {$$ = create_node(NULL, VECTOR); add_child(&$$, $2);};
 
 // operands
 id_exp_a : TK_IDENTIFICADOR {$$ = create_node($1, IDENT);}

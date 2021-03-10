@@ -1,4 +1,4 @@
-int toto(const char tete, int tutu, int titi, const char tototo){
+int toto(){
 	
 	
 	i = 5 + -5 * +5 ? ?true + &false + *toot - -6 : #clara - +4;

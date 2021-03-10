@@ -22,7 +22,11 @@ for line in out_f:
         diag_f.write(new_line.replace("\n", "") + ";\n")
     else:
         node = line.split(" ")[0]
-        new_line = line.replace(node, dict_nodes[str(node)])
+        if str(node) in dict_nodes:
+            new_line = line.replace(node, dict_nodes[str(node)])
+        else:
+            new_line =line.replace(node, "n" + str(node_count)) # deve sempre por n0, mas vai q né
+
         diag_f.write(new_line)
 
 diag_f.write("\n}")
