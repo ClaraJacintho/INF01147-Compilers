@@ -124,6 +124,9 @@ vector_attribution
 global_var_id
 global_id_list
 vector_declaration
+params_list
+params
+param
 
 %type<type>
 type
@@ -155,23 +158,25 @@ literal : TK_LIT_INT 	 {$$ = create_node($1, LIT_INT);}
 global_declaration : type global_id_list ';' {insert_id($2, $1);}
 				| TK_PR_STATIC type global_id_list ';'{insert_id($3, $2);}; // TODO: find out wtf to do w static
 
-vector_declaration: TK_IDENTIFICADOR '['TK_LIT_INT']' {$$ = create_identifier($1, K_VEC, $3->val.n);}
+vector_declaration: TK_IDENTIFICADOR '['TK_LIT_INT']' {$$ = create_identifier($1, K_VEC, $3->val.n, TYPE_X);}
 
-global_var_id: TK_IDENTIFICADOR {$$ = create_identifier($1, K_ID, 1);}
+global_var_id: TK_IDENTIFICADOR {$$ = create_identifier($1, K_ID, 1, TYPE_X);}
 			| vector_declaration {$$ = $1;};
-global_id_list : global_var_id ',' global_id_list {$$ = creates_id_list($1, $3);}
-				| global_var_id {$$ = creates_id_list($1, NULL);};
+global_id_list : global_var_id ',' global_id_list {$$ = creates_st_item_list($1, $3);}
+				| global_var_id {$$ = creates_st_item_list($1, NULL);};
 
 
 // function declaration
 function : function_header code_block { $$ = create_node($1, FUNC); add_child(&$$, $2);}
-function_header : type TK_IDENTIFICADOR '('params_list')' {$$ = $2;}
-				| TK_PR_STATIC type TK_IDENTIFICADOR '('params_list')' {$$ = $3;};
-params_list : params |
-param: type TK_IDENTIFICADOR {free_lex_val($2);}
-	| TK_PR_CONST type TK_IDENTIFICADOR {free_lex_val($3);};
+function_header : type TK_IDENTIFICADOR '('params_list')' {$$ = $2; create_function($2, $1, $4);}
+				| TK_PR_STATIC type TK_IDENTIFICADOR '('params_list')' {$$ = $3; create_function($3, $2, $5);};
+params_list : params {$$ = $1;}
+			| {$$ = NULL;};
+param: type TK_IDENTIFICADOR {$$ =create_identifier($2, K_ID, 1, $1);}
+	| TK_PR_CONST type TK_IDENTIFICADOR {$$ = create_identifier($3, K_ID, 1, $2);};
 
-params: param ',' params | param;
+params: param ',' params {$$ = creates_st_item_list($1, $3);}
+		| param {$$ = creates_st_item_list($1, NULL);};
 code_block : '{' commands '}'  {$$ = $2;}; 
 
 // ------------------------------------ commands ------------------------------------

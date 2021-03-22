@@ -1,2 +1,7 @@
-float a, b, c;
-int clara[3];
+int aaa(int x, float y){
+
+}
+int clara;
+float var(int t, float foo){
+
+}

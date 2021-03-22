@@ -78,28 +78,30 @@ typedef enum kind_s
     K_FUNC,
 } kind_t;
 
-typedef struct symbol_data
-{
+typedef struct symbol_table_item_s symbol_table_item_t;
+typedef struct symbol_data{
     char *key;
     int declaration_line;
     type_t type;
     kind_t kind;
     int n_args;
-    struct symbol_data *args;
+    symbol_table_item_t *args;
     int size;
     int count; 
     lex_val_t *data;
 
 } symbol_t;
 
-typedef struct symbol_table_item_s {
+struct symbol_table_item_s {
     struct symbol_table_item_s *next;
     symbol_t *item;
-} symbol_table_item_t;
+};
 
 typedef struct symbol_table_s {
     int size;
     symbol_table_item_t *top;
+    symbol_table_item_t *bottom;
+
 } symbol_table_t;
 
 typedef struct stack_item_s{

@@ -23,6 +23,8 @@ errors.o:
 test:
 	./etapa4 < test_a
 
+debug:
+	valgrind ./etapa4 < test_a  --leak-check=full
 clean:
 	rm -f lex.yy.* main.o ast.o symbol_table.o parser.tab.* parser.output etapa4
 
