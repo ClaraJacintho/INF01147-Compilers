@@ -1,5 +1,2 @@
-int clara;
-bool aaa;
 float a, b, c;
-string fff;
-char ggg;
+int clara[3];

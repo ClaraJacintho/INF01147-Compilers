@@ -66,7 +66,7 @@ alphanumeric [a-zA-Z0-9_]
 "false"                          {yylval.lex_val =  get_lit_lex_val(get_line_number(), (val_t)0); return TK_LIT_FALSE;}
 "true"                           {yylval.lex_val =  get_lit_lex_val(get_line_number(), (val_t)1); return TK_LIT_TRUE;}
 \'.\'                            {yylval.lex_val =  get_lit_lex_val(get_line_number(), (val_t)yytext[0]); return TK_LIT_CHAR;}
-\"[^"]+\"                           {yylval.lex_val =  get_lit_lex_val(get_line_number(), (val_t)unquote(strdup(yytext))); return TK_LIT_STRING;} // TODO REMOVE ""
+\"[^"]+\"                           {yylval.lex_val =  get_lit_lex_val(get_line_number(), (val_t)unquote(strdup(yytext))); return TK_LIT_STRING;}
 
 {num}+{alphabetic}{alphanumeric}+         {printf("Erro id st num %c", yytext[0]);  return TOKEN_ERRO;} // identifier that starts w/ num
 {num}+\.{num}*{alphabetic}{alphanumeric}* { printf("Erro id start flo %c", yytext[0]); return TOKEN_ERRO;} // identifier that starts w/ num

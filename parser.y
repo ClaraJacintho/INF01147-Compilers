@@ -21,13 +21,13 @@ extern void *arvore;
 
 %define parse.error verbose
 
-%token TK_PR_INT
-%token TK_PR_FLOAT
-%token TK_PR_BOOL
-%token TK_PR_CHAR
-%token TK_PR_STRING
-%token TK_PR_CONST
-%token TK_PR_STATIC
+%token<type> TK_PR_INT
+%token<type> TK_PR_FLOAT
+%token<type> TK_PR_BOOL
+%token<type> TK_PR_CHAR
+%token<type> TK_PR_STRING
+%token<type> TK_PR_CONST
+%token<type> TK_PR_STATIC
 %token<node> TK_PR_IF
 %token<node> TK_PR_THEN
 %token<node> TK_PR_ELSE
@@ -123,6 +123,7 @@ vector_attribution
 %type<symbol> 
 global_var_id
 global_id_list
+vector_declaration
 
 %type<type>
 type
@@ -154,10 +155,10 @@ literal : TK_LIT_INT 	 {$$ = create_node($1, LIT_INT);}
 global_declaration : type global_id_list ';' {insert_id($2, $1);}
 				| TK_PR_STATIC type global_id_list ';'{insert_id($3, $2);}; // TODO: find out wtf to do w static
 
-vector_declaration: TK_IDENTIFICADOR '['TK_LIT_INT']' {free_lex_val($1);free($3);}
+vector_declaration: TK_IDENTIFICADOR '['TK_LIT_INT']' {$$ = create_identifier($1, K_VEC, $3->val.n);}
 
-global_var_id: TK_IDENTIFICADOR {$$ = create_identifier($1, K_ID);}
-			| vector_declaration;
+global_var_id: TK_IDENTIFICADOR {$$ = create_identifier($1, K_ID, 1);}
+			| vector_declaration {$$ = $1;};
 global_id_list : global_var_id ',' global_id_list {$$ = creates_id_list($1, $3);}
 				| global_var_id {$$ = creates_id_list($1, NULL);};
 

@@ -86,7 +86,8 @@ typedef struct symbol_data
     kind_t kind;
     int n_args;
     struct symbol_data *args;
-    int size;  
+    int size;
+    int count; 
     lex_val_t *data;
 
 } symbol_t;

@@ -33,6 +33,7 @@ void print_symbol(symbol_t* s){
     // if(s->n_args != NULL){
     //     printf("        n_args: %i\n", s->n_args);
     // }
+    printf("        count: %i\n", s->count); 
     printf("        size: %i\n", s->size); 
     printf("        #################################################\n");
 }
@@ -93,13 +94,14 @@ int type_size(type_t t){
     }
 }
 
-symbol_t* create_symbol(char* name, lex_val_t* lex_val, type_t type, kind_t kind){
+symbol_t* create_symbol(char* name, lex_val_t* lex_val, type_t type, kind_t kind, int count){
     symbol_t * symbol = (symbol_t*)malloc(sizeof(symbol_t));
     symbol->key = name;
     symbol->declaration_line = lex_val->line;
     symbol->type = type;
     symbol->kind = kind;
-    symbol->size = type_size(type); // TODO: fix size for strings
+    symbol->count = count;
+    symbol->size = type_size(type) * count; // TODO: fix size for strings
     symbol->data = lex_val;
     // TODO: add arguments to functions
     return symbol;
@@ -107,12 +109,12 @@ symbol_t* create_symbol(char* name, lex_val_t* lex_val, type_t type, kind_t kind
 
 symbol_table_item_t* insert_symbol(symbol_t *symbol){
     symbol_table_item_t *item = (symbol_table_item_t *)malloc(sizeof(symbol_table_item_t));
-    item->item = symbol;
+    item->item = symbol;    
     item->next = NULL;
 
     if(current_scope == NULL)
         enter_scope();
-    
+
     symbol_table_item_t *aux = current_scope->scope->top;
     if(aux != NULL){
         while(aux->next != NULL){
@@ -135,13 +137,12 @@ symbol_table_item_t* insert_symbol(symbol_t *symbol){
 }
 
 // creates identifier with unkonwn type
-symbol_table_item_t* create_identifier(lex_val_t *lv, kind_t k){
+symbol_table_item_t* create_identifier(lex_val_t *lv, kind_t k, int count){
     char *s = (char*)lv->val.s;
-    symbol_t *symbol = create_symbol(s, lv, TYPE_X, k);
+    symbol_t *symbol = create_symbol(s, lv, TYPE_X, k, count);
     symbol_table_item_t *item = (symbol_table_item_t *)malloc(sizeof(symbol_table_item_t));
     item->item = symbol;
     item->next = NULL;
-    
     return item;
 }
 
@@ -159,7 +160,9 @@ void insert_id(symbol_table_item_t *first, type_t t){
     symbol_table_item_t *aux = first;
     while(aux != NULL){
         aux->item->type = t; //TODO: check if type compatible w value 
+        aux->item->size = type_size(t) * aux->item->count;
         insert_symbol(aux->item);
+        
         // TODO: free this symbol_item
         aux = aux->next;
     }
