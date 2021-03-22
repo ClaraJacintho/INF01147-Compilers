@@ -75,9 +75,9 @@ alphanumeric [a-zA-Z0-9_]
 
 {alphabetic}{alphanumeric}*  {yylval.lex_val = get_lex_val(get_line_number(), ID, strdup(yytext)); return TK_IDENTIFICADOR;}
 
-[ \t]         { };
+[ \t\r]         { };
 
-[\r\n]            { ++line_number; }
+[\n]            { ++line_number;}
 
 "/*"          { BEGIN(COMMENT); }
 

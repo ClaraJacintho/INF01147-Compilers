@@ -1,6 +1,7 @@
 %{
 #include "data.h"
 #include "ast.h"
+#include "symbol_table.h"
 #include <stdio.h>
 #include <stdlib.h>
 
@@ -13,7 +14,9 @@ extern void *arvore;
 
 %union{
 	lex_val_t* lex_val; 
-    node_t* node;  
+    node_t* node;
+	type_t type;
+	symbol_table_item_t* symbol;  
 }
 
 %define parse.error verbose
@@ -117,17 +120,29 @@ local_var_list
 var_attribution 
 vector_attribution
 
+%type<symbol> 
+global_var_id
+global_id_list
+
+%type<type>
+type
+
 %%
 
 // ------------------------------------ main blocks ------------------------------------
 
 // initial symbol
-program : global_declaration program { $$ = $2;}
+program : global_declaration program {$$ = $2;}
 		| function program { $$ = insert_node_next(&$1, $2); arvore = (void*) $$;  }
-		| {$$ = NULL;};
+		| {$$ = NULL; leave_scope();};
 
 // utils
-type : TK_PR_INT | TK_PR_FLOAT | TK_PR_BOOL | TK_PR_CHAR | TK_PR_STRING;
+type : TK_PR_INT   {$$ = TYPE_INT;} 
+	| TK_PR_FLOAT  {$$ = TYPE_FLOAT;} 
+	| TK_PR_BOOL   {$$ = TYPE_BOOL;} 
+	| TK_PR_CHAR   {$$ = TYPE_CHAR;} 
+	| TK_PR_STRING {$$ = TYPE_STRING;};
+ 
 literal : TK_LIT_INT 	 {$$ = create_node($1, LIT_INT);}
 		| TK_LIT_FLOAT   {$$ = create_node($1, LIT_FLOAT);}
 		| TK_LIT_FALSE   {$$ = create_node($1, LIT_BOOL);}
@@ -136,11 +151,15 @@ literal : TK_LIT_INT 	 {$$ = create_node($1, LIT_INT);}
 		| TK_LIT_STRING  {$$ = create_node($1, LIT_STR);};
 
 // global declarations
-global_declaration : type global_id_list ';'| TK_PR_STATIC type global_id_list ';';
+global_declaration : type global_id_list ';' {insert_id($2, $1);}
+				| TK_PR_STATIC type global_id_list ';'{insert_id($3, $2);}; // TODO: find out wtf to do w static
+
 vector_declaration: TK_IDENTIFICADOR '['TK_LIT_INT']' {free_lex_val($1);free($3);}
-global_var_id: TK_IDENTIFICADOR {free_lex_val($1);}
+
+global_var_id: TK_IDENTIFICADOR {$$ = create_identifier($1, K_ID);}
 			| vector_declaration;
-global_id_list : global_var_id ',' global_id_list| global_var_id;
+global_id_list : global_var_id ',' global_id_list {$$ = creates_id_list($1, $3);}
+				| global_var_id {$$ = creates_id_list($1, NULL);};
 
 
 // function declaration

@@ -1,4 +1,5 @@
 #include "ast.h"
+#include "symbol_table.h"
 #include <stdio.h>
 #include <stdlib.h>
 
@@ -211,7 +212,6 @@ node_t* insert_node_next(node_t** n1, node_t *n2){
         return n2;
     }
 }
-
 
 node_t *create_node(lex_val_t *val, node_type_t type){
     node_t *node = (node_t*)malloc(sizeof(node_t));

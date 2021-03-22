@@ -62,4 +62,48 @@ typedef struct node_s{
 
 } node_t;
 
+typedef enum types_e{
+    TYPE_INT,    
+    TYPE_FLOAT,  
+    TYPE_BOOL,   
+    TYPE_CHAR,   
+    TYPE_STRING, 
+    TYPE_X,
+} type_t;
+
+typedef enum kind_s
+{
+    K_ID, 
+    K_VEC,
+    K_FUNC,
+} kind_t;
+
+typedef struct symbol_data
+{
+    char *key;
+    int declaration_line;
+    type_t type;
+    kind_t kind;
+    int n_args;
+    struct symbol_data *args;
+    int size;  
+    lex_val_t *data;
+
+} symbol_t;
+
+typedef struct symbol_table_item_s {
+    struct symbol_table_item_s *next;
+    symbol_t *item;
+} symbol_table_item_t;
+
+typedef struct symbol_table_s {
+    int size;
+    symbol_table_item_t *top;
+} symbol_table_t;
+
+typedef struct stack_item_s{
+    symbol_table_t *scope;
+    struct stack_item_s *next;
+} stack_item_t;
+
 #endif

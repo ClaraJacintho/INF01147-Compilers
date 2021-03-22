@@ -1,0 +1,64 @@
+// global declarations
+int clara, mariana, jose, bete[10];
+static int pepe;
+
+// function, code block
+int clara(float clara, int clara){
+
+    // local vars
+    int clara <= 1; 
+    static bool foo;
+    static const string a <= "im cool";
+
+    // assignment
+    clara = pepe;
+    clara[5] = 9;
+
+    // function call
+    clara(7, true != false);
+
+    // IO
+    input clara;
+    output "foo";
+    output clara;
+
+    // Shift
+    clara << 2;
+    pepe[5] >> 5;
+
+    // PR
+    return clara == true ? foo == faa : pepe != 2;
+    break;
+    continue;
+
+    // flow control
+    if (true) {}
+    if (false) {} else {}
+
+    for(i = 5 : clara == 2 : i = i * 1) { a= 54;}
+    while(1 && 2) do  { call(sdfsdf); }
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
