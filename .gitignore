@@ -56,9 +56,12 @@ lex.yy.*
 etapa1
 etapa2
 etapa3
+etapa4
 *.output
 parser.tab.*
 *.png
 *.txt
 *.dot
 E2/
+.vscode
+tests
