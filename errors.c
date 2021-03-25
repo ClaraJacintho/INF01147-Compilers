@@ -21,32 +21,32 @@ void throw_error(int error, symbol_t *a, symbol_t *b){
         break;
 
     case ERR_VARIABLE:
-        printf("Error on line %i! Variable %s is not been used correctly.\n",
+        printf("Error on line %i! Variable %s is not being used correctly.\n",
                 a->declaration_line, a->key);
         break;
 
     case ERR_VECTOR:
-        printf("Error on line %i! Vector %s is not been used correctly\n",
+        printf("Error on line %i! Vector %s is not being used correctly\n",
                 a->declaration_line, a->key);
         break;
 
     case ERR_FUNCTION:
-        printf("Error on line %i! Function %s is not been used correctly.\n",
+        printf("Error on line %i! Function %s is not being used correctly.\n",
                 a->declaration_line, a->key);
         break;
 
     case ERR_WRONG_TYPE:
-        printf("Error on line %i! Type of %s declared (which is %s) is different of the type of value that has been atributed.\n",
+        printf("Error on line %i! Type of %s is %s and is different from the type of value that has been atributed.\n",
                 a->declaration_line, a->key, a->type);
         break;
 
     case ERR_STRING_TO_X:
-        printf("Error on line %i! The string %s cannot be implicit converted other types.\n",
+        printf("Error on line %i! String %s cannot be implicitly converted to other types.\n",
                 a->declaration_line, a->key);
         break;
 
     case ERR_CHAR_TO_X:
-        printf("Error on line %i! The char %s cannot be implicit converted other types.\n",
+        printf("Error on line %i! Char %s cannot be implicitly converted to other types.\n",
                 a->declaration_line, a->key);
         break;
     
@@ -61,12 +61,12 @@ void throw_error(int error, symbol_t *a, symbol_t *b){
         break;    
 
     case ERR_MISSING_ARGS:
-        printf("Error on line %i! Function %s is missing argument(s).\n",
+        printf("Error on line %i! Function %s is missing arguments.\n",
                 a->declaration_line, a->key);
         break;
 
     case ERR_EXCESS_ARGS:
-        printf("Error on line %i! Function %s has too many argument(s).\n",
+        printf("Error on line %i! Function %s has too many arguments.\n",
                 a->declaration_line, a->key);
         break;
     
@@ -76,7 +76,7 @@ void throw_error(int error, symbol_t *a, symbol_t *b){
         break;
 
     case ERR_FUNCTION_STRING:
-        printf("Error on line %i! Function %s returns, parameters and arguments cannot be a string type.\n",
+        printf("Error on line %i! Function %s returns, parameters and arguments cannot be type string .\n",
                 a->declaration_line, a->key);
         break;
 

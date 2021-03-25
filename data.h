@@ -7,7 +7,11 @@ typedef enum token_t{
     SP_CHAR,
     OP,
     ID,
-    LIT,
+    LIT_INT_T,
+    LIT_FLOAT_T,
+    LIT_BOOL_T,
+    LIT_CHAR_T,
+    LIT_STR_T,
 } token_t;
 
 typedef union val_s{
@@ -54,14 +58,6 @@ typedef enum node_type_s {
     NOT_INIT,
 } node_type_t;
 
-typedef struct node_s{
-    lex_val_t *lex_val;
-    node_type_t type;
-    struct node_s *children[MAX_CHILDREN];
-    struct node_s *next;
-
-} node_t;
-
 typedef enum types_e{
     TYPE_INT,    
     TYPE_FLOAT,  
@@ -71,11 +67,21 @@ typedef enum types_e{
     TYPE_X,
 } type_t;
 
+typedef struct node_s{
+    lex_val_t *lex_val;
+    node_type_t node_type;
+    type_t type;
+    struct node_s *children[MAX_CHILDREN];
+    struct node_s *next;
+
+} node_t;
+
 typedef enum kind_s
 {
     K_ID, 
     K_VEC,
     K_FUNC,
+    K_LIT
 } kind_t;
 
 typedef struct symbol_table_item_s symbol_table_item_t;

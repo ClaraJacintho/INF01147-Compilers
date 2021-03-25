@@ -10,6 +10,10 @@ int yyerror (char const *s);
 
 extern int get_line_number(void);
 extern void *arvore;
+// since local vars can be nodes on the tree, we can't just assign $$ a symbol table item
+// we need to create a var to store all declarations so we can later attribute a type to them
+symbol_table_item_t *local_list = NULL;
+
 %}
 
 %union{
@@ -112,9 +116,7 @@ if
 else
 for
 while
-literal
-init_types 
-var_init 
+literal 
 var
 local_var_list   
 var_attribution 
@@ -130,6 +132,7 @@ param
 
 %type<type>
 type
+var_type
 
 %%
 
@@ -147,12 +150,12 @@ type : TK_PR_INT   {$$ = TYPE_INT;}
 	| TK_PR_CHAR   {$$ = TYPE_CHAR;} 
 	| TK_PR_STRING {$$ = TYPE_STRING;};
  
-literal : TK_LIT_INT 	 {$$ = create_node($1, LIT_INT);}
-		| TK_LIT_FLOAT   {$$ = create_node($1, LIT_FLOAT);}
-		| TK_LIT_FALSE   {$$ = create_node($1, LIT_BOOL);}
-		| TK_LIT_TRUE    {$$ = create_node($1, LIT_BOOL);}
-		| TK_LIT_CHAR    {$$ = create_node($1, LIT_CHAR);}
-		| TK_LIT_STRING  {$$ = create_node($1, LIT_STR);};
+literal : TK_LIT_INT 	 {$$ = create_node($1, LIT_INT); insert_literal($1);}
+		| TK_LIT_FLOAT   {$$ = create_node($1, LIT_FLOAT); insert_literal($1);}
+		| TK_LIT_FALSE   {$$ = create_node($1, LIT_BOOL); insert_literal($1);}
+		| TK_LIT_TRUE    {$$ = create_node($1, LIT_BOOL); insert_literal($1);}
+		| TK_LIT_CHAR    {$$ = create_node($1, LIT_CHAR); insert_literal($1);}
+		| TK_LIT_STRING  {$$ = create_node($1, LIT_STR); insert_literal($1);};
 
 // global declarations
 global_declaration : type global_id_list ';' {insert_id($2, $1);}
@@ -177,11 +180,13 @@ param: type TK_IDENTIFICADOR {$$ =create_identifier($2, K_ID, 1, $1);}
 
 params: param ',' params {$$ = creates_st_item_list($1, $3);}
 		| param {$$ = creates_st_item_list($1, NULL);};
-code_block : '{' commands '}'  {$$ = $2;}; 
+
+code_block : '{' {enter_scope();} commands '}'{leave_scope(); $$ = $3;}; 
 
 // ------------------------------------ commands ------------------------------------
 commands : command commands {$$ = insert_node_next(&$1, $2);}
-	 | {$$ = NULL;};
+	| {$$ = NULL;};
+
 command : code_block';' {$$ = $1;}
 	| local_var';' 		{$$ = $1;}
 	| attribution';' 	{$$ = $1;}
@@ -200,20 +205,22 @@ command : code_block';' {$$ = $1;}
 id_with_vector : TK_IDENTIFICADOR vector_index {$$ = create_node($1, IDENT); add_child(&$$, $2);};
 
 // local vars
-var_type : type | TK_PR_STATIC type | TK_PR_CONST type | TK_PR_STATIC TK_PR_CONST type; 
+var_type : type 						{$$ = $1;}
+		| TK_PR_STATIC type 			{$$ = $2;}
+		| TK_PR_CONST type 				{$$ = $2;}
+		| TK_PR_STATIC TK_PR_CONST type {$$ = $3;}; 
 
-init_types : id_with_vector    {$$ = $1;}
-			| TK_IDENTIFICADOR {$$ = create_node($1, IDENT);};
-
-var_init : TK_IDENTIFICADOR TK_OC_LE init_types {$$ = create_node($2, INIT); add_child(&$$, create_node($1, IDENT)); add_child(&$$, $3);}
-		| TK_IDENTIFICADOR TK_OC_LE literal 	{$$ = create_node($2, INIT); add_child(&$$, create_node($1, IDENT)); add_child(&$$, $3);};
-
-var : TK_IDENTIFICADOR {$$ = create_node($1, NOT_INIT);} // Creates a node that wont actually be on the tree
-	| var_init {$$ = $1;};
+var : TK_IDENTIFICADOR TK_OC_LE TK_IDENTIFICADOR {$$ = create_attribution_node(create_node($1, IDENT), $2, create_node($3, IDENT), INIT); 
+													local_list = creates_st_item_list(create_identifier($1, K_ID, 1, TYPE_X), local_list);}
+	| TK_IDENTIFICADOR TK_OC_LE literal 	{$$ = create_attribution_node(create_node($1, IDENT), $2, $3, INIT);
+												local_list = creates_st_item_list(create_identifier($1, K_ID, 1, TYPE_X), local_list);};
+	| TK_IDENTIFICADOR {$$ = create_node($1, NOT_INIT);
+							local_list = creates_st_item_list(create_identifier($1, K_ID, 1, TYPE_X), local_list);} // Creates a node that wont actually be on the tree
 
 local_var_list: var ',' local_var_list {$$ = insert_node_next(&$1, $3);}
 			| var {$$ = $1;}; 
-local_var : var_type local_var_list {$$ = $2;}; 
+
+local_var : var_type local_var_list {$$ = $2; insert_id(local_list, $1); local_list = NULL;}; //TODO: add node type to attributions 
 
 // attribution
 attribution : var_attribution {$$ = $1;}

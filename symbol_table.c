@@ -6,7 +6,7 @@
 
 // inits scope as NULL so that global scope will have ->next == NULL
 stack_item_t* current_scope = NULL; 
-
+int n_scopes = 0;
 // DEBUG FUNCTIONS
 void print_type(type_t t){
     switch (t){
@@ -22,6 +22,8 @@ void print_type(type_t t){
 }
     
 void print_args(symbol_table_item_t* st, int num_args){
+    if(st == NULL)
+        return;
     symbol_table_item_t *aux = st;
     for(int i = 0; i < num_args; i++){
         printf("            arg_type:");
@@ -41,6 +43,7 @@ void print_symbol(symbol_t* s){
     case K_ID: printf("identifier \n"); break;
     case K_VEC: printf("vector \n"); break;
     case K_FUNC: printf("func \n"); break;
+    case K_LIT: printf("literal \n"); break;
     default:
         break;
     }
@@ -54,21 +57,21 @@ void print_symbol(symbol_t* s){
 }
 
 void print_table(symbol_table_t *t){
-     printf("   ------------------------ BEGIN TABLE ------------------------\n");
+    printf("    ------------------------ BEGIN TABLE %d --------------------------\n", n_scopes);
     printf("    size: %i\n", t->size);
-    symbol_table_item_t *aux =t->top;
+    symbol_table_item_t *aux = t->top;
     while( aux != NULL){
         print_symbol(aux->item);
         aux = aux->next;
     }
-    printf("    ---------------------------  END  TABLE ------------------------\n");
+    printf("    ------------------------  END  TABLE %d  ------------------------\n", n_scopes);
 }
 
 void print_stack(){
     stack_item_t *aux = current_scope;
     int i = 0;
     while(aux != NULL){
-        printf("%i level ===============================================\n", i);
+        printf("%i level ===============================================\n", i++);
         print_table(aux->scope);
         aux = aux->next;
     }
@@ -89,11 +92,13 @@ void enter_scope(){
     stack_item->scope = scope;
     stack_item->next = current_scope;
     current_scope = stack_item;
+    n_scopes += 1;
 }
 
 void leave_scope(){
-    print_stack();
+    print_table(current_scope->scope);
     current_scope = current_scope->next;
+    n_scopes -= 1;
     // TODO: free stuff
 }
 
@@ -121,7 +126,6 @@ symbol_t* create_symbol(char* name, lex_val_t* lex_val, type_t type, kind_t kind
     symbol->count = count;
     symbol->size = type_size(type) * count; // TODO: fix size for strings
     symbol->data = lex_val;
-    // TODO: add arguments to functions
     return symbol;
 }
 
@@ -133,7 +137,7 @@ int check_if_declared(symbol_t *symbol){
             while(aux->next != NULL){
                 if(!strcmp(aux->item->key, symbol->key)){
                     throw_error(ERR_DECLARED, symbol, aux->item);
-                return 1;
+                    return 1;
                 }
                 aux = aux->next;
             }
@@ -187,12 +191,84 @@ symbol_table_item_t *create_symbol_table_item(symbol_t *symbol){
     return item;
 }
 
-// creates identifier with unkonwn type
-symbol_table_item_t* create_identifier(lex_val_t *lv, kind_t k, int count, type_t t){
-    char *name = (char*)lv->val.s;
-    symbol_t *symbol = create_symbol(name, lv, t , k, count);
-    return create_symbol_table_item(symbol);
+type_t get_type(token_t t){
+    switch (t){
+        case LIT_INT_T:
+            return TYPE_INT;
+        case LIT_FLOAT_T:
+            return TYPE_FLOAT;
+        case LIT_BOOL_T:
+            return TYPE_BOOL;
+        case LIT_CHAR_T:
+            return TYPE_CHAR;
+        case LIT_STR_T:
+            return TYPE_STRING;
+    
+        default:
+            return TYPE_X;
+    }
 }
+
+char* get_key(lex_val_t *lv){
+    char *key;
+    switch (lv->type){
+        case LIT_INT: 
+                key = calloc(20, 1);
+                sprintf(key, "\"%d\"", lv->val.n);
+                break;
+                break; 
+        case LIT_FLOAT:
+                key = calloc(20, 1);
+                sprintf(key, "\"%f\"", lv->val.f);
+                break;
+        case LIT_BOOL:
+                key = calloc(6, 1);
+                sprintf(key, "\"%s\"", lv->val.b ? "true" : "false");
+                break;
+
+        case LIT_CHAR:  
+                key = calloc(3, 1);
+                sprintf(key, "\"%c\"", lv->val.c);
+                break;
+
+        case LIT_STR: 
+                key = strdup(lv->val.s);;
+                break;
+        case ID: 
+                key = strdup(lv->val.name);;
+                break;
+        
+        default:
+            return NULL;
+    }
+    return key;
+
+}
+
+symbol_t* find_symbol(lex_val_t *lv){
+    char *key = get_key(lv);
+    stack_item_t *s = current_scope;
+    while(s != NULL){
+    symbol_table_item_t *aux = s->scope->top;
+        if(aux != NULL){
+            while(aux->next != NULL){
+                if(!strcmp(aux->item->key, key)){
+                    return aux->item;
+                }
+                aux = aux->next;
+            }
+
+            // check if the last one is == to the key
+            if(!strcmp(aux->item->key, key)){
+                return aux->item;
+            }
+
+        }
+        s = s->next;
+    }
+    return NULL; 
+}
+
 
 symbol_table_item_t* creates_st_item_list(symbol_table_item_t* a, symbol_table_item_t* b){
     if(b == NULL){
@@ -201,6 +277,12 @@ symbol_table_item_t* creates_st_item_list(symbol_table_item_t* a, symbol_table_i
 
     a->next = b;
     return a;
+}
+
+symbol_table_item_t* create_identifier(lex_val_t *lv, kind_t k, int count, type_t t){
+    char *name = get_key(lv);
+    symbol_t *symbol = create_symbol(name, lv, t , k, count);
+    return create_symbol_table_item(symbol);
 }
 
 void insert_id(symbol_table_item_t *first, type_t t){
@@ -213,7 +295,6 @@ void insert_id(symbol_table_item_t *first, type_t t){
         aux = aux->next;
     }
 }
-
 
 int insert_params(symbol_table_item_t *args){
     if(current_scope == NULL)
@@ -231,7 +312,6 @@ int insert_params(symbol_table_item_t *args){
         aux = aux->next;
     }
     if(!err){
-        printf("DFGDGFSDFGDSFGSDFGSDFG\n");
         // if bottom == NULL than this is the first thing in the scope
         if(scope->bottom == NULL){
             scope->top = args;
@@ -247,8 +327,22 @@ int insert_params(symbol_table_item_t *args){
 symbol_table_item_t *create_function(lex_val_t *lv, type_t t, symbol_table_item_t *args){
     char *name = (char*)lv->val.s;
     symbol_t *symbol = create_symbol(name, lv, t, K_FUNC, 1);
-    int count = insert_params(args);
-    symbol->args = args;
-    symbol->n_args = count;
+    if(args != NULL){
+        int count = insert_params(args);
+        symbol->args = args;
+        symbol->n_args = count;
+    } else {
+        symbol->args = NULL;
+        symbol->n_args = 0;
+    }
+   
+
+
     return insert_symbol(symbol);
+}
+
+void insert_literal(lex_val_t* lv){
+    char* key = get_key(lv);
+    symbol_t *s = create_symbol(key, lv, get_type(lv->type), K_LIT, 1);
+    insert_symbol(s);
 }

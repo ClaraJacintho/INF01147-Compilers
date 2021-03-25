@@ -3,10 +3,10 @@
 #include <stdio.h>
 #include <stdlib.h>
 
-lex_val_t *get_lit_lex_val(int line, val_t v){
+lex_val_t *get_lit_lex_val(int line, val_t v, token_t t){
     lex_val_t *lex = (lex_val_t*)malloc(sizeof(lex_val_t));
     lex->line = line;
-    lex->type = LIT;
+    lex->type = t;
     lex->val  = v;
     return lex; 
 }
@@ -45,7 +45,7 @@ void free_nodes(node_t *node){
         
         if(node->lex_val != NULL){
             
-            if(node->type != LIT_INT && node->type != LIT_FLOAT && node->type != LIT_BOOL && node->type != LIT_CHAR){
+            if(node->node_type != LIT_INT && node->node_type != LIT_FLOAT && node->node_type != LIT_BOOL && node->node_type != LIT_CHAR){
                 free(node->lex_val->val.s);
             }
             
@@ -106,7 +106,7 @@ void print_node_labels(void *arvore){
 void print_label(node_t* node){
     if(node != NULL) {
         printf("%p [label=\"", node);
-        switch(node->type){
+        switch(node->node_type){
             case IN: printf("input"); break;
             case OUT: printf("output"); break;
             case INIT:
@@ -169,7 +169,7 @@ void print_label(node_t* node){
                 break;
 
             default:
-                printf("%i", node->type);
+                printf("%i", node->node_type);
         }
         printf("\"];\n");
     }
@@ -179,8 +179,8 @@ void print_label(node_t* node){
 node_t* insert_node_next(node_t** n1, node_t *n2){
     
      node_t* aux2;
-    if(*n1 != NULL && (*n1)->type != NOT_INIT){
-        while(n2 != NULL && n2->type == NOT_INIT){
+    if(*n1 != NULL && (*n1)->node_type != NOT_INIT){
+        while(n2 != NULL && n2->node_type == NOT_INIT){
             aux2 = n2;
             n2 = n2->next; // forward untill the next attribuition
             if(aux2->lex_val != NULL){
@@ -217,7 +217,7 @@ node_t *create_node(lex_val_t *val, node_type_t type){
     node_t *node = (node_t*)malloc(sizeof(node_t));
     memset(node, 0, sizeof(node_t));
     node->lex_val = val;
-    node->type = type;
+    node->node_type = type;
     return node;
 }
 
@@ -227,4 +227,13 @@ void add_child(node_t** node, node_t* child){
         i++;
     }
     (*node)->children[i] = child;
+}
+
+node_t *create_attribution_node(node_t *id, lex_val_t *lv, node_t *val, node_type_t node_type){
+    node_t* node = create_node(lv, INIT); 
+    add_child(&node, id);
+    //if(find_symbol(val->lex_val) != NULL){
+    add_child(&node, val);
+    //} // else throw error
+    return node;
 }
