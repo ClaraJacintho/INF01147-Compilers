@@ -1,5 +1,6 @@
 #include "ast.h"
 #include "symbol_table.h"
+#include "errors.h"
 #include <stdio.h>
 #include <stdlib.h>
 
@@ -171,7 +172,9 @@ void print_label(node_t* node){
             default:
                 printf("%i", node->node_type);
         }
-        printf("\"];\n");
+        //printf("\"];\n");
+        printf("\"]; type = ");
+        print_type(node->type);
     }
     
 }
@@ -183,10 +186,6 @@ node_t* insert_node_next(node_t** n1, node_t *n2){
         while(n2 != NULL && n2->node_type == NOT_INIT){
             aux2 = n2;
             n2 = n2->next; // forward untill the next attribuition
-            if(aux2->lex_val != NULL){
-                free(aux2->lex_val->val.name);
-                free(aux2->lex_val);
-            }
             free(aux2);
         }
 
@@ -203,10 +202,6 @@ node_t* insert_node_next(node_t** n1, node_t *n2){
         return *n1;
     } else {
         if(*n1 != NULL){
-            if((*n1)->lex_val != NULL){
-                free((*n1)->lex_val->val.name);
-                free((*n1)->lex_val);
-            }
             free(*n1);;
         }
         return n2;
@@ -229,11 +224,39 @@ void add_child(node_t** node, node_t* child){
     (*node)->children[i] = child;
 }
 
-node_t *create_attribution_node(node_t *id, lex_val_t *lv, node_t *val, node_type_t node_type){
+node_t *create_init_node(node_t *id, lex_val_t *lv, node_t *val){
     node_t* node = create_node(lv, INIT); 
     add_child(&node, id);
-    //if(find_symbol(val->lex_val) != NULL){
-    add_child(&node, val);
-    //} // else throw error
+    if(find_symbol(val->lex_val) != NULL){
+        add_child(&node, val);
+    } else{
+        throw_undeclared_error(val->lex_val->line, get_key(val->lex_val));
+        return 0;
+    }
     return node;
+}
+
+node_t *create_attrib_node(node_t *id, lex_val_t *lv, node_t *val){
+    node_t* node = create_node(lv, ATTR); 
+    
+    if(find_symbol(id->lex_val) != NULL){
+        add_child(&node, id);
+        // vem ai node->type = id->type;
+    } else{
+        throw_undeclared_error(id->lex_val->line, get_key(id->lex_val));
+        return 0;
+    }
+    add_child(&node, val);
+    return node;
+}
+
+void update_node_type(node_t *node, type_t t){
+    node_t* aux = node;
+    while(aux){
+        aux->type = t;
+        for(int i = 0; i < MAX_CHILDREN && aux->children[i] != NULL; i++){
+            aux->children[i]->type = t;
+        }
+        aux = aux->next;
+    }
 }

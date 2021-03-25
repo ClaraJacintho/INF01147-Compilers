@@ -17,4 +17,6 @@
 #define ERR_WRONG_PAR_RETURN 52
 #define ERR_WRONG_PAR_SHIFT  53
 
+void throw_declared_error(symbol_t* a, symbol_t* b);
+void throw_undeclared_error(int line, char* id);
 void throw_error(int error, symbol_t *a, symbol_t *b);

@@ -18,7 +18,7 @@ symbol_table.o:
 	gcc -c symbol_table.c -o symbol_table.o  -ggdb3 -Wall
 
 errors.o:
-	gcc - errors.c -o errors.o  -ggdb3 -Wall
+	gcc -c errors.c -o errors.o  -ggdb3 -Wall
 
 test:
 	./etapa4 < test_a
@@ -26,5 +26,5 @@ test:
 debug:
 	valgrind ./etapa4 < test_a  --leak-check=full
 clean:
-	rm -f lex.yy.* main.o ast.o symbol_table.o parser.tab.* parser.output etapa4
+	rm -f lex.yy.* main.o ast.o symbol_table.o errors.o parser.tab.* parser.output etapa4
 

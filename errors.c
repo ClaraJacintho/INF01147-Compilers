@@ -5,7 +5,17 @@
 #include "data.h"
 #include "errors.h"
 
+void throw_declared_error(symbol_t* a, symbol_t* b){
+     printf("Error on line %i! Variable %s was already declared. Previous declaration was on line %i\n",
+    a->declaration_line, a->key, b->declaration_line);
+}
 
+void throw_undeclared_error(int line, char* key){
+   printf("Error on line %i! Identifier %s has not been declared. First use in this function \n",
+                line, key);
+}
+
+/*
 void throw_error(int error, symbol_t *a, symbol_t *b){
     va_list arguments;
     switch (error)
@@ -106,4 +116,4 @@ void throw_error(int error, symbol_t *a, symbol_t *b){
     }
     va_end(arguments);
 
-}
+}*/

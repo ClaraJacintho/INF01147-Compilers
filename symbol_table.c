@@ -115,6 +115,43 @@ int type_size(type_t t){
     }
 }
 
+char* get_key(lex_val_t *lv){
+    char *key;
+    switch (lv->type){
+        case LIT_INT: 
+                key = calloc(20, 1);
+                sprintf(key, "\"%d\"", lv->val.n);
+                break;
+                break; 
+        case LIT_FLOAT:
+                key = calloc(20, 1);
+                sprintf(key, "\"%f\"", lv->val.f);
+                break;
+        case LIT_BOOL:
+                key = calloc(6, 1);
+                sprintf(key, "\"%s\"", lv->val.b ? "true" : "false");
+                break;
+
+        case LIT_CHAR:  
+                key = calloc(3, 1);
+                sprintf(key, "\"%c\"", lv->val.c);
+                break;
+
+        case LIT_STR: 
+                key = strdup(lv->val.s);;
+                break;
+        case ID: 
+            key = strdup(lv->val.name);;
+            break;
+        default:
+            printf("%i", lv->type);
+            key = strdup(lv->val.name);;
+            break;
+    }
+    return key;
+
+}
+
 symbol_t* create_symbol(char* name, lex_val_t* lex_val, type_t type, kind_t kind, int count){
     symbol_t * symbol = (symbol_t*)malloc(sizeof(symbol_t));
     symbol->key = name;
@@ -129,29 +166,25 @@ symbol_t* create_symbol(char* name, lex_val_t* lex_val, type_t type, kind_t kind
     return symbol;
 }
 
-int check_if_declared(symbol_t *symbol){
-    stack_item_t *s = current_scope;
-    while(s != NULL){
-    symbol_table_item_t *aux = s->scope->top;
-        if(aux != NULL){
-            while(aux->next != NULL){
-                if(!strcmp(aux->item->key, symbol->key)){
-                    throw_error(ERR_DECLARED, symbol, aux->item);
-                    return 1;
-                }
-                aux = aux->next;
+symbol_t* find_in_current_scope(lex_val_t *lv){
+    char *key = get_key(lv);
+    symbol_table_item_t *aux = current_scope->scope->top;
+    if(aux != NULL){
+        while(aux->next != NULL){
+            if(!strcmp(aux->item->key, key)){
+                return aux->item;
             }
-
-            // check if the last one is == to the key
-            if(!strcmp(aux->item->key, symbol->key)){
-                throw_error(ERR_DECLARED, symbol, aux->item);
-                return 1;
-            }
-
+            aux = aux->next;
         }
-        s = s->next;
+
+        // check if the last one is == to the key
+        if(!strcmp(aux->item->key, key)){
+            return aux->item;
+        }
+
     }
-    return 0; 
+
+    return NULL; 
 }
 
 
@@ -161,9 +194,11 @@ void insert_symbol_table_item_in_scope(symbol_table_item_t *item ){
     symbol_t *symbol = item->item;
     symbol_table_item_t *current_top = current_scope->scope->top;
     if(current_top != NULL){
-        int err = check_if_declared(symbol);
-        if(err)
-            return; //?
+        symbol_t* err = find_in_current_scope(symbol->data);
+        if(err != NULL){
+            throw_declared_error(symbol, err);
+            return;
+        }
         
         current_scope->scope->bottom->next = item;
         current_scope->scope->bottom = item;
@@ -174,6 +209,7 @@ void insert_symbol_table_item_in_scope(symbol_table_item_t *item ){
     }
     current_scope->scope->size++;
 }
+
 symbol_table_item_t* insert_symbol(symbol_t *symbol){
     symbol_table_item_t *item = (symbol_table_item_t *)malloc(sizeof(symbol_table_item_t));
     item->item = symbol;    
@@ -209,47 +245,11 @@ type_t get_type(token_t t){
     }
 }
 
-char* get_key(lex_val_t *lv){
-    char *key;
-    switch (lv->type){
-        case LIT_INT: 
-                key = calloc(20, 1);
-                sprintf(key, "\"%d\"", lv->val.n);
-                break;
-                break; 
-        case LIT_FLOAT:
-                key = calloc(20, 1);
-                sprintf(key, "\"%f\"", lv->val.f);
-                break;
-        case LIT_BOOL:
-                key = calloc(6, 1);
-                sprintf(key, "\"%s\"", lv->val.b ? "true" : "false");
-                break;
-
-        case LIT_CHAR:  
-                key = calloc(3, 1);
-                sprintf(key, "\"%c\"", lv->val.c);
-                break;
-
-        case LIT_STR: 
-                key = strdup(lv->val.s);;
-                break;
-        case ID: 
-                key = strdup(lv->val.name);;
-                break;
-        
-        default:
-            return NULL;
-    }
-    return key;
-
-}
-
 symbol_t* find_symbol(lex_val_t *lv){
     char *key = get_key(lv);
     stack_item_t *s = current_scope;
     while(s != NULL){
-    symbol_table_item_t *aux = s->scope->top;
+        symbol_table_item_t *aux = s->scope->top;
         if(aux != NULL){
             while(aux->next != NULL){
                 if(!strcmp(aux->item->key, key)){
@@ -268,7 +268,6 @@ symbol_t* find_symbol(lex_val_t *lv){
     }
     return NULL; 
 }
-
 
 symbol_table_item_t* creates_st_item_list(symbol_table_item_t* a, symbol_table_item_t* b){
     if(b == NULL){
@@ -299,19 +298,23 @@ void insert_id(symbol_table_item_t *first, type_t t){
 int insert_params(symbol_table_item_t *args){
     if(current_scope == NULL)
         enter_scope();
-    int err = 0;
+    symbol_t* err = NULL;
     int count = 0;
     symbol_table_item_t *aux, *last;
     aux = args;
     last = args;
     symbol_table_t *scope = current_scope->scope;
-    while(aux && !err){
-        err = check_if_declared(aux->item);
+    while(aux && err == NULL){
+        err = find_in_current_scope(aux->item->data);
+        if(err != NULL){
+            throw_declared_error(aux->item, err);
+            return 0;
+        }
         count++;
         last = aux;
         aux = aux->next;
     }
-    if(!err){
+    if(err == NULL){
         // if bottom == NULL than this is the first thing in the scope
         if(scope->bottom == NULL){
             scope->top = args;
