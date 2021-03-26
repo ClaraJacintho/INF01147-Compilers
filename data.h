@@ -59,12 +59,12 @@ typedef enum node_type_s {
 } node_type_t;
 
 typedef enum types_e{
+    TYPE_X,
     TYPE_INT,    
     TYPE_FLOAT,  
     TYPE_BOOL,   
     TYPE_CHAR,   
     TYPE_STRING, 
-    TYPE_X,
 } type_t;
 
 typedef struct node_s{
@@ -76,8 +76,7 @@ typedef struct node_s{
 
 } node_t;
 
-typedef enum kind_s
-{
+typedef enum kind_s{
     K_ID, 
     K_VEC,
     K_FUNC,

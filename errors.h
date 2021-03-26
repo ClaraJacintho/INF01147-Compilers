@@ -17,6 +17,9 @@
 #define ERR_WRONG_PAR_RETURN 52
 #define ERR_WRONG_PAR_SHIFT  53
 
+char* get_type_name(type_t t);
 void throw_declared_error(symbol_t* a, symbol_t* b);
 void throw_undeclared_error(int line, char* id);
 void throw_error(int error, symbol_t *a, symbol_t *b);
+void throw_wrong_type_error(int line, char* key, type_t a, type_t b);
+void throw_func_string_error(int line);

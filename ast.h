@@ -24,9 +24,13 @@ node_t* insert_node_next(node_t** n1, node_t *n2);
 node_t* create_node(lex_val_t *val, node_type_t type);
 void add_child(node_t** node, node_t* child);
 
+node_t* create_node_literal(lex_val_t *val, node_type_t node_type);
+node_t *create_node_declared_identifier(lex_val_t *val, node_type_t node_type);
 node_t *create_init_node(node_t *id, lex_val_t *lv, node_t *val);
 node_t *create_attrib_node(node_t *id, lex_val_t *lv, node_t *val);
+node_t *create_binop_node(node_t *opA, lex_val_t *lv, node_t *opB);
 
 void update_node_type(node_t *node, type_t t);
+void update_node_init(node_t *node, type_t t);
 
 #endif

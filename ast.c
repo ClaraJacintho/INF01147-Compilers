@@ -224,16 +224,45 @@ void add_child(node_t** node, node_t* child){
     (*node)->children[i] = child;
 }
 
+node_t* create_node_literal(lex_val_t *val, node_type_t node_type){
+    node_t *node = create_node(val, node_type);
+    node->type = get_type(val->type);
+    insert_literal(val);
+    return node;
+}
+
+node_t *create_node_declared_identifier(lex_val_t *val, node_type_t node_type){
+    node_t *node = create_node(val, node_type);
+    symbol_t* s = find_symbol(val);
+    if(s != NULL){
+        node->type = s->type;
+    } else {
+        throw_undeclared_error(val->line, get_key(val));
+    }
+    return node;
+}
+
 node_t *create_init_node(node_t *id, lex_val_t *lv, node_t *val){
     node_t* node = create_node(lv, INIT); 
     add_child(&node, id);
-    if(find_symbol(val->lex_val) != NULL){
-        add_child(&node, val);
-    } else{
-        throw_undeclared_error(val->lex_val->line, get_key(val->lex_val));
-        return 0;
-    }
+    add_child(&node, val);
     return node;
+}
+
+void update_node_init(node_t *node, type_t t){
+    if(node == NULL)
+        return;
+    node->type = t;
+
+    // the identifier
+    node->children[0]->type = t;
+    
+    // the value being attributed
+    node_t* child = node->children[1];
+    if(child->type != t){
+        throw_wrong_type_error(child->lex_val->line, node->children[0]->lex_val->val.s, t, child->type);
+    }
+    node->children[1]->type = t;
 }
 
 node_t *create_attrib_node(node_t *id, lex_val_t *lv, node_t *val){
@@ -241,22 +270,24 @@ node_t *create_attrib_node(node_t *id, lex_val_t *lv, node_t *val){
     
     if(find_symbol(id->lex_val) != NULL){
         add_child(&node, id);
-        // vem ai node->type = id->type;
-    } else{
-        throw_undeclared_error(id->lex_val->line, get_key(id->lex_val));
-        return 0;
+        node->type = id->type;
     }
     add_child(&node, val);
     return node;
 }
 
 void update_node_type(node_t *node, type_t t){
-    node_t* aux = node;
-    while(aux){
-        aux->type = t;
-        for(int i = 0; i < MAX_CHILDREN && aux->children[i] != NULL; i++){
-            aux->children[i]->type = t;
-        }
-        aux = aux->next;
-    }
+    if (node != NULL)
+        node->type = t;
 }
+
+node_t *create_binop_node(node_t *opA, lex_val_t *lv, node_t *opB){
+    node_t* node = create_node(lv, BIN_OP); 
+    add_child(&node, opA);
+    node->type = opA->type;
+    add_child(&node, opB);
+    //TODO: check if operands are compatible
+    return node;
+}
+
+

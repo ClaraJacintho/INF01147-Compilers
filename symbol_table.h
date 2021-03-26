@@ -3,7 +3,7 @@ void print_args(symbol_table_item_t* st, int num_args);
 void print_symbol(symbol_t* s);
 void print_table(symbol_table_t *t);
 void print_stack();
-
+// TODO: organize this
 symbol_table_t* create_symbol_table();
 void enter_scope();
 void leave_scope();

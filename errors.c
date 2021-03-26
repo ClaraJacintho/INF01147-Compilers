@@ -5,14 +5,39 @@
 #include "data.h"
 #include "errors.h"
 
+char* get_type_name(type_t t){
+    switch (t){
+        case TYPE_INT: return "int";
+        case TYPE_FLOAT: return "float";
+        case TYPE_BOOL: return "bool";
+        case TYPE_CHAR: return "char";
+        case TYPE_STRING: return "string";
+        case TYPE_X: return "x";
+        default: return "";
+    }
+}
+
 void throw_declared_error(symbol_t* a, symbol_t* b){
-     printf("Error on line %i! Variable %s was already declared. Previous declaration was on line %i\n",
-    a->declaration_line, a->key, b->declaration_line);
+    printf("Error on line %i! Variable %s was already declared. Previous declaration was on line %i\n",
+        a->declaration_line, a->key, b->declaration_line);
+    exit(ERR_DECLARED);
 }
 
 void throw_undeclared_error(int line, char* key){
    printf("Error on line %i! Identifier %s has not been declared. First use in this function \n",
                 line, key);
+    exit(ERR_UNDECLARED);
+}
+
+void throw_wrong_type_error(int line, char* key, type_t a, type_t b){
+    printf("Error on line %i! Type of %s is %s and is different from the type %s of value that is being atributed.\n",
+            line, key, get_type_name(a), get_type_name(b));
+    exit(ERR_WRONG_TYPE);
+}
+
+void throw_func_string_error(int line){
+    printf("Error on line %i! Function cannot have parameters or return type string\n", line);
+    exit(ERR_FUNCTION_STRING);
 }
 
 /*

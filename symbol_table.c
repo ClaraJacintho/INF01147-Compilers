@@ -310,6 +310,9 @@ int insert_params(symbol_table_item_t *args){
             throw_declared_error(aux->item, err);
             return 0;
         }
+        if(aux->item->type == TYPE_STRING){
+            throw_func_string_error(aux->item->declaration_line);
+        }
         count++;
         last = aux;
         aux = aux->next;
@@ -328,6 +331,9 @@ int insert_params(symbol_table_item_t *args){
 }
 
 symbol_table_item_t *create_function(lex_val_t *lv, type_t t, symbol_table_item_t *args){
+    if(t == TYPE_STRING){
+        throw_func_string_error(lv->line);
+    }
     char *name = (char*)lv->val.s;
     symbol_t *symbol = create_symbol(name, lv, t, K_FUNC, 1);
     if(args != NULL){

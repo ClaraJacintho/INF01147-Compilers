@@ -1,5 +1,5 @@
-float clara(){
-    float x <= nddfg;
-    x = floop;
+int clara(){
+    float x <= 4.6, y;
+    y = 666.6+45645;
 }
 

@@ -69,10 +69,10 @@
 %token<lex_val> TK_LIT_STRING
 %token<lex_val> TK_IDENTIFICADOR
 
-%type<lex_val> function_header 
+%type<lex_val>
 ',' ';' ':' '('')' '[' ']' '{''}' '+' 
 '-' '|' '*' '/' '<' '>' '=' '!' '&' 
-'%' '#' '^' '.' '$' '?'
+'%' '#' '^' '.' '$' '?' 
 unary_op
 logic_ops
 compare_ops
@@ -81,6 +81,7 @@ mul
 exponent
 
 %type<node> 
+function_header 
 id_with_vector
 logic_exp
 compare_exp
@@ -149,12 +150,12 @@ type : TK_PR_INT   {$$ = TYPE_INT;}
 	| TK_PR_CHAR   {$$ = TYPE_CHAR;} 
 	| TK_PR_STRING {$$ = TYPE_STRING;};
  
-literal : TK_LIT_INT 	 {$$ = create_node($1, LIT_INT); insert_literal($1);}
-		| TK_LIT_FLOAT   {$$ = create_node($1, LIT_FLOAT); insert_literal($1);}
-		| TK_LIT_FALSE   {$$ = create_node($1, LIT_BOOL); insert_literal($1);}
-		| TK_LIT_TRUE    {$$ = create_node($1, LIT_BOOL); insert_literal($1);}
-		| TK_LIT_CHAR    {$$ = create_node($1, LIT_CHAR); insert_literal($1);}
-		| TK_LIT_STRING  {$$ = create_node($1, LIT_STR); insert_literal($1);};
+literal : TK_LIT_INT 	 {$$ = create_node_literal($1, LIT_INT);}
+		| TK_LIT_FLOAT   {$$ = create_node_literal($1, LIT_FLOAT);}
+		| TK_LIT_FALSE   {$$ = create_node_literal($1, LIT_BOOL);}
+		| TK_LIT_TRUE    {$$ = create_node_literal($1, LIT_BOOL);}
+		| TK_LIT_CHAR    {$$ = create_node_literal($1, LIT_CHAR);}
+		| TK_LIT_STRING  {$$ = create_node_literal($1, LIT_STR);};
 
 // global declarations
 global_declaration : type global_id_list ';' {insert_id($2, $1);}
@@ -169,9 +170,9 @@ global_id_list : global_var_id ',' global_id_list {$$ = creates_st_item_list($1,
 
 
 // function declaration
-function : function_header code_block { $$ = create_node($1, FUNC); add_child(&$$, $2);}
-function_header : type TK_IDENTIFICADOR '('params_list')' {$$ = $2; create_function($2, $1, $4);}
-				| TK_PR_STATIC type TK_IDENTIFICADOR '('params_list')' {$$ = $3; create_function($3, $2, $5);};
+function : function_header code_block { $$ = $1; add_child(&$$, $2);}
+function_header : type TK_IDENTIFICADOR '('params_list')' {$$ = create_node($2, FUNC); update_node_type($$, $1); create_function($2, $1, $4);}
+				| TK_PR_STATIC type TK_IDENTIFICADOR '('params_list')' {$$ = create_node($3, FUNC); update_node_type($$, $2); create_function($3, $2, $5);};
 params_list : params {$$ = $1;}
 			| {$$ = NULL;};
 param: type TK_IDENTIFICADOR {$$ =create_identifier($2, K_ID, 1, $1);}
@@ -201,7 +202,7 @@ command : code_block';' {$$ = $1;}
 	| while				{$$ = $1;};
 
 
-id_with_vector : TK_IDENTIFICADOR vector_index {$$ = create_node($1, IDENT); add_child(&$$, $2);};
+id_with_vector : TK_IDENTIFICADOR vector_index {$$ = create_node_declared_identifier($1, IDENT); add_child(&$$, $2);};
 
 // local vars
 var_type : type 						{$$ = $1;}
@@ -211,7 +212,7 @@ var_type : type 						{$$ = $1;}
 
 var : TK_IDENTIFICADOR TK_OC_LE TK_IDENTIFICADOR {
 	local_list = creates_st_item_list(create_identifier($1, K_ID, 1, TYPE_X), local_list);
-	$$ = create_init_node(create_node($1, IDENT), $2, create_node($3, IDENT)); 
+	$$ = create_init_node(create_node($1, IDENT), $2, create_node_declared_identifier($3, IDENT)); 
 }
 	| TK_IDENTIFICADOR TK_OC_LE literal {
 		local_list = creates_st_item_list(create_identifier($1, K_ID, 1, TYPE_X), local_list);
@@ -225,13 +226,13 @@ var : TK_IDENTIFICADOR TK_OC_LE TK_IDENTIFICADOR {
 local_var_list: var ',' local_var_list {$$ = insert_node_next(&$1, $3);}
 			| var {$$ = $1;}; 
 
-local_var : var_type local_var_list {$$ = $2; update_node_type($$, $1); insert_id(local_list, $1); local_list = NULL;}; //TODO: add node type to attributions 
+local_var : var_type local_var_list {$$ = $2; update_node_init($$, $1); insert_id(local_list, $1); local_list = NULL;}; //TODO: add node type to attributions 
 
 // attribution
 attribution : var_attribution {$$ = $1;}
 			| vector_attribution {$$ = $1;}; 
 			
-var_attribution : TK_IDENTIFICADOR '=' expression {$$ = create_attrib_node(create_node($1, IDENT), $2 ,$3);}; 
+var_attribution : TK_IDENTIFICADOR '=' expression {$$ = create_attrib_node(create_node_declared_identifier($1, IDENT), $2 ,$3);}; 
 vector_attribution : id_with_vector '=' expression {$$ = create_attrib_node($1, $2 ,$3);}; 
 
 // io
@@ -286,18 +287,18 @@ expression : logic_exp {$$ = $1;}
 vector_index: '['expression']' {$$ = create_node(NULL, VECTOR); add_child(&$$, $2);};
 
 // operands
-id_exp_a : TK_IDENTIFICADOR {$$ = create_node($1, IDENT);}
+id_exp_a : TK_IDENTIFICADOR {$$ = create_node_declared_identifier($1, IDENT);}
 		| TK_IDENTIFICADOR vector_index {$$ = create_node($1, IDENT); add_child(&$$, $2);};
 
-lit_exp_a : TK_LIT_INT {$$ = create_node($1, LIT_INT);}
-		| TK_LIT_FLOAT {$$ = create_node($1, LIT_FLOAT);};
+lit_exp_a : TK_LIT_INT {$$ = create_node_literal($1, LIT_INT);}
+		| TK_LIT_FLOAT {$$ = create_node_literal($1, LIT_FLOAT);};
 
 operand_exp_a : id_exp_a  {$$ = $1;}
 		| lit_exp_a {$$ = $1;}
 		| function_call {$$ = $1;};
 
-operand_exp_l : TK_LIT_FALSE {$$ = create_node($1, LIT_BOOL);}
-			| TK_LIT_TRUE {$$ = create_node($1, LIT_BOOL);};
+operand_exp_l : TK_LIT_FALSE {$$ = create_node_literal($1, LIT_BOOL);}
+			| TK_LIT_TRUE {$$ = create_node_literal($1, LIT_BOOL);};
 
 operand: operand_exp_a {$$ = $1;}
 		| operand_exp_l {$$ = $1;}
@@ -312,19 +313,19 @@ mul: '*' | '/' | '%';
 exponent: '^';
 
 // expression definition
-logic_exp : logic_exp logic_ops compare_exp {$$ = create_node($2, BIN_OP); add_child(&$$, $1); add_child(&$$, $3);}
+logic_exp : logic_exp logic_ops compare_exp {$$ = create_binop_node($1, $2, $3);}
 	| compare_exp {$$ = $1;};
 
-compare_exp : compare_exp compare_ops sum_exp {$$ = create_node($2, BIN_OP); add_child(&$$, $1); add_child(&$$, $3);}
+compare_exp : compare_exp compare_ops sum_exp {$$ = create_binop_node($1, $2, $3);}
 	| sum_exp {$$ = $1;};
 
-sum_exp : sum_exp sum mul_exp {$$ = create_node($2, BIN_OP); add_child(&$$, $1); add_child(&$$, $3);}
+sum_exp : sum_exp sum mul_exp {$$ = create_binop_node($1, $2, $3);}
 	| mul_exp {$$ = $1;};
 
-mul_exp : mul_exp mul exponent_exp {$$ = create_node($2, BIN_OP); add_child(&$$, $1); add_child(&$$, $3);}
+mul_exp : mul_exp mul exponent_exp {$$ = create_binop_node($1, $2, $3);}
 	| exponent_exp {$$ = $1;};
 
-exponent_exp : exponent_exp exponent term {$$ = create_node($2, BIN_OP); add_child(&$$, $1); add_child(&$$, $3);}
+exponent_exp : exponent_exp exponent term {$$ = create_binop_node($1, $2, $3);}
 	| term {$$ = $1;};
 
 term : '(' expression ')' {$$ = $2;}
