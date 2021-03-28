@@ -82,7 +82,7 @@ exponent
 
 %type<node> 
 function_header 
-id_with_vector
+vector
 logic_exp
 compare_exp
 sum_exp
@@ -94,7 +94,6 @@ args
 operand
 operand_exp_a
 operand_exp_l
-vector_index
 lit_exp_a
 id_exp_a
 shift_left
@@ -161,7 +160,7 @@ literal : TK_LIT_INT 	 {$$ = create_node_literal($1, LIT_INT);}
 global_declaration : type global_id_list ';' {insert_id($2, $1);}
 				| TK_PR_STATIC type global_id_list ';'{insert_id($3, $2);}; // TODO: find out wtf to do w static
 
-vector_declaration: TK_IDENTIFICADOR '['TK_LIT_INT']' {$$ = create_identifier($1, K_VEC, $3->val.n, TYPE_X);}
+vector_declaration: TK_IDENTIFICADOR '['TK_LIT_INT']' {$$ = create_identifier($1, K_VEC, $3->val.n, TYPE_X); create_node_literal($3, LIT_INT);}
 
 global_var_id: TK_IDENTIFICADOR {$$ = create_identifier($1, K_ID, 1, TYPE_X);}
 			| vector_declaration {$$ = $1;};
@@ -202,7 +201,7 @@ command : code_block';' {$$ = $1;}
 	| while				{$$ = $1;};
 
 
-id_with_vector : TK_IDENTIFICADOR vector_index {$$ = create_node_declared_identifier($1, IDENT); add_child(&$$, $2);};
+vector : TK_IDENTIFICADOR '['expression']' {$$ = create_node(NULL, VECTOR); add_child(&$$, create_node_declared_identifier($1, IDENT)); add_child(&$$, $3);};
 
 // local vars
 var_type : type 						{$$ = $1;}
@@ -226,54 +225,54 @@ var : TK_IDENTIFICADOR TK_OC_LE TK_IDENTIFICADOR {
 local_var_list: var ',' local_var_list {$$ = insert_node_next(&$1, $3);}
 			| var {$$ = $1;}; 
 
-local_var : var_type local_var_list {$$ = $2; update_node_init($$, $1); insert_id(local_list, $1); local_list = NULL;}; //TODO: add node type to attributions 
+local_var : var_type local_var_list {$$ = $2; update_node_init($$, $1); insert_id(local_list, $1); local_list = NULL;};
 
 // attribution
 attribution : var_attribution {$$ = $1;}
 			| vector_attribution {$$ = $1;}; 
 			
 var_attribution : TK_IDENTIFICADOR '=' expression {$$ = create_attrib_node(create_node_declared_identifier($1, IDENT), $2 ,$3);}; 
-vector_attribution : id_with_vector '=' expression {$$ = create_attrib_node($1, $2 ,$3);}; 
+vector_attribution : vector '=' expression {$$ = create_attrib_node($1, $2 ,$3);}; 
 
 // io
-input: TK_PR_INPUT TK_IDENTIFICADOR   {$$ = create_node(NULL, IN); add_child(&$$, create_node($2, IDENT));};
-output: TK_PR_OUTPUT TK_IDENTIFICADOR {$$ = create_node(NULL, OUT); add_child(&$$, create_node($2, IDENT));}
-		| TK_PR_OUTPUT literal 		  {$$ = create_node(NULL, OUT); add_child(&$$, $2);};
+input: TK_PR_INPUT TK_IDENTIFICADOR   {$$ = create_input_node(create_node_declared_identifier($2, IDENT));};
+output: TK_PR_OUTPUT TK_IDENTIFICADOR {$$ = create_output_node(create_node_declared_identifier($2, IDENT));}
+		| TK_PR_OUTPUT literal 		  {$$ = create_output_node($2);};
 
 // fuction call
-function_call : TK_IDENTIFICADOR '(' args ')' {$$ = create_node($1, FUNC_CALL); add_child(&$$, $3);}; 
+function_call : TK_IDENTIFICADOR '(' args ')' {$$ = create_func_call_node($1, $3);}; 
 
 args : expression ',' args {$$ = insert_node_next(&$1, $3);} 
 	| expression {$$ = $1;}
 	| {$$ = NULL;};
 
 // shift
-shift_left : TK_IDENTIFICADOR TK_OC_SL TK_LIT_INT {$$ = create_node($2, SHIFT); add_child(&$$, create_node($1, IDENT)); add_child(&$$, create_node($3, LIT_INT));}; 
-			| id_with_vector TK_OC_SL TK_LIT_INT {$$ = create_node($2, SHIFT); add_child(&$$, $1); add_child(&$$, create_node($3, LIT_INT));};
+shift_left : TK_IDENTIFICADOR TK_OC_SL TK_LIT_INT {$$ = create_shift_node(create_node_declared_identifier($1, IDENT), $2, create_node_literal($3, LIT_INT));}; 
+			| vector TK_OC_SL TK_LIT_INT {$$ = create_shift_node($1, $2, create_node_literal($3, LIT_INT));;};
 
 
-shift_right : TK_IDENTIFICADOR TK_OC_SR TK_LIT_INT {$$ = create_node($2, SHIFT); add_child(&$$, create_node($1, IDENT)); add_child(&$$, create_node($3, LIT_INT));};
-			| id_with_vector TK_OC_SR TK_LIT_INT {$$ = create_node($2, SHIFT); add_child(&$$, $1); add_child(&$$, create_node($3, LIT_INT));};
+shift_right : TK_IDENTIFICADOR TK_OC_SR TK_LIT_INT {$$ = create_shift_node(create_node_declared_identifier($1, IDENT), $2, create_node_literal($3, LIT_INT));};
+			| vector TK_OC_SR TK_LIT_INT {$$ = create_shift_node($1, $2, create_node_literal($3, LIT_INT));};
 
 shift : shift_left {$$ = $1;}
 	| shift_right {$$ = $1;};
 
 // PRs
-return : TK_PR_RETURN expression {$$ = create_node(NULL, RETURN); add_child(&$$, $2);}; 
-break : TK_PR_BREAK {$$ = create_node(NULL, BREAK);}; 
-continue : TK_PR_CONTINUE {$$ = create_node(NULL, CONTINUE);};
+return : TK_PR_RETURN expression {$$ = create_return_node($2);}; 
+break : TK_PR_BREAK {$$ = create_cmd_node(BREAK);}; 
+continue : TK_PR_CONTINUE {$$ = create_cmd_node(CONTINUE);};
 
 
 // ------------------------------------ expressions ------------------------------------
 
-if : TK_PR_IF '(' expression ')' code_block {$$ = create_node(NULL, IF); add_child(&$$, $3); add_child(&$$, $5);}
-   | TK_PR_IF '(' expression ')' code_block else {$$ = create_node(NULL, IF); add_child(&$$, $3); add_child(&$$, $5);add_child(&$$, $6);};
+if : TK_PR_IF '(' expression ')' code_block {$$ = create_cmd_node(IF); add_child(&$$, $3); add_child(&$$, $5);}
+   | TK_PR_IF '(' expression ')' code_block else {$$ = create_cmd_node(IF); add_child(&$$, $3); add_child(&$$, $5);add_child(&$$, $6);};
 
 else: TK_PR_ELSE code_block {$$ = $2;}; 
 
-for : TK_PR_FOR '(' attribution ':' expression ':' attribution ')' code_block { $$ = create_node(NULL, FOR); add_child(&$$, $3); add_child(&$$, $5); add_child(&$$, $7);add_child(&$$, $9);}; 
+for : TK_PR_FOR '(' attribution ':' expression ':' attribution ')' code_block { $$ = create_cmd_node(FOR); add_child(&$$, $3); add_child(&$$, $5); add_child(&$$, $7);add_child(&$$, $9);}; 
 
-while : TK_PR_WHILE '('expression')'  TK_PR_DO code_block {$$ = create_node(NULL, WHILE); add_child(&$$, $3); add_child(&$$, $6);};
+while : TK_PR_WHILE '('expression')'  TK_PR_DO code_block {$$ = create_cmd_node(WHILE); add_child(&$$, $3); add_child(&$$, $6);};
 // for priority, follow the example:
 // E → E+T | T
 // T → T*F | F
@@ -284,11 +283,11 @@ expression : logic_exp {$$ = $1;}
 		| logic_exp '?' expression ':' expression {$$ = create_node(NULL, TERN_OP); add_child(&$$, $1); add_child(&$$, $3); add_child(&$$, $5);free_lex_val($2);}; 
 
 
-vector_index: '['expression']' {$$ = create_node(NULL, VECTOR); add_child(&$$, $2);};
+
 
 // operands
 id_exp_a : TK_IDENTIFICADOR {$$ = create_node_declared_identifier($1, IDENT);}
-		| TK_IDENTIFICADOR vector_index {$$ = create_node($1, IDENT); add_child(&$$, $2);};
+		| vector {$$ = $1;};
 
 lit_exp_a : TK_LIT_INT {$$ = create_node_literal($1, LIT_INT);}
 		| TK_LIT_FLOAT {$$ = create_node_literal($1, LIT_FLOAT);};

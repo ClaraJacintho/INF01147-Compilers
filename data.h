@@ -60,6 +60,7 @@ typedef enum node_type_s {
 
 typedef enum types_e{
     TYPE_X,
+    TYPE_CMD,
     TYPE_INT,    
     TYPE_FLOAT,  
     TYPE_BOOL,   

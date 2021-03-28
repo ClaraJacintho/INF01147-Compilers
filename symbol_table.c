@@ -195,7 +195,7 @@ void insert_symbol_table_item_in_scope(symbol_table_item_t *item ){
     symbol_table_item_t *current_top = current_scope->scope->top;
     if(current_top != NULL){
         symbol_t* err = find_in_current_scope(symbol->data);
-        if(err != NULL){
+        if(err != NULL && symbol->kind != K_LIT){
             throw_declared_error(symbol, err);
             return;
         }

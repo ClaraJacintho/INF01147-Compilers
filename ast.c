@@ -35,13 +35,11 @@ void free_nodes(node_t *node){
         for(i = 0; i < MAX_CHILDREN; i++){
             if(node->children[i] != NULL) {
                 free_nodes(node->children[i]);
-                //node->children[i] = NULL;
             }
         }
 
         if(node->next != NULL){
             free_nodes(node->next);
-            //node->next = NULL;
         }
         
         if(node->lex_val != NULL){
@@ -51,7 +49,6 @@ void free_nodes(node_t *node){
             }
             
             free(node->lex_val);
-  
         }
         
         free(node);
@@ -151,7 +148,7 @@ void print_label(node_t* node){
                 printf("call %s", node->lex_val->val.name);
                 break;
             case TERN_OP:
-                printf("? : ");
+                printf("?:");
                 break;
             case RETURN:
                 printf("return");
@@ -172,9 +169,9 @@ void print_label(node_t* node){
             default:
                 printf("%i", node->node_type);
         }
-        //printf("\"];\n");
-        printf("\"]; type = ");
-        print_type(node->type);
+        printf("\"];\n");
+        //printf("\"]; type = ");
+        //print_type(node->type);
     }
     
 }
@@ -235,6 +232,7 @@ node_t *create_node_declared_identifier(lex_val_t *val, node_type_t node_type){
     node_t *node = create_node(val, node_type);
     symbol_t* s = find_symbol(val);
     if(s != NULL){
+        // TODO: check if s has kind id
         node->type = s->type;
     } else {
         throw_undeclared_error(val->line, get_key(val));
@@ -250,7 +248,7 @@ node_t *create_init_node(node_t *id, lex_val_t *lv, node_t *val){
 }
 
 void update_node_init(node_t *node, type_t t){
-    if(node == NULL)
+    if(node == NULL || node->node_type == NOT_INIT)
         return;
     node->type = t;
 
@@ -290,4 +288,68 @@ node_t *create_binop_node(node_t *opA, lex_val_t *lv, node_t *opB){
     return node;
 }
 
+node_t* create_input_node(node_t* id){
+    node_t* node = create_node(NULL, IN); 
+    add_child(&node, id);
+    node->type = id->type;
+    //TODO: check if operands are compatible
+    return node;
+}
 
+node_t* create_output_node(node_t* var){
+    node_t* node = create_node(NULL, OUT); 
+    add_child(&node, var);
+    node->type = var->type;
+    //TODO: check if operands are compatible
+    return node;
+}
+
+node_t* create_func_call_node(lex_val_t *lv, node_t *args){
+    node_t* node = create_node(lv, FUNC_CALL); 
+    add_child(&node, args);
+    symbol_t* s = find_symbol(lv);
+    if(s != NULL){
+        if(s->kind == K_FUNC){
+            node->type = s->type;
+        } else {
+            throw_kind_error(lv->line, get_key(lv), s->kind, K_FUNC);
+        }
+        
+    } else {
+        throw_undeclared_error(lv->line, get_key(lv));
+    }
+    //TODO: check if operands are compatible
+    return node;
+}
+
+node_t *create_shift_node(node_t *id, lex_val_t *lv, node_t *val){
+    node_t* node = create_node(lv, SHIFT); 
+    symbol_t* s;
+    if(id->node_type==VECTOR){
+        node_t* ident = id->children[0];
+        s = find_symbol(ident->lex_val);
+    } else {
+        s = find_symbol(id->lex_val);
+    }
+        
+    if(s != NULL){
+        add_child(&node, id);
+        node->type = id->type;
+        // TODO: check for kind error
+    }
+    add_child(&node, val);
+    return node;
+}
+
+node_t *create_return_node(node_t* ex){
+    node_t* node = create_node(NULL, RETURN); 
+    node->type = TYPE_CMD;
+    add_child(&node, ex); //TODO check if it matches the function type maybe???
+    return node;
+}
+
+node_t *create_cmd_node(node_type_t node_type){
+    node_t* node = create_node(NULL, node_type); 
+    node->type = TYPE_CMD;
+    return node;
+}

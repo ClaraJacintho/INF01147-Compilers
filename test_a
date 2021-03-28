@@ -1,5 +1,9 @@
+float h[88];
 int clara(){
-    float x <= 4.6, y;
-    y = 666.6+45645;
+    int b;
+    while( 2+2 ) do {
+        int a;
+        clara();
+    }
 }
 

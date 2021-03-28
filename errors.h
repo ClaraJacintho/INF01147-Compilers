@@ -23,3 +23,4 @@ void throw_undeclared_error(int line, char* id);
 void throw_error(int error, symbol_t *a, symbol_t *b);
 void throw_wrong_type_error(int line, char* key, type_t a, type_t b);
 void throw_func_string_error(int line);
+void throw_kind_error(int line, char* key, kind_t var_k, kind_t use_k);

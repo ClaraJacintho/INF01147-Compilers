@@ -65,10 +65,10 @@ alphanumeric [a-zA-Z0-9_]
 {num}\.{single_num}+([eE]{num})? {yylval.lex_val =  get_lit_lex_val(get_line_number(), (val_t)(float)atof(yytext), LIT_FLOAT_T); return TK_LIT_FLOAT;} // This is bad. Im sorry
 "false"                          {yylval.lex_val =  get_lit_lex_val(get_line_number(), (val_t)0, LIT_BOOL_T); return TK_LIT_FALSE;}
 "true"                           {yylval.lex_val =  get_lit_lex_val(get_line_number(), (val_t)1, LIT_BOOL_T); return TK_LIT_TRUE;}
-\'.\'                            {yylval.lex_val =  get_lit_lex_val(get_line_number(), (val_t)yytext[0], LIT_CHAR_T); return TK_LIT_CHAR;}
+\'.\'                            {yylval.lex_val =  get_lit_lex_val(get_line_number(), (val_t)yytext[1], LIT_CHAR_T); return TK_LIT_CHAR;}
 \"[^"]+\"                           {yylval.lex_val =  get_lit_lex_val(get_line_number(), (val_t)unquote(strdup(yytext)), LIT_STR_T); return TK_LIT_STRING;}
 
-{num}+{alphabetic}{alphanumeric}+         {printf("Erro id st num %c", yytext[0]);  return TOKEN_ERRO;} // identifier that starts w/ num
+{num}+{alphabetic}{alphanumeric}+         { printf("Erro id st num %c", yytext[0]);  return TOKEN_ERRO;} // identifier that starts w/ num
 {num}+\.{num}*{alphabetic}{alphanumeric}* { printf("Erro id start flo %c", yytext[0]); return TOKEN_ERRO;} // identifier that starts w/ num
 {num}\.	                                  { printf("Erro no num af opoint %c", yytext[0]); return TOKEN_ERRO;} // float w/o num after point
 \.{num}+                                  { printf("Erro wo lead num%c", yytext[0]); return TOKEN_ERRO;} // float w/o leading num
