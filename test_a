@@ -1,7 +1,7 @@
-int h[55];
-string f,g;
-int clara(){
-    int a, b <= 18;
-    h[44] << 199;
+int clara(int a, int b, int c){
+    a = 56;
 }
-
+float rrr(){
+    int a, b;
+    clara(a, b);
+}

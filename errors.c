@@ -101,3 +101,33 @@ void throw_shift_par_error(int line, int value){
     printf("Error on line %i! Shift value must be less than 16, got %d\n", line, value);
     exit(ERR_WRONG_PAR_SHIFT);
 }
+
+void throw_wrong_type_args_error(int line, char* func_name, char* param_name, type_t a, type_t b){
+    printf("Error on line %i! Function %s expects parameter %s to have type %s, received %s instead. \n",
+            line, func_name, param_name, get_type_name(a), get_type_name(b));
+    exit(ERR_WRONG_TYPE_ARGS);
+}
+
+void throw_missing_args_error(int line, char* func_name, int n_args, int received_args){
+    printf("Error on line %i! Too few arguments for function %s! Expected %i arguments, received %i instead. \n",
+            line, func_name, n_args, received_args);
+    exit(ERR_MISSING_ARGS);
+}
+
+void throw_excess_args_error(int line, char* func_name, int n_args){
+    printf("Error on line %i! Too many arguments for function %s! Expected %i argument(s). \n",
+            line, func_name, n_args);
+    exit(ERR_EXCESS_ARGS);
+}
+
+void throw_string_char_to_x_error(int line, char* ident, type_t a){
+    if(a == TYPE_STRING){
+        printf("Error on line %i! Cannot convert identifier %s of type string to %s. \n",
+            line, ident, get_type_name(a));
+        exit(ERR_STRING_TO_X);
+    } else if(a == TYPE_CHAR){
+        printf("Error on line %i! Cannot convert identifier %s of type char to %s. \n",
+            line, ident, get_type_name(a));
+        exit(ERR_CHAR_TO_X);
+    }
+}

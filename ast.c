@@ -291,7 +291,6 @@ int is_convertible_type(type_t t){
 
 node_t *create_attrib_node(node_t *id, lex_val_t *lv, node_t *val){
     node_t* node = create_node(lv, ATTR); 
-    printf("%d %d %d %d\n",id->type, val->type, is_convertible_type(id->type), is_convertible_type(val->type) );
     if(id->type != val->type){
         if(!is_convertible_type(id->type) || !is_convertible_type(val->type)){
             throw_wrong_type_error(id->lex_val->line, id->lex_val->val.s, id->type, val->type);
@@ -320,7 +319,12 @@ node_t *create_binop_node(node_t *opA, lex_val_t *lv, node_t *opB){
     add_child(&node, opA);
     node->type = opA->type;
     add_child(&node, opB);
-    //TODO: check if operands are compatible
+    if(!is_convertible_type(opA->type)){
+        throw_string_char_to_x_error(opA->lex_val->line, opA->lex_val->val.s, opB->type);
+    }
+    if(!is_convertible_type(opB->type)){
+        throw_string_char_to_x_error(opB->lex_val->line, opB->lex_val->val.s, opA->type);
+    }
     return node;
 }
 
@@ -358,7 +362,25 @@ node_t* create_func_call_node(lex_val_t *lv, node_t *args){
     } else {
         throw_undeclared_error(lv->line, get_key(lv));
     }
-    //TODO: check if operands are compatible
+
+    symbol_table_item_t* declared_param = s->args;
+    node_t* received_arg = args;
+    int n_received_args = 0;
+    while(declared_param !=  NULL && received_arg != NULL){
+        if(declared_param->item->type != received_arg->type){
+            throw_wrong_type_args_error(lv->line, s->key, declared_param->item->key, declared_param->item->type, received_arg->type);
+        }
+        declared_param = declared_param->next;
+        received_arg = received_arg->next;
+        n_received_args += 1;
+    }
+    if(n_received_args > s->n_args || received_arg != NULL){
+        throw_excess_args_error(lv->line, s->key, s->n_args);
+    }
+    if(declared_param != NULL && received_arg == NULL){
+        throw_missing_args_error(lv->line, s->key, s->n_args, n_received_args);
+    }
+    
     return node;
 }
 

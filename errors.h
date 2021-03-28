@@ -30,3 +30,7 @@ void throw_input_par_error(int line, type_t t);
 void throw_output_par_error(int line, type_t t);
 void throw_return_par_error(int line, type_t func_t, type_t ex_t);
 void throw_shift_par_error(int line, int value);
+void throw_wrong_type_args_error(int line, char* func_name, char* param_name, type_t a, type_t b);
+void throw_missing_args_error(int line, char* func_name, int n_args, int received_args);
+void throw_excess_args_error(int line, char* func_name, int n_args);
+void throw_string_char_to_x_error(int line, char* ident, type_t a);
