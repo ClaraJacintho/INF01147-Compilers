@@ -161,7 +161,10 @@ symbol_t* create_symbol(char* name, lex_val_t* lex_val, type_t type, kind_t kind
     symbol->n_args = 0;
     symbol->args = NULL;
     symbol->count = count;
-    symbol->size = type_size(type) * count; // TODO: fix size for strings
+    if(type == TYPE_STRING ||kind == K_VEC)
+        symbol->size = type_size(type) * count;
+    else
+        symbol->size = type_size(type);
     symbol->data = lex_val;
     return symbol;
 }
@@ -278,7 +281,7 @@ symbol_table_item_t* creates_st_item_list(symbol_table_item_t* a, symbol_table_i
     return a;
 }
 
-symbol_table_item_t* create_identifier(lex_val_t *lv, kind_t k, int count, type_t t){
+symbol_table_item_t* create_identifier(lex_val_t *lv, kind_t k, int count, type_t t, lex_val_t* size){
     char *name = get_key(lv);
     symbol_t *symbol = create_symbol(name, lv, t , k, count);
     return create_symbol_table_item(symbol);
@@ -287,10 +290,12 @@ symbol_table_item_t* create_identifier(lex_val_t *lv, kind_t k, int count, type_
 void insert_id(symbol_table_item_t *first, type_t t){
     symbol_table_item_t *aux = first;
     while(aux != NULL){
-        aux->item->type = t; //TODO: check if type compatible w value 
+        aux->item->type = t;  
         aux->item->size = type_size(t) * aux->item->count;
+        if(aux->item->kind == K_VEC && aux->item->type == TYPE_STRING){
+            throw_string_vector_error(aux->item->data);
+        }
         insert_symbol(aux->item);
-        // TODO: free this symbol_item
         aux = aux->next;
     }
 }
@@ -352,6 +357,32 @@ symbol_table_item_t *create_function(lex_val_t *lv, type_t t, symbol_table_item_
 
 void insert_literal(lex_val_t* lv){
     char* key = get_key(lv);
-    symbol_t *s = create_symbol(key, lv, get_type(lv->type), K_LIT, 1);
+    int count = 1;
+    if(lv->type == LIT_STR_T){
+        count = strlen(lv->val.s);
+    }
+    symbol_t *s = create_symbol(key, lv, get_type(lv->type), K_LIT, count);
     insert_symbol(s);
+}
+
+int get_size_from_literal(lex_val_t* lv){
+    if(lv->type == LIT_STR_T){
+        return strlen(lv->val.s);
+    }
+    return 1;
+}
+
+int get_size_from_identifier(lex_val_t* lv){
+    symbol_t* s = find_symbol(lv);
+    if(s != NULL){
+        return s->count;
+    }
+    return 0;
+}
+
+symbol_t* get_current_function(){
+    stack_item_t* aux = current_scope->next;
+    if(aux == NULL)
+        return NULL;
+    return aux->scope->bottom->item;
 }

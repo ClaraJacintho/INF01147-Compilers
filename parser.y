@@ -158,11 +158,11 @@ literal : TK_LIT_INT 	 {$$ = create_node_literal($1, LIT_INT);}
 
 // global declarations
 global_declaration : type global_id_list ';' {insert_id($2, $1);}
-				| TK_PR_STATIC type global_id_list ';'{insert_id($3, $2);}; // TODO: find out wtf to do w static
+				| TK_PR_STATIC type global_id_list ';'{insert_id($3, $2);};
 
 vector_declaration: TK_IDENTIFICADOR '['TK_LIT_INT']' {$$ = create_identifier($1, K_VEC, $3->val.n, TYPE_X); create_node_literal($3, LIT_INT);}
 
-global_var_id: TK_IDENTIFICADOR {$$ = create_identifier($1, K_ID, 1, TYPE_X);}
+global_var_id: TK_IDENTIFICADOR {$$ = create_identifier($1, K_ID, 0, TYPE_X);}
 			| vector_declaration {$$ = $1;};
 global_id_list : global_var_id ',' global_id_list {$$ = creates_st_item_list($1, $3);}
 				| global_var_id {$$ = creates_st_item_list($1, NULL);};
@@ -174,7 +174,7 @@ function_header : type TK_IDENTIFICADOR '('params_list')' {$$ = create_node($2, 
 				| TK_PR_STATIC type TK_IDENTIFICADOR '('params_list')' {$$ = create_node($3, FUNC); update_node_type($$, $2); create_function($3, $2, $5);};
 params_list : params {$$ = $1;}
 			| {$$ = NULL;};
-param: type TK_IDENTIFICADOR {$$ =create_identifier($2, K_ID, 1, $1);}
+param: type TK_IDENTIFICADOR {$$ = create_identifier($2, K_ID, 1, $1);}
 	| TK_PR_CONST type TK_IDENTIFICADOR {$$ = create_identifier($3, K_ID, 1, $2);};
 
 params: param ',' params {$$ = creates_st_item_list($1, $3);}
@@ -201,7 +201,7 @@ command : code_block';' {$$ = $1;}
 	| while				{$$ = $1;};
 
 
-vector : TK_IDENTIFICADOR '['expression']' {$$ = create_node(NULL, VECTOR); add_child(&$$, create_node_declared_identifier($1, IDENT)); add_child(&$$, $3);};
+vector : TK_IDENTIFICADOR '['expression']' {$$ = create_node(NULL, VECTOR); add_child(&$$, create_node_declared_identifier_vec($1, IDENT)); add_child(&$$, $3);};
 
 // local vars
 var_type : type 						{$$ = $1;}
@@ -210,15 +210,15 @@ var_type : type 						{$$ = $1;}
 		| TK_PR_STATIC TK_PR_CONST type {$$ = $3;}; 
 
 var : TK_IDENTIFICADOR TK_OC_LE TK_IDENTIFICADOR {
-	local_list = creates_st_item_list(create_identifier($1, K_ID, 1, TYPE_X), local_list);
+	local_list = creates_st_item_list(create_identifier($1, K_ID, get_size_from_identifier($3), TYPE_X), local_list);
 	$$ = create_init_node(create_node($1, IDENT), $2, create_node_declared_identifier($3, IDENT)); 
 }
 	| TK_IDENTIFICADOR TK_OC_LE literal {
-		local_list = creates_st_item_list(create_identifier($1, K_ID, 1, TYPE_X), local_list);
+		local_list = creates_st_item_list(create_identifier($1, K_ID, get_size_from_literal($3->lex_val), TYPE_X), local_list);
 		$$ = create_init_node(create_node($1, IDENT), $2, $3);
 };
 	| TK_IDENTIFICADOR {
-		local_list = creates_st_item_list(create_identifier($1, K_ID, 1, TYPE_X), local_list);
+		local_list = creates_st_item_list(create_identifier($1, K_ID, 0, TYPE_X), local_list);
 		$$ = create_node($1, NOT_INIT);  // Creates a node that wont actually be on the tree
 }
 

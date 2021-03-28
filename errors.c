@@ -54,15 +54,15 @@ void throw_kind_error(int line, char* key, kind_t var_k, kind_t use_k){
     switch (var_k)
     {
     case K_ID:
-        printf("Error on line %i! Variable %s is being used as  %s\n", line, key, get_kind_name(use_k));
+        printf("Error on line %i! Variable %s is being used as a %s\n", line, key, get_kind_name(use_k));
         exit(ERR_VARIABLE);
         break;
     case K_VEC:
-        printf("Error on line %i! Vector %s is being used as  %s\n", line, key, get_kind_name(use_k));
+        printf("Error on line %i! Vector %s is being used as a %s\n", line, key, get_kind_name(use_k));
         exit(ERR_VECTOR);
         break;
     case K_FUNC:
-        printf("Error on line %i! Function %s is being used as  %s\n", line, key, get_kind_name(use_k));
+        printf("Error on line %i! Function %s is being used as a %s\n", line, key, get_kind_name(use_k));
         exit(ERR_FUNCTION);
         break;
     
@@ -70,4 +70,34 @@ void throw_kind_error(int line, char* key, kind_t var_k, kind_t use_k){
         break;
     }
        
+}
+
+void throw_string_vector_error(lex_val_t *lv){
+    printf("Error on line %i! Vector %s cannot be declared with type STRING\n", lv->line, lv->val.s);
+    exit(ERR_STRING_VECTOR);
+}
+
+void throw_string_max_error(symbol_t* s, int size){
+    printf("Error on line %i! Identifier %s has size %d and cannot receive string size %d\n", s->data->line, s->data->val.s, s->count, size);
+    exit(ERR_STRING_MAX);
+}
+
+void throw_input_par_error(int line, type_t t){
+    printf("Error on line %i! Input command only accepts identifiers of type INT and FLOAT, but received type %s instead\n", line, get_type_name(t));
+    exit(ERR_WRONG_PAR_INPUT);
+}
+
+void throw_output_par_error(int line, type_t t){
+    printf("Error on line %i! Output command only accepts identifiers or literals of type INT and FLOAT, but received type %s instead\n", line, get_type_name(t));
+    exit(ERR_WRONG_PAR_OUTPUT);
+}
+
+void throw_return_par_error(int line, type_t func_t, type_t ex_t){
+    printf("Error on line %i! Return type must match function type - Expected %s but got %s\n", line, get_type_name(func_t), get_type_name(ex_t));
+    exit(ERR_WRONG_PAR_RETURN);
+}
+
+void throw_shift_par_error(int line, int value){
+    printf("Error on line %i! Shift value must be less than 16, got %d\n", line, value);
+    exit(ERR_WRONG_PAR_SHIFT);
 }

@@ -1,9 +1,7 @@
-float h[88];
+int h[55];
+string f,g;
 int clara(){
-    int b;
-    while( 2+2 ) do {
-        int a;
-        clara();
-    }
+    int a, b <= 18;
+    h[44] << 199;
 }
 

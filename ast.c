@@ -169,9 +169,9 @@ void print_label(node_t* node){
             default:
                 printf("%i", node->node_type);
         }
-        printf("\"];\n");
-        //printf("\"]; type = ");
-        //print_type(node->type);
+        //printf("\"];\n");
+        printf("\"]; type = ");
+        print_type(node->type);
     }
     
 }
@@ -228,11 +228,31 @@ node_t* create_node_literal(lex_val_t *val, node_type_t node_type){
     return node;
 }
 
+node_t *create_node_declared_identifier_vec(lex_val_t *val, node_type_t node_type){
+    node_t *node = create_node(val, node_type);
+    symbol_t* s = find_symbol(val);
+    if(s != NULL){
+        if(s->kind == K_VEC){
+            node->type = s->type;
+        } else {
+            throw_kind_error(val->line, get_key(val), s->kind, K_VEC);
+        }
+        node->type = s->type;
+    } else {
+        throw_undeclared_error(val->line, get_key(val));
+    }
+    return node;
+}
+
 node_t *create_node_declared_identifier(lex_val_t *val, node_type_t node_type){
     node_t *node = create_node(val, node_type);
     symbol_t* s = find_symbol(val);
     if(s != NULL){
-        // TODO: check if s has kind id
+        if(s->kind == K_ID){
+            node->type = s->type;
+        } else {
+            throw_kind_error(val->line, get_key(val), s->kind, K_ID);
+        }
         node->type = s->type;
     } else {
         throw_undeclared_error(val->line, get_key(val));
@@ -263,13 +283,29 @@ void update_node_init(node_t *node, type_t t){
     node->children[1]->type = t;
 }
 
+int is_convertible_type(type_t t){
+    if((t == TYPE_BOOL || t == TYPE_INT || t == TYPE_FLOAT ))
+        return 1;
+    return 0;
+}
+
 node_t *create_attrib_node(node_t *id, lex_val_t *lv, node_t *val){
     node_t* node = create_node(lv, ATTR); 
-    
-    if(find_symbol(id->lex_val) != NULL){
-        add_child(&node, id);
-        node->type = id->type;
+    printf("%d %d %d %d\n",id->type, val->type, is_convertible_type(id->type), is_convertible_type(val->type) );
+    if(id->type != val->type){
+        if(!is_convertible_type(id->type) || !is_convertible_type(val->type)){
+            throw_wrong_type_error(id->lex_val->line, id->lex_val->val.s, id->type, val->type);
+        }
     }
+    if(id->type == TYPE_STRING){
+        int size = get_size_from_identifier(val->lex_val);
+        symbol_t* s = find_symbol(id->lex_val);
+        if(size > s->count){
+            throw_string_max_error(s, size);
+        }
+    }
+    add_child(&node, id);
+    node->type = id->type;
     add_child(&node, val);
     return node;
 }
@@ -290,17 +326,21 @@ node_t *create_binop_node(node_t *opA, lex_val_t *lv, node_t *opB){
 
 node_t* create_input_node(node_t* id){
     node_t* node = create_node(NULL, IN); 
+    if(id->type != TYPE_INT && id->type != TYPE_FLOAT){
+        throw_input_par_error(id->lex_val->line, id->type);
+    }
     add_child(&node, id);
     node->type = id->type;
-    //TODO: check if operands are compatible
     return node;
 }
 
 node_t* create_output_node(node_t* var){
     node_t* node = create_node(NULL, OUT); 
+    if(var->type != TYPE_INT && var->type != TYPE_FLOAT){
+        throw_output_par_error(var->lex_val->line, var->type);
+    }
     add_child(&node, var);
     node->type = var->type;
-    //TODO: check if operands are compatible
     return node;
 }
 
@@ -323,7 +363,10 @@ node_t* create_func_call_node(lex_val_t *lv, node_t *args){
 }
 
 node_t *create_shift_node(node_t *id, lex_val_t *lv, node_t *val){
-    node_t* node = create_node(lv, SHIFT); 
+    node_t* node = create_node(lv, SHIFT);
+    if(val->lex_val->val.n > 16){
+        throw_shift_par_error(val->lex_val->line, val->lex_val->val.n);
+    }
     symbol_t* s;
     if(id->node_type==VECTOR){
         node_t* ident = id->children[0];
@@ -335,7 +378,6 @@ node_t *create_shift_node(node_t *id, lex_val_t *lv, node_t *val){
     if(s != NULL){
         add_child(&node, id);
         node->type = id->type;
-        // TODO: check for kind error
     }
     add_child(&node, val);
     return node;
@@ -344,7 +386,13 @@ node_t *create_shift_node(node_t *id, lex_val_t *lv, node_t *val){
 node_t *create_return_node(node_t* ex){
     node_t* node = create_node(NULL, RETURN); 
     node->type = TYPE_CMD;
-    add_child(&node, ex); //TODO check if it matches the function type maybe???
+    symbol_t* func = get_current_function();
+    if(func->type != ex->type){
+        if(!is_convertible_type(func->type) || !is_convertible_type(ex->type)){
+            throw_return_par_error(ex->lex_val->line,func->type, ex->type);
+        }
+    }
+    add_child(&node, ex); 
     return node;
 }
 

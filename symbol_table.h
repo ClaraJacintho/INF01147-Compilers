@@ -26,3 +26,6 @@ void insert_id(symbol_table_item_t *first, type_t t);
 int insert_params(symbol_table_item_t *args);
 symbol_table_item_t *create_function(lex_val_t *lv, type_t t, symbol_table_item_t *args);
 void insert_literal(lex_val_t* lv);
+int get_size_from_literal(lex_val_t* lv);
+int get_size_from_identifier(lex_val_t* lv);
+symbol_t* get_current_function();
