@@ -143,7 +143,7 @@ program : global_declaration program {$$ = $2;}
 		| {$$ = NULL; leave_scope();};
 
 // utils
-type : TK_PR_INT   {$$ = TYPE_INT;} 
+type : TK_PR_INT   {$$ = TYPE_INT; } 
 	| TK_PR_FLOAT  {$$ = TYPE_FLOAT;} 
 	| TK_PR_BOOL   {$$ = TYPE_BOOL;} 
 	| TK_PR_CHAR   {$$ = TYPE_CHAR;} 
@@ -265,7 +265,7 @@ continue : TK_PR_CONTINUE {$$ = create_cmd_node(CONTINUE);};
 
 // ------------------------------------ expressions ------------------------------------
 
-if : TK_PR_IF '(' expression ')' code_block {$$ = create_cmd_node(IF); add_child(&$$, $3); add_child(&$$, $5);}
+if : TK_PR_IF '(' expression ')' code_block {$$ = create_cmd_node(IF); add_child(&$$, $3); add_child(&$$, $5); }
    | TK_PR_IF '(' expression ')' code_block else {$$ = create_cmd_node(IF); add_child(&$$, $3); add_child(&$$, $5);add_child(&$$, $6);};
 
 else: TK_PR_ELSE code_block {$$ = $2;}; 

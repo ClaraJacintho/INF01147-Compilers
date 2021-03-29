@@ -2,11 +2,15 @@
 #include <stdio.h>
 #include <string.h>
 #include "data.h"
-#include "errors.h"
+#include "error_handling.h"
 
 // inits scope as NULL so that global scope will have ->next == NULL
-stack_item_t* current_scope = NULL; 
+stack_item_t* current_scope = NULL;
+
+scope_tree_node_t* scope_tree_current = NULL;
+scope_tree_node_t* scope_root = NULL;
 int n_scopes = 0;
+
 // DEBUG FUNCTIONS
 void print_type(type_t t){
     switch (t){
@@ -15,6 +19,7 @@ void print_type(type_t t){
         case TYPE_BOOL: printf("bool \n"); break;
         case TYPE_CHAR: printf("char \n"); break;
         case TYPE_STRING: printf("string \n"); break;
+        case TYPE_CMD: printf("command \n"); break;
         case TYPE_X: printf("X \n"); break;
         default:
             break;
@@ -86,6 +91,71 @@ symbol_table_t* create_symbol_table(){
 
 }
 
+void free_scope(symbol_table_t* scope){
+    symbol_table_item_t* st = scope->top;
+    while(st != NULL){
+        symbol_t* s = st->item;
+        printf("FREEING: %s\n", s->key);
+        free(s->key);
+        if(s->data && (s->data->type == LIT_STR_T || s->data->type == ID)){
+            free(s->data->val.s);
+        }
+        free(s->data);
+        if(s->kind == K_FUNC){
+            for(int i = 0; i < s->n_args; i++){
+                s->args = NULL;
+            }
+        }
+        free(s);
+        symbol_table_item_t* aux = st->next;
+        free(st);
+        st = aux;
+    }
+    free(scope);
+
+   
+    
+}
+
+void free_scope_node(scope_tree_node_t *scope){
+    if(scope == NULL)
+        return;
+    free_scope(scope->scope);
+    scope_tree_node_t* aux = scope->children;
+    while(aux){
+        free_scope_node(aux);
+        scope_tree_node_t* aux2 = aux;
+        aux = aux->brother;
+        free(aux2);
+    }
+    //free(scope->children);
+    
+}
+
+void free_all_scopes(){
+    free_scope_node(scope_root);
+    free(scope_root);
+    free(scope_tree_current);
+    free(current_scope);
+}
+
+symbol_t* get_current_function(){
+    stack_item_t* aux = current_scope->next;
+    if(aux == NULL)
+        return NULL;
+    
+    while(aux != NULL){
+        if(aux->scope->bottom->item->kind == K_FUNC){
+            return aux->scope->bottom->item;
+        }
+        aux = aux->next;
+    }
+    return NULL;
+
+}
+
+int insert_params(symbol_table_item_t *args);
+
 void enter_scope(){
     symbol_table_t* scope = create_symbol_table();
     stack_item_t *stack_item = (stack_item_t *)malloc(sizeof(stack_item_t));
@@ -93,13 +163,48 @@ void enter_scope(){
     stack_item->next = current_scope;
     current_scope = stack_item;
     n_scopes += 1;
+    symbol_t* func  = get_current_function();
+
+
+    if(func != NULL && func->n_args == -1){
+        if(func->args != NULL){
+            int count = insert_params(func->args);
+            func->n_args = count;
+        } else {
+            func->n_args = 0;
+        }
+    }
+
+    scope_tree_node_t* scope_node = (scope_tree_node_t *)malloc(sizeof(scope_tree_node_t));
+    scope_node->scope = scope;
+    scope_node->parent = scope_tree_current;
+    scope_node->brother = NULL;
+    scope_node->children = NULL;
+    if(scope_root == NULL){
+        scope_root = scope_node;
+    }
+    if(scope_tree_current != NULL){
+        if(scope_tree_current->children != NULL){
+            scope_tree_node_t* aux = scope_tree_current->children;
+            while(aux->brother != NULL){
+                aux = aux->brother;
+            }
+            aux->brother = scope_node;
+        } else {
+            scope_tree_current->children = scope_node;
+        }
+    }
+    scope_tree_current = scope_node;
 }
 
 void leave_scope(){
     print_table(current_scope->scope);
+    stack_item_t *aux = current_scope;
     current_scope = current_scope->next;
+    free(aux);
+    scope_tree_current = scope_tree_current->parent;
     n_scopes -= 1;
-    // TODO: free stuff
+    
 }
 
 int type_size(type_t t){
@@ -118,29 +223,30 @@ int type_size(type_t t){
 char* get_key(lex_val_t *lv){
     char *key;
     switch (lv->type){
-        case LIT_INT: 
+        case LIT_INT_T: 
                 key = calloc(20, 1);
                 sprintf(key, "\"%d\"", lv->val.n);
                 break;
                 break; 
-        case LIT_FLOAT:
+        case LIT_FLOAT_T:
                 key = calloc(20, 1);
                 sprintf(key, "\"%f\"", lv->val.f);
                 break;
-        case LIT_BOOL:
-                key = calloc(6, 1);
+        case LIT_BOOL_T:
+                key = calloc(7, 1);
                 sprintf(key, "\"%s\"", lv->val.b ? "true" : "false");
                 break;
 
-        case LIT_CHAR:  
-                key = calloc(3, 1);
-                sprintf(key, "\"%c\"", lv->val.c);
+        case LIT_CHAR_T:  
+                key = calloc(4, 1);
+                sprintf(key, "\'%c\'", lv->val.c);
                 break;
 
-        case LIT_STR: 
+        case LIT_STR_T: 
                 key = strdup(lv->val.s);;
                 break;
-        case ID: 
+        case ID:
+        case DECL_ID: 
             key = strdup(lv->val.name);;
             break;
         default:
@@ -175,6 +281,7 @@ symbol_t* find_in_current_scope(lex_val_t *lv){
     if(aux != NULL){
         while(aux->next != NULL){
             if(!strcmp(aux->item->key, key)){
+                free(key);
                 return aux->item;
             }
             aux = aux->next;
@@ -182,11 +289,12 @@ symbol_t* find_in_current_scope(lex_val_t *lv){
 
         // check if the last one is == to the key
         if(!strcmp(aux->item->key, key)){
+            free(key);
             return aux->item;
         }
 
     }
-
+    free(key);
     return NULL; 
 }
 
@@ -256,6 +364,7 @@ symbol_t* find_symbol(lex_val_t *lv){
         if(aux != NULL){
             while(aux->next != NULL){
                 if(!strcmp(aux->item->key, key)){
+                    free(key);
                     return aux->item;
                 }
                 aux = aux->next;
@@ -263,12 +372,14 @@ symbol_t* find_symbol(lex_val_t *lv){
 
             // check if the last one is == to the key
             if(!strcmp(aux->item->key, key)){
+                free(key);
                 return aux->item;
             }
 
         }
         s = s->next;
     }
+    free(key);
     return NULL; 
 }
 
@@ -296,7 +407,9 @@ void insert_id(symbol_table_item_t *first, type_t t){
             throw_string_vector_error(aux->item->data);
         }
         insert_symbol(aux->item);
+        symbol_table_item_t* aux2 = aux;
         aux = aux->next;
+        free(aux2);
     }
 }
 
@@ -339,19 +452,10 @@ symbol_table_item_t *create_function(lex_val_t *lv, type_t t, symbol_table_item_
     if(t == TYPE_STRING){
         throw_func_string_error(lv->line);
     }
-    char *name = (char*)lv->val.s;
+    char *name = get_key(lv);
     symbol_t *symbol = create_symbol(name, lv, t, K_FUNC, 1);
-    if(args != NULL){
-        int count = insert_params(args);
-        symbol->args = args;
-        symbol->n_args = count;
-    } else {
-        symbol->args = NULL;
-        symbol->n_args = 0;
-    }
-   
-
-
+    symbol->args = args;
+    symbol->n_args = -1;
     return insert_symbol(symbol);
 }
 
@@ -378,11 +482,4 @@ int get_size_from_identifier(lex_val_t* lv){
         return s->count;
     }
     return 0;
-}
-
-symbol_t* get_current_function(){
-    stack_item_t* aux = current_scope->next;
-    if(aux == NULL)
-        return NULL;
-    return aux->scope->bottom->item;
 }

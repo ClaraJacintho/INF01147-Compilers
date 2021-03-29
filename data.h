@@ -7,6 +7,7 @@ typedef enum token_t{
     SP_CHAR,
     OP,
     ID,
+    DECL_ID,
     LIT_INT_T,
     LIT_FLOAT_T,
     LIT_BOOL_T,
@@ -114,5 +115,17 @@ typedef struct stack_item_s{
     symbol_table_t *scope;
     struct stack_item_s *next;
 } stack_item_t;
+
+typedef struct scope_tree_node_s{
+    symbol_table_t *scope;
+    struct scope_tree_node_s *parent;
+    
+    // Each node has a brother because there might be many nested scopes
+    // inside another scope - i don't know how to do a dynamically allocated array in C
+    struct scope_tree_node_s *brother;
+
+    // points to the first child - the rest must be access through its brothers
+    struct scope_tree_node_s *children;
+} scope_tree_node_t;
 
 #endif

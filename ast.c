@@ -1,6 +1,6 @@
 #include "ast.h"
 #include "symbol_table.h"
-#include "errors.h"
+#include "error_handling.h"
 #include <stdio.h>
 #include <stdlib.h>
 
@@ -27,6 +27,7 @@ void exporta (void *arvore) {
 
 void libera (void *arvore){
     free_nodes((node_t*)arvore);
+    free_all_scopes();
 }
 
 void free_nodes(node_t *node){
@@ -44,11 +45,13 @@ void free_nodes(node_t *node){
         
         if(node->lex_val != NULL){
             
-            if(node->node_type != LIT_INT && node->node_type != LIT_FLOAT && node->node_type != LIT_BOOL && node->node_type != LIT_CHAR){
+            if(node->lex_val->type == SP_CHAR || node->lex_val->type == OP || node->lex_val->type == DECL_ID){
+                printf("FREEING %s\n", node->lex_val->val.s);
                 free(node->lex_val->val.s);
+                free(node->lex_val);
             }
             
-            free(node->lex_val);
+            
         }
         
         free(node);
@@ -205,7 +208,7 @@ node_t* insert_node_next(node_t** n1, node_t *n2){
     }
 }
 
-node_t *create_node(lex_val_t *val, node_type_t type){
+node_t* create_node(lex_val_t *val, node_type_t type){
     node_t *node = (node_t*)malloc(sizeof(node_t));
     memset(node, 0, sizeof(node_t));
     node->lex_val = val;
@@ -229,33 +232,35 @@ node_t* create_node_literal(lex_val_t *val, node_type_t node_type){
 }
 
 node_t *create_node_declared_identifier_vec(lex_val_t *val, node_type_t node_type){
+    val->type = DECL_ID; // haxx
     node_t *node = create_node(val, node_type);
     symbol_t* s = find_symbol(val);
     if(s != NULL){
         if(s->kind == K_VEC){
             node->type = s->type;
         } else {
-            throw_kind_error(val->line, get_key(val), s->kind, K_VEC);
+            throw_kind_error(s->data->line, get_key(s->data), s->kind, K_VEC);
         }
         node->type = s->type;
     } else {
-        throw_undeclared_error(val->line, get_key(val));
+        throw_undeclared_error(s->data->line, get_key(s->data));
     }
     return node;
 }
 
 node_t *create_node_declared_identifier(lex_val_t *val, node_type_t node_type){
+    val->type = DECL_ID; // haxx
     node_t *node = create_node(val, node_type);
     symbol_t* s = find_symbol(val);
     if(s != NULL){
         if(s->kind == K_ID){
             node->type = s->type;
         } else {
-            throw_kind_error(val->line, get_key(val), s->kind, K_ID);
+            throw_kind_error(s->data->line, get_key(s->data), s->kind, K_ID);
         }
         node->type = s->type;
     } else {
-        throw_undeclared_error(val->line, get_key(val));
+        throw_undeclared_error(s->data->line, get_key(s->data));
     }
     return node;
 }
@@ -320,10 +325,11 @@ node_t *create_binop_node(node_t *opA, lex_val_t *lv, node_t *opB){
     node->type = opA->type;
     add_child(&node, opB);
     if(!is_convertible_type(opA->type)){
-        throw_string_char_to_x_error(opA->lex_val->line, opA->lex_val->val.s, opB->type);
+        throw_string_char_to_x_error(opA->lex_val->line, opA->lex_val->val.s, opA->type, opB->type);
     }
+    printf("type B: %s, is conv? %i\n", get_type_name(opB->type), is_convertible_type(opB->type));
     if(!is_convertible_type(opB->type)){
-        throw_string_char_to_x_error(opB->lex_val->line, opB->lex_val->val.s, opA->type);
+        throw_string_char_to_x_error(opB->lex_val->line, opB->lex_val->val.s, opB->type, opA->type);
     }
     return node;
 }
