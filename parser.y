@@ -120,6 +120,7 @@ var
 local_var_list   
 var_attribution 
 vector_attribution
+str_and_char
 
 %type<symbol> 
 global_var_id
@@ -160,7 +161,7 @@ literal : TK_LIT_INT 	 {$$ = create_node_literal($1, LIT_INT);}
 global_declaration : type global_id_list ';' {insert_id($2, $1);}
 				| TK_PR_STATIC type global_id_list ';'{insert_id($3, $2);};
 
-vector_declaration: TK_IDENTIFICADOR '['TK_LIT_INT']' {$$ = create_identifier($1, K_VEC, $3->val.n, TYPE_X); create_node_literal($3, LIT_INT);}
+vector_declaration: TK_IDENTIFICADOR '['TK_LIT_INT']' {$$ = create_identifier($1, K_VEC, $3->val.n, TYPE_X); insert_literal($3);}
 
 global_var_id: TK_IDENTIFICADOR {$$ = create_identifier($1, K_ID, 0, TYPE_X);}
 			| vector_declaration {$$ = $1;};
@@ -201,7 +202,7 @@ command : code_block';' {$$ = $1;}
 	| while				{$$ = $1;};
 
 
-vector : TK_IDENTIFICADOR '['expression']' {$$ = create_node(NULL, VECTOR); add_child(&$$, create_node_declared_identifier_vec($1, IDENT)); add_child(&$$, $3);};
+vector : TK_IDENTIFICADOR '['expression']' {$$ = create_vector_node(create_node_declared_identifier($1, IDENT, K_VEC), $3);};
 
 // local vars
 var_type : type 						{$$ = $1;}
@@ -211,7 +212,7 @@ var_type : type 						{$$ = $1;}
 
 var : TK_IDENTIFICADOR TK_OC_LE TK_IDENTIFICADOR {
 	local_list = creates_st_item_list(create_identifier($1, K_ID, get_size_from_identifier($3), TYPE_X), local_list);
-	$$ = create_init_node(create_node($1, IDENT), $2, create_node_declared_identifier($3, IDENT)); 
+	$$ = create_init_node(create_node($1, IDENT), $2, create_node_declared_identifier($3, IDENT, K_ID)); 
 }
 	| TK_IDENTIFICADOR TK_OC_LE literal {
 		local_list = creates_st_item_list(create_identifier($1, K_ID, get_size_from_literal($3->lex_val), TYPE_X), local_list);
@@ -231,12 +232,12 @@ local_var : var_type local_var_list {$$ = $2; update_node_init($$, $1); insert_i
 attribution : var_attribution {$$ = $1;}
 			| vector_attribution {$$ = $1;}; 
 			
-var_attribution : TK_IDENTIFICADOR '=' expression {$$ = create_attrib_node(create_node_declared_identifier($1, IDENT), $2 ,$3);}; 
+var_attribution : TK_IDENTIFICADOR '=' expression {$$ = create_attrib_node(create_node_declared_identifier($1, IDENT, K_ID), $2 ,$3);}; 
 vector_attribution : vector '=' expression {$$ = create_attrib_node($1, $2 ,$3);}; 
 
 // io
-input: TK_PR_INPUT TK_IDENTIFICADOR   {$$ = create_input_node(create_node_declared_identifier($2, IDENT));};
-output: TK_PR_OUTPUT TK_IDENTIFICADOR {$$ = create_output_node(create_node_declared_identifier($2, IDENT));}
+input: TK_PR_INPUT TK_IDENTIFICADOR   {$$ = create_input_node(create_node_declared_identifier($2, IDENT, K_ID));};
+output: TK_PR_OUTPUT TK_IDENTIFICADOR {$$ = create_output_node(create_node_declared_identifier($2, IDENT, K_ID));}
 		| TK_PR_OUTPUT literal 		  {$$ = create_output_node($2);};
 
 // fuction call
@@ -247,11 +248,11 @@ args : expression ',' args {$$ = insert_node_next(&$1, $3);}
 	| {$$ = NULL;};
 
 // shift
-shift_left : TK_IDENTIFICADOR TK_OC_SL TK_LIT_INT {$$ = create_shift_node(create_node_declared_identifier($1, IDENT), $2, create_node_literal($3, LIT_INT));}; 
+shift_left : TK_IDENTIFICADOR TK_OC_SL TK_LIT_INT {$$ = create_shift_node(create_node_declared_identifier($1, IDENT, K_ID), $2, create_node_literal($3, LIT_INT));}; 
 			| vector TK_OC_SL TK_LIT_INT {$$ = create_shift_node($1, $2, create_node_literal($3, LIT_INT));;};
 
 
-shift_right : TK_IDENTIFICADOR TK_OC_SR TK_LIT_INT {$$ = create_shift_node(create_node_declared_identifier($1, IDENT), $2, create_node_literal($3, LIT_INT));};
+shift_right : TK_IDENTIFICADOR TK_OC_SR TK_LIT_INT {$$ = create_shift_node(create_node_declared_identifier($1, IDENT, K_ID), $2, create_node_literal($3, LIT_INT));};
 			| vector TK_OC_SR TK_LIT_INT {$$ = create_shift_node($1, $2, create_node_literal($3, LIT_INT));};
 
 shift : shift_left {$$ = $1;}
@@ -280,13 +281,18 @@ while : TK_PR_WHILE '('expression')'  TK_PR_DO code_block {$$ = create_cmd_node(
 // priority low to high: ternary logic compare +- /%* ^ ()
 
 expression : logic_exp {$$ = $1;}
-		| logic_exp '?' expression ':' expression {$$ = create_node(NULL, TERN_OP); add_child(&$$, $1); add_child(&$$, $3); add_child(&$$, $5);free_lex_val($2);}; 
+		| logic_exp '?' expression ':' expression {$$ = create_ternop_node( $1, $3, $5); free_lex_val($2);}; 
 
 
 
 
 // operands
-id_exp_a : TK_IDENTIFICADOR {$$ = create_node_declared_identifier($1, IDENT);}
+
+// E4D2 - D#3 - strings are now allowed in expressions
+str_and_char : TK_LIT_STRING {$$ = create_node_literal($1, LIT_STR);}
+			| TK_LIT_CHAR {$$ = create_node_literal($1, LIT_CHAR);};
+
+id_exp_a : TK_IDENTIFICADOR {$$ = create_node_declared_identifier($1, IDENT, K_ID);}
 		| vector {$$ = $1;};
 
 lit_exp_a : TK_LIT_INT {$$ = create_node_literal($1, LIT_INT);}
@@ -301,7 +307,8 @@ operand_exp_l : TK_LIT_FALSE {$$ = create_node_literal($1, LIT_BOOL);}
 
 operand: operand_exp_a {$$ = $1;}
 		| operand_exp_l {$$ = $1;}
-		| unary_op term {$$ = create_node($1, UN_OP); add_child(&$$, $2);};
+		| unary_op term {$$ = create_unop_node($1, $2);}
+		| str_and_char {$$ = $1;};
 
 // operators
 unary_op : '+' | '-' | '!' | '?' | '&'| '*' | '#';

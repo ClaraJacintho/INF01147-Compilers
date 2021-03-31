@@ -1,0 +1,4 @@
+int clara(){
+    int a;
+    a = b + 1;
+}

@@ -1,0 +1,4 @@
+int clara(char a){}
+int main(){
+    clara(12312);
+}

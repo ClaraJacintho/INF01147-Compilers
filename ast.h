@@ -23,13 +23,16 @@ void free_lex_val(lex_val_t* lex_val);
 node_t* insert_node_next(node_t** n1, node_t* n2);
 node_t* create_node(lex_val_t* val, node_type_t type);
 void add_child(node_t** node, node_t* child);
+type_t type_inference(type_t a, type_t b);
 
 node_t* create_node_literal(lex_val_t* val, node_type_t node_type);
-node_t* create_node_declared_identifier(lex_val_t* val, node_type_t node_type);
-node_t *create_node_declared_identifier_vec(lex_val_t *val, node_type_t node_type);
+node_t *create_node_declared_identifier(lex_val_t *val, node_type_t node_type, kind_t k);
+node_t* create_vector_node(node_t* id, node_t* exp);
 node_t* create_init_node(node_t* id, lex_val_t* lv, node_t* val);
 node_t* create_attrib_node(node_t* id, lex_val_t* lv, node_t* val);
+node_t *create_ternop_node(node_t *opA, node_t *opB, node_t *opC);
 node_t* create_binop_node(node_t* opA, lex_val_t* lv, node_t* opB);
+node_t *create_unop_node(lex_val_t *lv, node_t *opA);
 node_t* create_input_node(node_t* id);
 node_t* create_output_node(node_t* var);
 node_t* create_func_call_node(lex_val_t* lv, node_t* args);

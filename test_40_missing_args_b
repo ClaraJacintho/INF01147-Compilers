@@ -1,0 +1,4 @@
+int clara(int a, int b){}
+int main(){
+    clara(3);
+}

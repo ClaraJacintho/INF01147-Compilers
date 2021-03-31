@@ -14,6 +14,7 @@ char* get_type_name(type_t t){
         case TYPE_CHAR: return "char";
         case TYPE_STRING: return "string";
         case TYPE_X: return "x";
+        case TYPE_CMD: return "command";
         default: return "";
     }
 }
@@ -35,7 +36,7 @@ void throw_declared_error(symbol_t* a, symbol_t* b){
 }
 
 void throw_undeclared_error(int line, char* key){
-   printf("Error on line %i! Identifier %s has not been declared. First use in this function \n",
+   printf("Error on line %i! Identifier %s has not been declared.\n",
                 line, key);
     exit(ERR_UNDECLARED);
 }
@@ -47,7 +48,7 @@ void throw_wrong_type_error(int line, char* key, type_t a, type_t b){
 }
 
 void throw_func_string_error(int line){
-    printf("Error on line %i! Function cannot have parameters or return type string\n", line);
+    printf("Error on line %i! Function cannot have parameters, arguments or return type string\n", line);
     exit(ERR_FUNCTION_STRING);
 }
 
@@ -123,11 +124,11 @@ void throw_excess_args_error(int line, char* func_name, int n_args){
 
 void throw_string_char_to_x_error(int line, char* ident, type_t a, type_t b){
     if(a == TYPE_STRING){
-        printf("Error on line %i! Cannot convert identifier %s of type string to %s. \n",
+        printf("Error on line %i! Cannot convert %s of type string to %s. \n",
             line, ident, get_type_name(b));
         exit(ERR_STRING_TO_X);
     } else if(a == TYPE_CHAR){
-        printf("Error on line %i! Cannot convert identifier %s of type char to %s. \n",
+        printf("Error on line %i! Cannot convert %s of type char to %s. \n",
             line, ident, get_type_name(b));
         exit(ERR_CHAR_TO_X);
     }

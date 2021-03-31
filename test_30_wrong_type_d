@@ -1,0 +1,5 @@
+int clara(){}
+int main(){
+    string a;
+    a = clara();
+}

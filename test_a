@@ -1,12 +1,17 @@
-int clara(int a, int b, int c){
-    int sdfsd;
-    char f <= 'c';
-    if(true){
-        float xxx;
-        xxx = 6;
-    }
-}
-int foo(){
-    int a;
-    a = 5;
+int main(int a, int b){
+   if(true){
+        int x <= 4, y <= 4.0, ff, z <= true;
+        if(false){
+            char c  <= 'c';
+            for(x = 5: x < 6: x = x+1){
+                string ccc <= "aaaaa", f;
+                while(x? main(1,2) : 54) do {
+                    bool aaa, bbb, ccc;
+                    string s;
+                    aaa = 4 + x + ccc / bbb;
+                    s = 4+5.0 ? "aaa" : f;
+                }
+            }
+        }
+   }
 }

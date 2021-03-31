@@ -3,7 +3,6 @@
 #include <string.h>
 #include "data.h"
 #include "error_handling.h"
-
 // inits scope as NULL so that global scope will have ->next == NULL
 stack_item_t* current_scope = NULL;
 
@@ -22,6 +21,7 @@ void print_type(type_t t){
         case TYPE_CMD: printf("command \n"); break;
         case TYPE_X: printf("X \n"); break;
         default:
+        printf("ERROR %d\n", t);
             break;
     }
 }
@@ -95,7 +95,7 @@ void free_scope(symbol_table_t* scope){
     symbol_table_item_t* st = scope->top;
     while(st != NULL){
         symbol_t* s = st->item;
-        printf("FREEING: %s\n", s->key);
+        //printf("FREEING ST: %s\n", s->key);
         free(s->key);
         if(s->data && (s->data->type == LIT_STR_T || s->data->type == ID)){
             free(s->data->val.s);
@@ -135,7 +135,7 @@ void free_scope_node(scope_tree_node_t *scope){
 void free_all_scopes(){
     free_scope_node(scope_root);
     free(scope_root);
-    free(scope_tree_current);
+    // free(scope_tree_current);
     free(current_scope);
 }
 
@@ -145,7 +145,7 @@ symbol_t* get_current_function(){
         return NULL;
     
     while(aux != NULL){
-        if(aux->scope->bottom->item->kind == K_FUNC){
+        if(aux->scope->bottom != NULL && aux->scope->bottom->item!= NULL && aux->scope->bottom->item->kind == K_FUNC){
             return aux->scope->bottom->item;
         }
         aux = aux->next;
@@ -198,7 +198,8 @@ void enter_scope(){
 }
 
 void leave_scope(){
-    print_table(current_scope->scope);
+    // DEBUG
+    //print_table(current_scope->scope);
     stack_item_t *aux = current_scope;
     current_scope = current_scope->next;
     free(aux);
@@ -224,27 +225,29 @@ char* get_key(lex_val_t *lv){
     char *key;
     switch (lv->type){
         case LIT_INT_T: 
-                key = calloc(20, 1);
-                sprintf(key, "\"%d\"", lv->val.n);
-                break;
-                break; 
+            key = calloc(20, 1);
+            sprintf(key, "\"%d\"", lv->val.n);
+            break;
         case LIT_FLOAT_T:
-                key = calloc(20, 1);
-                sprintf(key, "\"%f\"", lv->val.f);
-                break;
+            key = calloc(20, 1);
+            sprintf(key, "\"%f\"", lv->val.f);
+            break;
         case LIT_BOOL_T:
-                key = calloc(7, 1);
-                sprintf(key, "\"%s\"", lv->val.b ? "true" : "false");
-                break;
+            key = (char *) malloc (6);
+            strcpy(key, lv->val.b == 1 ? "true" : "false");
+            break;
 
         case LIT_CHAR_T:  
-                key = calloc(4, 1);
-                sprintf(key, "\'%c\'", lv->val.c);
-                break;
+            key = (char *) malloc (4);
+            key[0] = '\'';
+            key[1] = lv->val.c;
+            key[2] = '\'';
+            key[3] = '\0';
+            break;
 
         case LIT_STR_T: 
-                key = strdup(lv->val.s);;
-                break;
+            key = strdup(lv->val.s);;
+            break;
         case ID:
         case DECL_ID: 
             key = strdup(lv->val.name);;
@@ -391,6 +394,7 @@ symbol_table_item_t* creates_st_item_list(symbol_table_item_t* a, symbol_table_i
     a->next = b;
     return a;
 }
+
 
 symbol_table_item_t* create_identifier(lex_val_t *lv, kind_t k, int count, type_t t, lex_val_t* size){
     char *name = get_key(lv);

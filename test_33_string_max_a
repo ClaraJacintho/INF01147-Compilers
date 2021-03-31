@@ -1,0 +1,4 @@
+string clara;
+int main(){
+    clara = "aaaaa";
+}

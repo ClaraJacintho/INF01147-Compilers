@@ -1,0 +1,305 @@
+// ----------------------------- 3.1 Declaracoes de Variaveis Globais -----------------------------
+// As variaveis sao declaradas pelo tipo seguido de uma lista
+// composta de pelo menos um nome de variavel (identifica-
+// dor) separadas por virgula. Variaveis podem ser dos tipos primitivos 
+//int, float, char, bool e string. As declaracoes de
+//variaveis globais sao terminadas por ponto-e-vırgula, 
+//e nao podem receber valores de inicializacao
+
+int a;
+float b, c;
+bool d, e, f;
+
+//O tipo pode estar precedido opcionalmente pela palavra reservada static.
+
+static int g;
+static bool h, i;
+
+// A linguagem inclui tambem a declaracao de vetores, feita pela definicao
+// de seu tamanho inteiro positivo entre colchetes, colocada
+// a direita do nome.
+static int j[9];
+bool k[6], l;
+string m;
+
+// ----------------------------- 3.2 Definicao de Funcoes -----------------------------
+// Cada funcao e definida por um cabecalho e um corpo, sendo
+// que esta definicao nao e terminada por ponto-e-vırgula. O
+// cabecalho consiste no tipo do valor de retorno, que nao pode
+// ser vetor, seguido pelo nome da funcao e terminado por uma
+// lista. A lista e dada entre parenteses e e composta por zero
+// ou mais parametros de entrada, separados por vırgula.
+
+int clara_func(int ii){}
+int another_func(int a, bool b, char c){}
+bool o(){}
+int p(int lista){}
+char q(int a, bool b, char c){}
+
+//O tipo pode estar precedido opcionalmente pela palavra reservada static. 
+static bool r(){}
+bool s(int clara){}
+
+//Cada parametro e definido pelo seu tipo e nome, e nao pode ser do tipo vetor.
+// O tipo de um parametro pode ser opcionalmente precedido da palavra 
+// reservada const. 
+
+bool t(int a, bool b, char c){}
+bool u(const int b, const int c){}
+char v(int a, const int b, int c){}
+
+// O corpo da funcao eh um bloco de comandos.
+int w(){int a; a << 2; input a; output 5; }
+
+// ----------------------------- 3.3 Bloco de Comandos -----------------------------
+// Um bloco de comandos e definido entre chaves, e consiste
+// em uma sequencia, possivelmente vazia, de comandos
+// simples cada um terminado por ponto-e-vırgula. 
+int x(){}
+int y(){
+    int clara;
+    clara >> 5;
+    return clara;
+    break;
+    continue;
+}
+
+// Um bloco de comandos e considerado como um comando unico 
+// simples, recursivamente, e pode ser utilizado em qualquer
+// construc¸ao que aceite um comando simples. 
+int z(){{{{{{{};};};};};};}
+int printf(){}
+
+int hhhhh[15];
+float id[33];
+int main(){
+/* ----------------------------- 3.4 Comandos Simples -----------------------------
+Os comandos simples da linguagem podem ser: declaracao
+de variavel local, atribuicao, construcoes de fluxo de controle, 
+operacoes de entrada, de saıda, e de retorno, um bloco de comandos, 
+e chamadas de funcao. */
+
+// ~~~~~~~~ Declaracao de Variavel ~~~~~~~~
+// Consiste no tipo da variavel precedido opcionalmente pela
+// palavra reservada static, seguido de uma lista composta
+// de pelo menos um nome de variavel (identificador) sepa-
+// radas por vırgula. Os tipos podem ser aqueles descritos
+// na sec¸ao sobre variaveis globais.
+
+int a;
+float b, c;
+static char d;
+static string e, f, g;
+int identificador;
+
+// As declaracoes locais, ao contrario das globais, nao permitem vetores 
+// e podem permitir o uso da palavra reservada const antes do tipo (apos a 
+// palavra reservada static caso esta aparecer). 
+// Uma variavel local pode ser opcionalmente inicializada com um valor
+// valido caso sua declarac ao seja seguida do operador com- ˜
+// posto <= e de um identificador ou literal.
+
+int h <= identificador;
+int i, j <= identificador, k;
+int l <= 1, m <= a, n <= true, o <= 5.6;
+float p <= 1, q <= a, r <= true, s <= 5.6;
+bool t <= 1, u <= a, v <= false, w <= 5.6;
+string x <= "string"; 
+char y <= 'e';
+int clara;
+
+// ~~~~~~~~ Comando de Atribuicao ~~~~~~~~
+// Existe apenas uma forma de atribuicao para identificadores.
+// Identificadores podem receber valores assim (primeiro caso
+// de um identificador simples; segundo caso de um identificador que e um vetor): ´
+// identificador = expressao
+
+clara = ?a ? printf() : clara_func(c);
+
+// identificador[expressao] = expressao
+hhhhh[4] = 5+-5;
+hhhhh[45+-0+(8^(true))] = #clara;
+
+// ~~~~~~~~ Comandos de Entrada e Saıda ~~~~~~~~
+// Para entrada de dados, o comando tem a palavra reservada
+// input, seguida de um identificador.
+input clara;
+
+// O comando de saıda e identificado pela palavra reservada
+// output, seguida de um identificador ou de um literal.
+output clara;
+output 5;
+output 5.6;
+
+// ~~~~~~~~ Chamada de Funcao ~~~~~~~~
+// Uma chamada de funcao consiste no nome da funcao,
+// seguida de argumentos entre parenteses separados por
+// vırgula. Um argumento pode ser uma expressao.
+z();
+another_func(5+5, clara, 'c');
+
+// ~~~~~~~~ Comandos de Shift ~~~~~~~~
+// Sendo numero um literal inteiro positivo, temos os exem- 
+// plos validos abaixo. Os exemplos sao dados com  <<, mas
+// as entradas sao sintaticamente validas tambem para >>. O
+// numero deve ser representado por um literal inteiro.
+// identificador << numero
+clara << 4;
+
+// identificador[express˜ao] << numero
+hhhhh[5+5*(6)] << 4;
+
+// ~~~~~~~~ Comando de Retorno, Break, Continue ~~~~~~~~
+// Retorno e a palavra reservada return seguida de uma expressao.
+return clara;
+return 5+(5);
+// Os comandos break e continue sao simples. 
+break;
+continue;
+
+// ~~~~~~~~ Comandos de Controle de Fluxo ~~~~~~~~
+//  Em todas as construcoes de controle de fluxo, o termo  bloco
+// indica um bloco de comandos. Este nao tem ponto-e-vırgula
+// nestas situacoes
+
+// A linguagem possui construcoes condicionais, iterativas e de 
+// selecao para controle estruturado de fluxo. As condicionais 
+// incluem o if com o else opcional, assim:
+// if (expressao) bloco
+if (clara) {}
+if (clara) {return 5*+5;}
+
+//if (expressao) bloco else bloco
+if(false){}else{}
+if(true){input clara;}else{}
+if(5){}else{printf();}
+if(clara){output 5;}else{clara << 2;}
+
+// As construcoes iterativas sao as seguintes no formato:
+// Os dois marcadores atrib do comando for representa
+// o comando de atribuicao,  unico aceito nestas posicoes.
+// for (atrib: expressao: atrib) bloco
+
+int num;
+for(i = 0 : i < num : i = i+1){}
+for(i = false||true : i>=43 : i = ?i+#1){clara_func(1.0);}
+
+//while (expressao) do bloco
+while(true) do {}
+while(x) do {printf();}
+
+
+// ----------------------------- 3.5 Expr. Aritmeticas, Logicas -----------------------------
+// As expressoes podem ser de dois tipos: aritmeticas e logicas. 
+// As expressoes aritmeticas podem ter como operandos:  ´
+// (a) identificadores, opcionalmente seguidos de expressao in-
+//teira entre colchetes, para acesso a vetores; 
+clara = identificador;
+clara = hhhhh[identificador];
+
+// (b) literais numericos como inteiro e ponto-flutuante;
+clara = 5;
+clara = 5.5;
+clara = 5.5e5;
+
+// (c) chamada de funcao. 
+clara = printf();
+clara = clara_func(5);
+
+//As expressoes aritmeticas podem ser formadas re- ´
+// cursivamente com operadores aritmeticos, assim como per- ´
+// mitem o uso de parenteses para forcar uma associatividade ˆ
+// ou precedencia diferente daquela tradicional. A associativi- ˆ
+// dade e a esquerda. 
+
+clara = 5 + 6 * 7 - +hhhhh[identificador] *-6/clara%43;
+clara = (45+7)*7;
+
+// Expressoes logicas podem ser formadas atraves dos ope-
+// radores relacionais aplicados a expressoes aritmeticas, 
+clara = 5+5 ||5*6;
+
+// ou de operadores logicos aplicados a expressoes logicas, recursi- 
+// vamente. Outras expressoes podem ser formadas conside-
+// rando variaveis logicas do tipo bool. A descricao sintatica 
+// deve aceitar qualquer operadores e subexpressao de um des- 
+// ses tipos como validos, deixando para a analise semantica
+// das proximas etapas do projeto a tarefa de verificar a vali-
+// dade dos operandos e operadores.
+
+// Unarios (todos prefixados)
+// + sinal positivo explıcito
+clara = + 4;
+
+// - inverte o sinal
+clara = - 4;
+
+// ! negacao logica
+clara = !clara;
+
+// & acesso ao endereco da variavel
+clara = &clara;
+
+// * acesso ao valor do ponteiro
+clara = *clara;
+
+// ? avalia uma expressao para true ou false
+clara = ?clara;
+
+// # acesso a um identificador como uma tabela hash
+clara = #clara;
+
+// Binarios
+// + soma
+clara = a + b;
+clara = 5++5+-5;
+clara = hhhhh[5]+identificador;
+
+// - subtracao
+clara = 5-7-+6--7;
+clara = a - b;
+
+// * mult
+clara = a * b;
+clara = -7 * +5 * 7;
+
+// / div
+clara = a / b;
+clara = 5 /0; //hehe
+clara = -5 + 5;
+
+// % resto
+clara = 5 %5;
+clara = -6 % 3;
+
+// | bitwise or
+clara = 101001 | 1001010;
+clara = a | 234;
+
+// & bitwise and
+clara = 10101 & 101010;
+clara = 2321 & 1231;
+clara = id[23--7] & 234;
+
+// ^ exp
+clara = 4 ^ 5;
+clara = true ^ false; //lol
+clara = 123 ^id[3];
+
+// relacionais
+clara = a > b;
+clara = a < b;
+clara = a <= b;
+clara = a >= b;
+clara = a == b;
+clara = a != b;
+
+// logicos
+clara = a && b;
+clara = a || b;
+
+// ternario expressao ? : expressao : expressao
+clara = true ? clara_func(1231231) : printf();
+if(true ? 5+5 : true | false) {printf();}
+
+}

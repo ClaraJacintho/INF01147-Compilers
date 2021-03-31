@@ -20,11 +20,19 @@ symbol_table.o:
 error_handling.o:
 	gcc -c error_handling.c -o error_handling.o  -ggdb3 -Wall
 
-test:
+test: etapa4
 	./etapa4 < test_a
 
-debug:
+debug: etapa4
 	valgrind --leak-check=full --show-leak-kinds=all --track-origins=yes --verbose ./etapa4 < test_a
+
+nuclear_option: etapa4                               
+	valgrind --leak-check=full --show-leak-kinds=all --track-origins=yes --verbose ./etapa4 < test_a
+	./nuclear_option.sh
+	valgrind --leak-check=full --show-leak-kinds=all --track-origins=yes --verbose ./etapa4 < test_spec
+	valgrind --leak-check=full --show-leak-kinds=all --track-origins=yes --verbose ./etapa4 < test_e3_errors
+	valgrind --leak-check=full --show-leak-kinds=all --track-origins=yes --verbose ./etapa4 < test_type_inference
+
 clean:
 	rm -f lex.yy.* main.o ast.o symbol_table.o error_handling.o parser.tab.* parser.output etapa4
 
