@@ -386,6 +386,33 @@ symbol_t* find_symbol(lex_val_t *lv){
     return NULL; 
 }
 
+symbol_t* find_identifier_symbol(lex_val_t *lv, kind_t k){
+    char *key = get_key(lv);
+    stack_item_t *s = current_scope;
+    while(s != NULL){
+        symbol_table_item_t *aux = s->scope->top;
+        if(aux != NULL){
+            while(aux->next != NULL){
+                if(!strcmp(aux->item->key, key) && (aux->item->kind == k)){
+                    free(key);
+                    return aux->item;
+                }
+                aux = aux->next;
+            }
+
+            // check if the last one is == to the key
+            if(!strcmp(aux->item->key, key) && (aux->item->kind == k)){
+                free(key);
+                return aux->item;
+            }
+
+        }
+        s = s->next;
+    }
+    free(key);
+    return NULL; 
+}
+
 symbol_table_item_t* creates_st_item_list(symbol_table_item_t* a, symbol_table_item_t* b){
     if(b == NULL){
         return a;
@@ -405,7 +432,7 @@ symbol_table_item_t* create_identifier(lex_val_t *lv, kind_t k, int count, type_
 void insert_id(symbol_table_item_t *first, type_t t){
     symbol_table_item_t *aux = first;
     while(aux != NULL){
-        aux->item->type = t;  
+        aux->item->type = t;
         aux->item->size = type_size(t) * aux->item->count;
         if(aux->item->kind == K_VEC && aux->item->type == TYPE_STRING){
             throw_string_vector_error(aux->item->data);

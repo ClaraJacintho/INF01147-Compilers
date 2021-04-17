@@ -27,6 +27,7 @@ symbol_table_item_t* insert_symbol(char* name, lex_val_t* lex_val, type_t type, 
 
 symbol_t* find_in_current_scope(lex_val_t *lv);
 symbol_t* find_symbol(lex_val_t *lv);
+symbol_t* find_identifier_symbol(lex_val_t *lv, kind_t k);
 
 symbol_table_item_t* create_identifier(lex_val_t *lv, kind_t k, int count, type_t t);
 void insert_id(symbol_table_item_t *first, type_t t);

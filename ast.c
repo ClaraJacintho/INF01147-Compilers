@@ -324,7 +324,7 @@ node_t *create_node_declared_identifier(lex_val_t *val, node_type_t node_type, k
     */
     val->type = DECL_ID; // haxx
     node_t *node = create_node(val, node_type);
-    symbol_t* s = find_symbol(val);
+    symbol_t* s = find_identifier_symbol(val, k);
     if(s != NULL){
         if(s->kind == k){
             node->type = s->type;
@@ -393,7 +393,7 @@ int is_convertible_type(type_t t){
 
 
 node_t *create_attrib_node(node_t *id, lex_val_t *lv, node_t *val){
-    if(id->node_type == VECTOR){}
+    kind_t k = id->node_type == VECTOR ? K_VEC : K_ID;
     node_t* node = create_node(lv, ATTR); 
 
     // types must be compatible
@@ -412,8 +412,9 @@ node_t *create_attrib_node(node_t *id, lex_val_t *lv, node_t *val){
     // if id is string, checks if received val exceeds string size
     if(id->type == TYPE_STRING && (val->node_type == IDENT || val->node_type == LIT_STR)){ // prof, não tem como pegar o tamanho de um no de comando, por exemplo, né? 
         int size = get_size_from_identifier(val->lex_val);
-        symbol_t* s = find_symbol(id->lex_val);
-        if(size > s->count){
+        symbol_t* s = find_identifier_symbol(id->lex_val, k);
+        printf("qsldkfjnsqlkjfnqslkdjdf\n");
+        if(size > s->size){
             throw_string_max_error(s, size);
         }
     }
@@ -434,11 +435,11 @@ node_t *create_ternop_node(node_t *opA, node_t *opB, node_t *opC){
 
     if(opB->type != opC->type){
         if(!is_convertible_type(opB->type) || !is_convertible_type(opC->type)){
-            if(!is_convertible_type(opB->type)){
-                throw_string_char_to_x_error(opB->lex_val->line, get_key(opB->lex_val), opB->type, opC->type);
-            }
             if(!is_convertible_type(opC->type)){
                 throw_string_char_to_x_error(opC->lex_val->line, get_key(opC->lex_val), opC->type, opB->type);
+            }
+            if(!is_convertible_type(opB->type)){
+                throw_string_char_to_x_error(opB->lex_val->line, get_key(opB->lex_val), opB->type, opC->type);
             }
         }
     }
@@ -456,12 +457,12 @@ node_t *create_binop_node(node_t *opA, lex_val_t *lv, node_t *opB){
     add_child(&node, opB);
      if(opB->type != opA->type){
         if(!is_convertible_type(opB->type) || !is_convertible_type(opA->type)){
-            if(!is_convertible_type(opA->type)){
-                throw_string_char_to_x_error(opA->lex_val->line, get_key(opA->lex_val), opA->type, opB->type);
-            }
             if(!is_convertible_type(opB->type)){
                 throw_string_char_to_x_error(opB->lex_val->line, get_key(opB->lex_val), opB->type, opA->type);
             } 
+            if(!is_convertible_type(opA->type)){
+                throw_string_char_to_x_error(opA->lex_val->line, get_key(opA->lex_val), opA->type, opB->type);
+            }
         }
     }
 
@@ -508,7 +509,7 @@ node_t* create_func_call_node(lex_val_t *lv, node_t *args){
     lv->type = DECL_ID; //haxxs
     node_t* node = create_node(lv, FUNC_CALL); 
     add_child(&node, args);
-    symbol_t* s = find_symbol(lv);
+    symbol_t* s = find_identifier_symbol(lv, K_FUNC);
 
     if(s != NULL){
         // identifier must be a function
@@ -535,7 +536,12 @@ node_t* create_func_call_node(lex_val_t *lv, node_t *args){
         // types must be compatible
         if(declared_param->item->type != received_arg->type){
             if(!is_convertible_type(declared_param->item->type) || !is_convertible_type(received_arg->type)){
-                throw_wrong_type_args_error(lv->line, s->key, declared_param->item->key, declared_param->item->type, received_arg->type);
+                if(received_arg->type == TYPE_STRING){
+                    throw_func_string_error(lv->line);
+                } else {
+                    throw_wrong_type_args_error(lv->line, s->key, declared_param->item->key, declared_param->item->type, received_arg->type);
+                }
+                
             }
         }
         declared_param = declared_param->next;

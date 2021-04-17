@@ -21,7 +21,7 @@ error_handling.o:
 	gcc -c error_handling.c -o error_handling.o  -ggdb3 -Wall
 
 test: etapa4
-	./etapa4 < test_a
+	./etapa4 < test_x
 
 debug: etapa4
 	valgrind --leak-check=full --show-leak-kinds=all --track-origins=yes --verbose ./etapa4 < test_a

@@ -67,7 +67,6 @@ void throw_kind_error(int line, char* key, kind_t var_k, kind_t use_k){
         printf("Error on line %i! Function %s is being used as a %s\n", line, key, get_kind_name(use_k));
         exit(ERR_FUNCTION);
         break;
-    
     default:
         break;
     }
