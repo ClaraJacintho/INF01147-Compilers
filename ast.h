@@ -43,6 +43,6 @@ node_t *create_cmd_node(node_type_t node_type);
 
 int is_convertible_type(type_t t);
 void update_node_type(node_t *node, type_t t);
-void update_node_init(node_t *node, type_t t);
+node_t* update_node_init(node_t *node, type_t t);
 
 #endif

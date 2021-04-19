@@ -78,6 +78,7 @@ typedef struct patch_s{
 } patch_t;
 
 typedef enum iloc_e{
+    NOP,
     HALT,
     JUMPI,
     LOADI,
@@ -85,13 +86,17 @@ typedef enum iloc_e{
     ADDI,
     STOREAI,
     LOADAI,
-
-
     ADD,
     SUB,
     MULT,
     DIV,
-    NOP,
+    CMP_GT,
+    CMP_LT,
+    CMP_LE,
+    CMP_GE,
+    CMP_EQ,
+    CMP_NE
+   
 } iloc_code;
 
 typedef struct op_s {

@@ -1,5 +1,6 @@
 #include <stdlib.h>
 #include <stdio.h>
+#include <string.h>
 #include "data.h"
 #include "symbol_table.h"
 #include "code_generation.h"
@@ -34,6 +35,32 @@ int gen_label(){
 int get_func_label(char* key){
     symbol_t* symbol = find_function(key);
     return symbol == NULL ? 0  : symbol->label; // 0 == HALT
+}
+
+iloc_code get_op(lex_val_t* lv){
+    char* op = lv->val.name;
+    if(strcmp(op, "+") == 0){
+        return ADD;
+    } else if(strcmp(op, "-") == 0){
+        return SUB;
+    } else if(strcmp(op, "/") == 0){
+        return DIV;
+    } else if(strcmp(op, "*") == 0){
+        return MULT;
+    } else if(strcmp(op, ">") == 0){
+        return CMP_GT;
+    } else if(strcmp(op, "<") == 0){
+        return CMP_LT;
+    } else if(strcmp(op, ">=") == 0){
+        return CMP_GE;
+    } else if(strcmp(op, "<=") == 0){
+        return CMP_LE;
+    } else if(strcmp(op, "==") == 0){
+        return CMP_EQ;
+    } else if(strcmp(op, "!=") == 0){
+        return CMP_NE;
+    }
+    return NOP;
 }
 
 operation_t* gen_code(iloc_code op, int label, int arg0, int arg1, int arg2, operation_t* next){
@@ -117,6 +144,12 @@ operation_t* gen_attribution(node_t* id, node_t* exp){
     return gen_code(STOREAI, NULL_INT, exp->reg, reg, address_scope.addr, NULL);
 }
 
+operation_t* gen_binop(node_t* node){
+    iloc_code operation = get_op(node->lex_val);
+    return gen_code(operation, NULL_INT, node->children[0]->reg, node->children[1]->reg, node->reg, NULL);
+}
+
+
 void print_code(operation_t* code){
     while(code){
         if(code->label != NULL_INT){
@@ -151,9 +184,42 @@ void print_code(operation_t* code){
             case LOADAI:
                 printf("loadAI r%s, %d => r%s", get_reg(code->arg0), code->arg1, get_reg(code->arg2));
                 break;
+            case  ADD: 
+                printf("add r%s, r%s => r%s", get_reg(code->arg0), get_reg(code->arg1), get_reg(code->arg2));
+                break;
+            case SUB:
+                printf("sub r%s, r%s => r%s", get_reg(code->arg0), get_reg(code->arg1), get_reg(code->arg2));
+                break;
+            case MULT:
+                printf("mult r%s, r%s => r%s", get_reg(code->arg0), get_reg(code->arg1), get_reg(code->arg2));
+                break;
+            case DIV:
+                printf("div r%s, r%s => r%s", get_reg(code->arg0), get_reg(code->arg1), get_reg(code->arg2));
+                break;
+            case CMP_GT:
+                printf("cmp_GT r%s, r%s => r%s", get_reg(code->arg0), get_reg(code->arg1), get_reg(code->arg2));
+                break;
+            case CMP_LT:
+                printf("cmp_LT r%s, r%s => r%s", get_reg(code->arg0), get_reg(code->arg1), get_reg(code->arg2));
+                break;
+            case CMP_LE:
+                printf("cmp_LE r%s, r%s => r%s", get_reg(code->arg0), get_reg(code->arg1), get_reg(code->arg2));
+                break;
+            case CMP_GE:
+                printf("cmp_GE r%s, r%s => r%s", get_reg(code->arg0), get_reg(code->arg1), get_reg(code->arg2));
+                break;
+            case CMP_EQ:
+                printf("cmp_EQ r%s, r%s => r%s", get_reg(code->arg0), get_reg(code->arg1), get_reg(code->arg2));
+                break;
+            case CMP_NE:
+                printf("cmp_NE r%s, r%s => r%s", get_reg(code->arg0), get_reg(code->arg1), get_reg(code->arg2));
+                break;
+            case NOP:
+                printf("nop");
+                break;
 
 
-            default:
+            default: printf("%d", code->op_code);
                 break;
         }
 

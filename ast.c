@@ -383,12 +383,12 @@ node_t *create_init_node(node_t *id, lex_val_t *lv, node_t *val){
  * @param node init node
  * @param type new node type
  */
-void update_node_init(node_t *node, type_t t){
+node_t* update_node_init(node_t *node, type_t t){
     if(node == NULL)
-        return;
+        return NULL;
     if(node->node_type == NOT_INIT){
-        update_node_init(node->next, t);
-        return;
+        node_t* next = update_node_init(node->next, t);
+        return next;
     }
     node->type = t;
 
@@ -406,9 +406,11 @@ void update_node_init(node_t *node, type_t t){
     }
     node->children[1]->type = t;
     node->code = concat_code(node->children[1]->code, gen_init(node->children[0], node->children[1]));
-    update_node_init(node->next, t);
-
+    node_t* next = update_node_init(node->next, t);
+    node->code = concat_code(node->code, next == NULL ? NULL : next->code);
+    return node;
 }
+
 
 int is_convertible_type(type_t t){
     if((t == TYPE_BOOL || t == TYPE_INT || t == TYPE_FLOAT ))
@@ -491,7 +493,8 @@ node_t *create_binop_node(node_t *opA, lex_val_t *lv, node_t *opB){
             }
         }
     }
-
+    node->reg = gen_reg();
+    node->code = concat_code(concat_code(node->children[0]->code, node->children[1]->code), gen_binop(node));
     return node;
 }
 

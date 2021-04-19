@@ -1,7 +1,14 @@
 int main(int x, int y){
-    int a <= 666, b, c;
-    b = 69;
-    c = a;
-    x = 42;
-    y = 6;
+    int a <= 6, b <= 9, c;
+    x = a + b;
+    y = 5 - a;
+    c = 14 / 2;
+    int aa, bb, cc, dd, ee, ff, gg;
+    aa = a * b;
+    bb = a > b;
+    cc = a < b;
+    dd = a == 6;
+    ff = a >= b;
+    gg = a <= b;
+
 }
