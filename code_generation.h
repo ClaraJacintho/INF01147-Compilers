@@ -16,4 +16,6 @@ operation_t* gen_code(iloc_code op, int label, int arg0, int arg1, int arg2, ope
 
 operation_t* init();
 
+operation_t* gen_function_declaration(node_t* func);
+
 void print_code(operation_t* code);

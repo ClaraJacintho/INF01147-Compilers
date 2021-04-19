@@ -12,10 +12,10 @@ int gen_reg(){
 
 char* get_reg(int reg){
     switch(reg){
-        case RFP: return "rfp";
-        case RBSS: return "rbss";
-        case RSP: return "rsp";
-        case RPC: return "rpc";
+        case RFP: return "fp";
+        case RBSS: return "bss";
+        case RSP: return "sp";
+        case RPC: return "pc";
         case -1: return "AAAAAAAAAA";
         default:{
             char *key = calloc(20, 1);
@@ -59,7 +59,7 @@ operation_t* concat_code(operation_t* a, operation_t* b){
 
     operation_t* aux;
     aux = a;
-    while(a->next != NULL){
+    while(aux->next != NULL){
         aux = aux->next;
     }
 
@@ -82,6 +82,14 @@ operation_t* init(){
     return init_rbss;
 }
 
+operation_t* gen_function_declaration(node_t* func){
+    int s = get_func_size();
+    operation_t* update_rsp = gen_code(ADDI, NULL_INT, RSP, s, RSP, NULL); 
+    operation_t* update_rfp = gen_code(I2I, get_func_label(func->lex_val->val.name), RSP, RFP, NULL_INT, update_rsp);
+    
+    return update_rfp;
+}
+
 void print_code(operation_t* code){
     while(code){
         if(code->label != NULL_INT){
@@ -98,13 +106,20 @@ void print_code(operation_t* code){
                 break;
 
             case LOADI:
-                printf("loadI %d => %s", code->arg0, get_reg(code->arg1));
+                printf("loadI %d => r%s", code->arg0, get_reg(code->arg1));
                 break;
-        
+            
+            case I2I:
+                printf("i2i r%s => r%s", get_reg(code->arg0),  get_reg(code->arg1));
+                break;
+            
+            case ADDI:
+                printf("addI r%s, %d -> r%s", get_reg(code->arg0), code->arg1, get_reg(code->arg2));
+                break;
+
             default:
                 break;
         }
-
 
         printf("\n");
         code = code->next;

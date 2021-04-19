@@ -59,7 +59,8 @@ void print_symbol(symbol_t* s){
         print_args(s->args, s->n_args);
     }
     printf("        count: %i\n", s->count); 
-    printf("        size: %i\n", s->size); 
+    printf("        size: %i\n", s->size);
+    printf("        address: %i\n", s->address); 
     printf("        #################################################\n");
 }
 
@@ -92,11 +93,12 @@ symbol_table_t* create_symbol_table(int named){
     new_scope->top = NULL;
     new_scope->bottom = NULL;
     new_scope->named_scope = named;
-    if(named){
+    if(named == TRUE){
         new_scope->current_address = 0;    
     } else {
         new_scope->current_address = current_scope == NULL ? 0 : current_scope->scope->current_address;
     }
+    //printf("new scope named? %d current address? %d\n", new_scope->named_scope, new_scope->current_address);
     return new_scope;
 }
 
@@ -121,8 +123,6 @@ void free_scope(symbol_table_t* scope){
         st = aux;
     }
     free(scope);
-
-   
     
 }
 
@@ -174,7 +174,6 @@ void enter_scope(int named){
     n_scopes += 1;
     symbol_t* func  = get_current_function();
 
-
     if(func != NULL && func->n_args == -1){
         if(func->args != NULL){
             int count = insert_params(func->args);
@@ -209,6 +208,7 @@ void enter_scope(int named){
 void leave_scope(){
     // DEBUG
     //print_table(current_scope->scope);
+    //printf("left scope\n");
     stack_item_t *aux = current_scope;
     current_scope = current_scope->next;
     free(aux);
@@ -317,6 +317,7 @@ void insert_symbol_table_item_in_scope(symbol_table_item_t *item ){
     symbol_t *symbol = item->item;
     symbol->address = current_scope->scope->current_address;
     current_scope->scope->current_address += symbol->size;
+    //printf("++ size: %d, current_address: %d\n", symbol->size, current_scope->scope->current_address);
     if(symbol->kind == K_FUNC){
         symbol->label = gen_label();
     } else {
@@ -373,23 +374,6 @@ type_t get_type(token_t t){
         default:
             return TYPE_X;
     }
-}
-
-symbol_t* find_function(char* key){
-    symbol_table_item_t *aux = scope_root->scope->top;
-    if(aux != NULL){
-        while(aux->next != NULL){
-            if(!strcmp(aux->item->key, key))
-                return aux->item;
-            
-            aux = aux->next;
-        }
-
-        // check if the last one is == to the key
-        if(!strcmp(aux->item->key, key))
-            return aux->item;
-    }
-    return NULL;   
 }
 
 symbol_t* find_symbol(lex_val_t *lv){
@@ -487,6 +471,7 @@ int insert_params(symbol_table_item_t *args){
     aux = args;
     last = args;
     symbol_table_t *scope = current_scope->scope;
+    int curr_addr = current_scope->scope->current_address;
     while(aux && err == NULL){
         err = find_in_current_scope(aux->item->data);
         if(err != NULL){
@@ -496,6 +481,8 @@ int insert_params(symbol_table_item_t *args){
         if(aux->item->type == TYPE_STRING){
             throw_func_string_error(aux->item->declaration_line);
         }
+        aux->item->address = curr_addr;
+        curr_addr += aux->item->size;
         count++;
         last = aux;
         aux = aux->next;
@@ -509,6 +496,7 @@ int insert_params(symbol_table_item_t *args){
         }
         scope->bottom = last;
         scope->size += count;
+        scope->current_address = curr_addr;
     }
     return count;
 }
@@ -547,4 +535,26 @@ int get_size_from_identifier(lex_val_t* lv){
         return s->count;
     }
     return 0;
+}
+
+symbol_t* find_function(char* key){
+    symbol_table_item_t *aux = scope_root->scope->top;
+    if(aux != NULL){
+        while(aux->next != NULL){
+            if(!strcmp(aux->item->key, key))
+                return aux->item;
+            aux = aux->next;
+        }
+
+        // check if the last one is == to the key
+        if(!strcmp(aux->item->key, key))
+            return aux->item;
+    }
+    return NULL;   
+}
+
+// returns how size of all local vars for the current function
+int get_func_size(){
+    //print_table(current_scope->scope);
+    return current_scope->scope->current_address;
 }

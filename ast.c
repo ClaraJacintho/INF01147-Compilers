@@ -260,6 +260,10 @@ node_t* insert_node_next(node_t** n1, node_t *n2){
         } else {
             (*n1)->next = n2;
         }
+        if(n2 != NULL){
+            (*n1)->code = concat_code((*n1)->code, n2->code);
+        }
+        
         return *n1;
     } else {
         if(*n1 != NULL){
@@ -302,6 +306,12 @@ type_t type_inference(type_t a, type_t b){
     return TYPE_BOOL;
 }
 
+node_t* create_function_declaration(node_t* header, node_t* commands){
+    add_child(&header, commands);
+    operation_t* func_declaration_code = gen_function_declaration(header);
+    header->code = concat_code(func_declaration_code, commands->code);
+    return header;
+}
 
 /**
  * Creates an AST node for a literal and inserts it in the symbol table;

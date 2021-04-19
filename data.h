@@ -81,11 +81,14 @@ typedef enum iloc_e{
     HALT,
     JUMPI,
     LOADI,
+    I2I,
+    ADDI,
+
+
     ADD,
     SUB,
     MULT,
     DIV,
-    ADDI,
     NOP,
 } iloc_code;
 

@@ -1,9 +1,11 @@
 %{
+	#include <stdio.h>
+	#include <stdlib.h>
 	#include "data.h"
 	#include "ast.h"
 	#include "symbol_table.h"
-	#include <stdio.h>
-	#include <stdlib.h>
+	#include "code_generation.h"
+
 
 	int yylex(void);
 	int yyerror (char const *s);
@@ -170,7 +172,7 @@ global_id_list : global_var_id ',' global_id_list {$$ = creates_st_item_list($1,
 
 
 // function declaration
-function : function_header '{' {enter_scope(TRUE);} commands '}'{leave_scope(); $$ = $1; add_child(&$$, $4);}
+function : function_header '{' {enter_scope(TRUE);} commands '}'{$$ = create_function_declaration($1, $4); leave_scope();}
 function_header : type TK_IDENTIFICADOR '('params_list')' {$$ = create_node($2, FUNC); update_node_type($$, $1); create_function($2, $1, $4);}
 				| TK_PR_STATIC type TK_IDENTIFICADOR '('params_list')' {$$ = create_node($3, FUNC); update_node_type($$, $2); create_function($3, $2, $5);};
 params_list : params {$$ = $1;}
