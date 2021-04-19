@@ -95,6 +95,13 @@ operation_t* gen_literal(node_t* lit){
     return gen_code(LOADI, NULL_INT, lit->lex_val->val.n, lit->reg, NULL_INT, NULL);
 }
 
+operation_t* gen_load_var(node_t* id){
+    struct var_addr_and_scope address_scope = get_var_addr_and_scope(id->lex_val);
+    int reg = address_scope.scope_type == 1 ? RBSS : RFP;
+
+    return gen_code(LOADAI, NULL_INT, reg, address_scope.addr, id->reg, NULL);
+}
+
 operation_t* gen_init(node_t* id, node_t* val){
     struct var_addr_and_scope address_scope = get_var_addr_and_scope(id->lex_val);
     int reg = address_scope.scope_type == 1 ? RBSS : RFP;
@@ -103,11 +110,12 @@ operation_t* gen_init(node_t* id, node_t* val){
     return gen_code(STOREAI, NULL_INT, val->reg, reg, address_scope.addr, NULL);
 }
 
-// operation_t* gen_attribution(node_t* id, node_t* exp){
-//     struct var_addr_and_scope address_scope = get_var_addr_and_scope(id->lex_val);
-//     int reg = address_scope.scope_type == 1 ? RBSS : RFP;
-//     return gen_code(STOREAI, NULL_INT, address_scope.addr, )
-// }
+operation_t* gen_attribution(node_t* id, node_t* exp){
+    struct var_addr_and_scope address_scope = get_var_addr_and_scope(id->lex_val);
+
+    int reg = address_scope.scope_type == 1 ? RBSS : RFP;
+    return gen_code(STOREAI, NULL_INT, exp->reg, reg, address_scope.addr, NULL);
+}
 
 void print_code(operation_t* code){
     while(code){
@@ -139,6 +147,11 @@ void print_code(operation_t* code){
             case STOREAI:
                 printf("storeAI r%s => r%s, %d", get_reg(code->arg0), get_reg(code->arg1), code->arg2);
                 break;
+            
+            case LOADAI:
+                printf("loadAI r%s, %d => r%s", get_reg(code->arg0), code->arg1, get_reg(code->arg2));
+                break;
+
 
             default:
                 break;

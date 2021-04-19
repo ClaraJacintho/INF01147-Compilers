@@ -356,6 +356,8 @@ node_t *create_node_declared_identifier(lex_val_t *val, node_type_t node_type, k
     } else {
         throw_undeclared_error(val->line, get_key(val));
     }
+    node->reg = gen_reg();
+    node->code = gen_load_var(node);
     return node;
 }
 
@@ -445,6 +447,7 @@ node_t *create_attrib_node(node_t *id, lex_val_t *lv, node_t *val){
     add_child(&node, id);
     node->type = type_inference(id->type, val->type);
     add_child(&node, val);
+    node->code = concat_code(val->code, gen_attribution(id, val));
     return node;
 }
 

@@ -439,8 +439,25 @@ symbol_table_item_t* creates_st_item_list(symbol_table_item_t* a, symbol_table_i
         return a;
     }
 
+     if(a == NULL){
+        return b;
+    }
+
     a->next = b;
     return a;
+}
+
+symbol_table_item_t* creates_st_item_list_return_b(symbol_table_item_t* a, symbol_table_item_t* b){
+    if(b == NULL){
+        return a;
+    }
+
+     if(a == NULL){
+        return b;
+    }
+
+    a->next = b;
+    return b;
 }
 
 

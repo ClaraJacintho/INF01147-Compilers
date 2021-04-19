@@ -84,6 +84,7 @@ typedef enum iloc_e{
     I2I,
     ADDI,
     STOREAI,
+    LOADAI,
 
 
     ADD,

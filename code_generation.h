@@ -18,6 +18,8 @@ operation_t* init();
 
 operation_t* gen_function_declaration(node_t* func);
 operation_t* gen_literal(node_t* lit);
+operation_t* gen_load_var(node_t* id);
 operation_t* gen_init(node_t* id, node_t* val);
+operation_t* gen_attribution(node_t* id, node_t* exp);
 
 void print_code(operation_t* code);

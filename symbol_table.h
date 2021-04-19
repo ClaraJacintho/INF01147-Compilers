@@ -19,6 +19,7 @@ int get_size_from_identifier(lex_val_t* lv);
 symbol_table_t* create_symbol_table(int named);
 symbol_table_item_t *create_symbol_table_item(symbol_t *symbol);
 symbol_table_item_t* creates_st_item_list(symbol_table_item_t* a, symbol_table_item_t* b);
+symbol_table_item_t* creates_st_item_list_return_b(symbol_table_item_t* a, symbol_table_item_t* b);
 symbol_t create_symbol(char* name, lex_val_t* lex_val, type_t type, kind_t kind, int count);
 
 void insert_item_in_scope(symbol_table_item_t *i);

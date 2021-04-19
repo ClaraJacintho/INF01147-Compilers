@@ -14,7 +14,8 @@
 	extern void *arvore;
 	// since local vars can be nodes on the tree, we can't just assign $$ a symbol table item
 	// we need to create a var to store all declarations so we can later attribute a type to them
-	symbol_table_item_t *local_list = NULL;
+	symbol_table_item_t *local_list_top = NULL;
+	symbol_table_item_t *local_list_bottom = NULL;
 %}
 
 %union{
@@ -213,22 +214,25 @@ var_type : type 						{$$ = $1;}
 		| TK_PR_STATIC TK_PR_CONST type {$$ = $3;}; 
 
 var : TK_IDENTIFICADOR TK_OC_LE TK_IDENTIFICADOR {
-	local_list = creates_st_item_list(create_identifier($1, K_ID, get_size_from_identifier($3), TYPE_X), local_list);
+	local_list_bottom = creates_st_item_list_return_b(local_list_bottom, create_identifier($1, K_ID, get_size_from_identifier($3), TYPE_X));
+	if(local_list_top == NULL) local_list_top = local_list_bottom;
 	$$ = create_init_node(create_node($1, IDENT), $2, create_node_declared_identifier($3, IDENT, K_ID)); 
 }
 	| TK_IDENTIFICADOR TK_OC_LE literal {
-		local_list = creates_st_item_list(create_identifier($1, K_ID, get_size_from_literal($3->lex_val), TYPE_X), local_list);
+		local_list_bottom = creates_st_item_list_return_b(local_list_bottom, create_identifier($1, K_ID, get_size_from_literal($3->lex_val), TYPE_X));
+		if(local_list_top == NULL) local_list_top = local_list_bottom;
 		$$ = create_init_node(create_node($1, IDENT), $2, $3);
 };
 	| TK_IDENTIFICADOR {
-		local_list = creates_st_item_list(create_identifier($1, K_ID, 0, TYPE_X), local_list);
+		local_list_bottom = creates_st_item_list_return_b(local_list_bottom, create_identifier($1, K_ID, 1, TYPE_X));
+		if(local_list_top == NULL) local_list_top = local_list_bottom;
 		$$ = create_node($1, NOT_INIT);  // Creates a node that wont actually be on the tree
 }
 
 local_var_list: var ',' local_var_list {$$ = insert_node_next(&$1, $3);}
 			| var {$$ = $1;}; 
 
-local_var : var_type local_var_list {$$ = $2; insert_id(local_list, $1); update_node_init($$, $1);  local_list = NULL;};
+local_var : var_type local_var_list {$$ = $2; insert_id(local_list_top, $1); update_node_init($$, $1);  local_list_top = NULL; local_list_bottom = NULL;};
 
 // attribution
 attribution : var_attribution {$$ = $1;}

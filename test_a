@@ -1,10 +1,7 @@
-int a;
-
-int clara(){
-    int foo <= 5;
-}
-
 int main(int x, int y){
-    clara();
-    int fofofof <= 666;
+    int a <= 666, b, c;
+    b = 69;
+    c = a;
+    x = 42;
+    y = 6;
 }
