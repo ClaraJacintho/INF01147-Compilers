@@ -16,7 +16,7 @@ char* get_key(lex_val_t *lv);
 int get_size_from_literal(lex_val_t* lv);
 int get_size_from_identifier(lex_val_t* lv);
 
-symbol_table_t* create_symbol_table();
+symbol_table_t* create_symbol_table(int named);
 symbol_table_item_t *create_symbol_table_item(symbol_t *symbol);
 symbol_table_item_t* creates_st_item_list(symbol_table_item_t* a, symbol_table_item_t* b);
 symbol_t create_symbol(char* name, lex_val_t* lex_val, type_t type, kind_t kind, int count);
@@ -26,6 +26,7 @@ void insert_symbol_table_item_in_scope(symbol_table_item_t *item);
 symbol_table_item_t* insert_symbol(char* name, lex_val_t* lex_val, type_t type, kind_t kind);
 
 symbol_t* find_in_current_scope(lex_val_t *lv);
+symbol_t* find_function(char* key);
 symbol_t* find_symbol(lex_val_t *lv);
 symbol_t* find_identifier_symbol(lex_val_t *lv, kind_t k);
 

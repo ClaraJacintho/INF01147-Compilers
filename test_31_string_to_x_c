@@ -1,4 +1,0 @@
-int clara(int x){}
-int main(){
-    string a;
-    a = true ? "aaa" : 'a'';

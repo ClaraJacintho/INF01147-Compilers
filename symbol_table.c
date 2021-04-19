@@ -3,6 +3,8 @@
 #include <string.h>
 #include "data.h"
 #include "error_handling.h"
+#include "code_generation.h"
+
 // inits scope as NULL so that global scope will have ->next == NULL
 stack_item_t* current_scope = NULL;
 
@@ -64,6 +66,8 @@ void print_symbol(symbol_t* s){
 void print_table(symbol_table_t *t){
     printf("    ------------------------ BEGIN TABLE %d --------------------------\n", n_scopes);
     printf("    size: %i\n", t->size);
+    printf("    current address: %i\n", t->current_address);
+    printf("    named?: %i\n", t->named_scope);
     symbol_table_item_t *aux = t->top;
     while( aux != NULL){
         print_symbol(aux->item);
@@ -82,13 +86,18 @@ void print_stack(){
     }
 }
 
-symbol_table_t* create_symbol_table(){
+symbol_table_t* create_symbol_table(int named){
     symbol_table_t *new_scope = (symbol_table_t *)malloc(sizeof(symbol_table_t));
     new_scope->size = 0;
     new_scope->top = NULL;
     new_scope->bottom = NULL;
+    new_scope->named_scope = named;
+    if(named){
+        new_scope->current_address = 0;    
+    } else {
+        new_scope->current_address = current_scope == NULL ? 0 : current_scope->scope->current_address;
+    }
     return new_scope;
-
 }
 
 void free_scope(symbol_table_t* scope){
@@ -156,8 +165,8 @@ symbol_t* get_current_function(){
 
 int insert_params(symbol_table_item_t *args);
 
-void enter_scope(){
-    symbol_table_t* scope = create_symbol_table();
+void enter_scope(int named){
+    symbol_table_t* scope = create_symbol_table(named);
     stack_item_t *stack_item = (stack_item_t *)malloc(sizeof(stack_item_t));
     stack_item->scope = scope;
     stack_item->next = current_scope;
@@ -304,8 +313,15 @@ symbol_t* find_in_current_scope(lex_val_t *lv){
 
 void insert_symbol_table_item_in_scope(symbol_table_item_t *item ){
     if(current_scope == NULL)
-        enter_scope();
+        enter_scope(FALSE);
     symbol_t *symbol = item->item;
+    symbol->address = current_scope->scope->current_address;
+    current_scope->scope->current_address += symbol->size;
+    if(symbol->kind == K_FUNC){
+        symbol->label = gen_label();
+    } else {
+         symbol->label = -1;
+    }
     symbol_table_item_t *current_top = current_scope->scope->top;
     if(current_top != NULL){
         symbol_t* err = find_in_current_scope(symbol->data);
@@ -326,7 +342,7 @@ void insert_symbol_table_item_in_scope(symbol_table_item_t *item ){
 
 symbol_table_item_t* insert_symbol(symbol_t *symbol){
     symbol_table_item_t *item = (symbol_table_item_t *)malloc(sizeof(symbol_table_item_t));
-    item->item = symbol;    
+    item->item = symbol;
     item->next = NULL;
 
     insert_symbol_table_item_in_scope(item);
@@ -357,6 +373,23 @@ type_t get_type(token_t t){
         default:
             return TYPE_X;
     }
+}
+
+symbol_t* find_function(char* key){
+    symbol_table_item_t *aux = scope_root->scope->top;
+    if(aux != NULL){
+        while(aux->next != NULL){
+            if(!strcmp(aux->item->key, key))
+                return aux->item;
+            
+            aux = aux->next;
+        }
+
+        // check if the last one is == to the key
+        if(!strcmp(aux->item->key, key))
+            return aux->item;
+    }
+    return NULL;   
 }
 
 symbol_t* find_symbol(lex_val_t *lv){
@@ -445,8 +478,9 @@ void insert_id(symbol_table_item_t *first, type_t t){
 }
 
 int insert_params(symbol_table_item_t *args){
-    if(current_scope == NULL)
-        enter_scope();
+    if(current_scope == NULL){
+        enter_scope(TRUE);
+    }
     symbol_t* err = NULL;
     int count = 0;
     symbol_table_item_t *aux, *last;

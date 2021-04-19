@@ -1,8 +1,10 @@
+#include <stdio.h>
+#include <stdlib.h>
 #include "ast.h"
 #include "symbol_table.h"
 #include "error_handling.h"
-#include <stdio.h>
-#include <stdlib.h>
+#include "code_generation.h"
+
 
 /**
  * Creates a lexical value from a literal
@@ -36,8 +38,10 @@ lex_val_t *get_lex_val(int line, token_t type, char *name){
 }
 
 void exporta (void *arvore) {
-    print_edges(arvore);
-    print_node_labels(arvore);
+    // print_edges(arvore);
+    // print_node_labels(arvore);
+    operation_t* ops = concat_code(init(), ((node_t*)arvore)->code);
+    print_code(ops);
 }
 
 void libera (void *arvore){
@@ -219,6 +223,11 @@ node_t* create_node(lex_val_t *val, node_type_t type){
     memset(node, 0, sizeof(node_t));
     node->lex_val = val;
     node->node_type = type;
+
+    node->code = NULL;
+    node->patch_true = NULL;
+    node->patch_false = NULL;
+
     return node;
 }
 

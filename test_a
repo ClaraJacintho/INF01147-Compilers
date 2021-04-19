@@ -1,6 +1,10 @@
-int foo(int a, int b) {
-return a+b;
+int a;
+
+int clara(){
+    int foo <= 5;
 }
-int main() {
-return foo("string", 3); // ERR_WRONG_TYPE_ARGS aqui
+
+int main(int x){
+    clara();
+    int fofofof <= 666;
 }

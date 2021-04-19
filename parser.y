@@ -170,7 +170,7 @@ global_id_list : global_var_id ',' global_id_list {$$ = creates_st_item_list($1,
 
 
 // function declaration
-function : function_header code_block { $$ = $1; add_child(&$$, $2);}
+function : function_header '{' {enter_scope(TRUE);} commands '}'{leave_scope(); $$ = $1; add_child(&$$, $4);}
 function_header : type TK_IDENTIFICADOR '('params_list')' {$$ = create_node($2, FUNC); update_node_type($$, $1); create_function($2, $1, $4);}
 				| TK_PR_STATIC type TK_IDENTIFICADOR '('params_list')' {$$ = create_node($3, FUNC); update_node_type($$, $2); create_function($3, $2, $5);};
 params_list : params {$$ = $1;}
@@ -181,7 +181,7 @@ param: type TK_IDENTIFICADOR {$$ = create_identifier($2, K_ID, 1, $1);}
 params: param ',' params {$$ = creates_st_item_list($1, $3);}
 		| param {$$ = creates_st_item_list($1, NULL);};
 
-code_block : '{' {enter_scope();} commands '}'{leave_scope(); $$ = $3;}; 
+code_block : '{' {enter_scope(FALSE);} commands '}'{leave_scope(); $$ = $3;}; 
 
 // ------------------------------------ commands ------------------------------------
 commands : command commands {$$ = insert_node_next(&$1, $2);}
