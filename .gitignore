@@ -65,6 +65,7 @@ parser.tab.*
 *.png
 *.txt
 *.dot
+*.iloc
 E2/
 .vscode
 tests

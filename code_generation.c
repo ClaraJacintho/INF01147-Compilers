@@ -4,7 +4,9 @@
 #include "symbol_table.h"
 #include "code_generation.h"
 
-int reg = 0, label = 1;
+// starting number for registers, labels (L0 is halt) 
+// and counter for number of instructions in program
+int reg = 0, label = 1, gen_instructions = 0;
 
 int gen_reg(){
     return reg++;
@@ -16,10 +18,10 @@ char* get_reg(int reg){
         case RBSS: return "bss";
         case RSP: return "sp";
         case RPC: return "pc";
-        case -1: return "AAAAAAAAAA";
+        case -1: return "OHNO";
         default:{
             char *key = calloc(20, 1);
-            sprintf(key, "\"%d\"", reg);
+            sprintf(key, "%d", reg);
             return key;
         }
     }
@@ -31,9 +33,6 @@ int gen_label(){
 
 int get_func_label(char* key){
     symbol_t* symbol = find_function(key);
-    if(symbol == NULL){
-        printf("sjgmdjfngdskjng\n");
-    }
     return symbol == NULL ? 0  : symbol->label; // 0 == HALT
 }
 
@@ -45,6 +44,7 @@ operation_t* gen_code(iloc_code op, int label, int arg0, int arg1, int arg2, ope
     code->arg1 = arg1;
     code->arg2 = arg2;
     code->next = next;
+    gen_instructions++;
     return code;
 }
 
@@ -77,7 +77,7 @@ operation_t* init(){
     operation_t* main = gen_code(JUMPI, NULL_INT, get_func_label("main"), NULL_INT, NULL_INT, halt);
     operation_t* init_rsp = gen_code(LOADI, NULL_INT, 1024, RSP, NULL_INT, main);
     operation_t* init_rfp = gen_code(LOADI, NULL_INT, 1024, RFP, NULL_INT, init_rsp);
-    operation_t* init_rbss = gen_code(LOADI, NULL_INT, 500, RBSS, NULL_INT, init_rfp);
+    operation_t* init_rbss = gen_code(LOADI, NULL_INT, gen_instructions+1, RBSS, NULL_INT, init_rfp);
 
     return init_rbss;
 }
@@ -89,6 +89,25 @@ operation_t* gen_function_declaration(node_t* func){
     
     return update_rfp;
 }
+
+
+operation_t* gen_literal(node_t* lit){
+    return gen_code(LOADI, NULL_INT, lit->lex_val->val.n, lit->reg, NULL_INT, NULL);
+}
+
+operation_t* gen_init(node_t* id, node_t* val){
+    struct var_addr_and_scope address_scope = get_var_addr_and_scope(id->lex_val);
+    int reg = address_scope.scope_type == 1 ? RBSS : RFP;
+    
+    // storeAI val_reg => RBSS if global, RFP if local + var shift in stack
+    return gen_code(STOREAI, NULL_INT, val->reg, reg, address_scope.addr, NULL);
+}
+
+// operation_t* gen_attribution(node_t* id, node_t* exp){
+//     struct var_addr_and_scope address_scope = get_var_addr_and_scope(id->lex_val);
+//     int reg = address_scope.scope_type == 1 ? RBSS : RFP;
+//     return gen_code(STOREAI, NULL_INT, address_scope.addr, )
+// }
 
 void print_code(operation_t* code){
     while(code){
@@ -114,7 +133,11 @@ void print_code(operation_t* code){
                 break;
             
             case ADDI:
-                printf("addI r%s, %d -> r%s", get_reg(code->arg0), code->arg1, get_reg(code->arg2));
+                printf("addI r%s, %d => r%s", get_reg(code->arg0), code->arg1, get_reg(code->arg2));
+                break;
+
+            case STOREAI:
+                printf("storeAI r%s => r%s, %d", get_reg(code->arg0), get_reg(code->arg1), code->arg2);
                 break;
 
             default:

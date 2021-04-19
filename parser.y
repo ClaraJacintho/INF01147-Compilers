@@ -165,7 +165,7 @@ global_declaration : type global_id_list ';' {insert_id($2, $1);}
 
 vector_declaration: TK_IDENTIFICADOR '['TK_LIT_INT']' {$$ = create_identifier($1, K_VEC, $3->val.n, TYPE_X); insert_literal($3);}
 
-global_var_id: TK_IDENTIFICADOR {$$ = create_identifier($1, K_ID, 0, TYPE_X);}
+global_var_id: TK_IDENTIFICADOR {$$ = create_identifier($1, K_ID, 1, TYPE_X);}
 			| vector_declaration {$$ = $1;};
 global_id_list : global_var_id ',' global_id_list {$$ = creates_st_item_list($1, $3);}
 				| global_var_id {$$ = creates_st_item_list($1, NULL);};
@@ -228,7 +228,7 @@ var : TK_IDENTIFICADOR TK_OC_LE TK_IDENTIFICADOR {
 local_var_list: var ',' local_var_list {$$ = insert_node_next(&$1, $3);}
 			| var {$$ = $1;}; 
 
-local_var : var_type local_var_list {$$ = $2; update_node_init($$, $1); insert_id(local_list, $1); local_list = NULL;};
+local_var : var_type local_var_list {$$ = $2; insert_id(local_list, $1); update_node_init($$, $1);  local_list = NULL;};
 
 // attribution
 attribution : var_attribution {$$ = $1;}

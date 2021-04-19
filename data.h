@@ -83,6 +83,7 @@ typedef enum iloc_e{
     LOADI,
     I2I,
     ADDI,
+    STOREAI,
 
 
     ADD,
@@ -108,6 +109,7 @@ typedef struct node_s{
     type_t type;
 
     operation_t* code;
+    int reg;
     
     // backpatching for short-circuit
     patch_t* patch_true;
@@ -149,6 +151,7 @@ typedef struct symbol_table_s {
     int size;
     int current_address;
     int named_scope;
+    int global;
     symbol_table_item_t *top;
     symbol_table_item_t *bottom;
 
@@ -170,5 +173,10 @@ typedef struct scope_tree_node_s{
     // points to the first child - the rest must be access through its brothers
     struct scope_tree_node_s *children;
 } scope_tree_node_t;
+
+struct var_addr_and_scope{
+    int addr;
+    int scope_type;
+};
 
 #endif

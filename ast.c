@@ -322,6 +322,8 @@ node_t* create_function_declaration(node_t* header, node_t* commands){
 node_t* create_node_literal(lex_val_t *val, node_type_t node_type){
     node_t *node = create_node(val, node_type);
     node->type = get_type(val->type);
+    node->reg = gen_reg();
+    node->code = gen_literal(node);
     insert_literal(val);
     return node;
 }
@@ -369,6 +371,7 @@ node_t *create_init_node(node_t *id, lex_val_t *lv, node_t *val){
     node_t* node = create_node(lv, INIT); 
     add_child(&node, id);
     add_child(&node, val);
+    
     return node;
 }
 
@@ -400,6 +403,7 @@ void update_node_init(node_t *node, type_t t){
             throw_wrong_type_error(child->lex_val->line, node->children[0]->lex_val->val.s, t, child->type);
     }
     node->children[1]->type = t;
+    node->code = concat_code(node->children[1]->code, gen_init(node->children[0], node->children[1]));
     update_node_init(node->next, t);
 
 }

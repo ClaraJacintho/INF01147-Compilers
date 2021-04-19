@@ -68,7 +68,8 @@ void print_table(symbol_table_t *t){
     printf("    ------------------------ BEGIN TABLE %d --------------------------\n", n_scopes);
     printf("    size: %i\n", t->size);
     printf("    current address: %i\n", t->current_address);
-    printf("    named?: %i\n", t->named_scope);
+    printf("    named?: %s\n", t->named_scope ? "true" : "false");
+    printf("    global?: %s\n", t->global ? "true" : "false");
     symbol_table_item_t *aux = t->top;
     while( aux != NULL){
         print_symbol(aux->item);
@@ -93,6 +94,7 @@ symbol_table_t* create_symbol_table(int named){
     new_scope->top = NULL;
     new_scope->bottom = NULL;
     new_scope->named_scope = named;
+    new_scope->global = FALSE;
     if(named == TRUE){
         new_scope->current_address = 0;    
     } else {
@@ -167,6 +169,8 @@ int insert_params(symbol_table_item_t *args);
 
 void enter_scope(int named){
     symbol_table_t* scope = create_symbol_table(named);
+    if(current_scope == NULL)
+        scope->global = TRUE;
     stack_item_t *stack_item = (stack_item_t *)malloc(sizeof(stack_item_t));
     stack_item->scope = scope;
     stack_item->next = current_scope;
@@ -555,6 +559,36 @@ symbol_t* find_function(char* key){
 
 // returns how size of all local vars for the current function
 int get_func_size(){
-    //print_table(current_scope->scope);
     return current_scope->scope->current_address;
+}
+
+struct var_addr_and_scope get_var_addr_and_scope(lex_val_t* lv){
+    char *key = get_key(lv);
+    stack_item_t *s = current_scope;
+    while(s != NULL){
+        symbol_table_item_t *aux = s->scope->top;
+        if(aux != NULL){
+            while(aux->next != NULL){
+                if(!strcmp(aux->item->key, key)){
+                    free(key);
+                    struct var_addr_and_scope res = { .addr =aux->item->address, .scope_type=s->scope->global};
+                    return res;
+                }
+                aux = aux->next;
+            }
+
+            // check if the last one is == to the key
+            if(!strcmp(aux->item->key, key)){
+                free(key);
+                struct var_addr_and_scope res = { .addr =aux->item->address, .scope_type=s->scope->global};
+                return res;
+            }
+
+        }
+        s = s->next;
+    }
+    free(key);
+    struct var_addr_and_scope res = {.addr = -1, .scope_type = 66};
+    return res; 
+
 }

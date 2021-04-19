@@ -41,3 +41,4 @@ symbol_t* get_current_function();
 
 symbol_t* find_function(char* key);
 int get_func_size();
+struct var_addr_and_scope get_var_addr_and_scope(lex_val_t* lv);
