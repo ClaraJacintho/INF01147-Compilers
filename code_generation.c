@@ -291,22 +291,6 @@ void gen_for(node_t* node){
 
 }
 
-// struct code *gera_WHILE(struct AST *cond, struct AST *bloco) {
-//     struct code *x = rot();
-//     struct code *y = rot();
-//     struct code *z = rot();
-//     struct code *z_zump = gera_code(NULL_LABEL, op_jumpI, NULL_REGIS, NULL_REGIS, z->label, NULL_REGIS, NULL);
-
-//     remenda(cond, REMENDO_T, x->label);
-//     remenda(cond, REMENDO_F, y->label);
-
-//     struct code *c = concat(z, cond->codigo, x);
-//     c = concat(c, (bloco == NULL) ? NULL : bloco->codigo, z_zump);
-//     c = concat(c, y, NULL);
-
-//     return c;
-// }
-
 void gen_while(node_t* node){
     int check_cond = gen_label();
     int cond_true = gen_label();
@@ -322,6 +306,26 @@ void gen_while(node_t* node){
     node->code = concat_code(concat_code(node->code, jmp), condition_false);
 
 }
+
+// struct code *gera_args(struct AST *params) {
+//     struct AST *aux = params;
+//     struct code *c=NULL, *c_aux=NULL;
+//     int i;
+//     for (i = INIT_ESC_NOMEADO; aux != NULL; i += 4) {
+//         if (i == INIT_ESC_NOMEADO) {
+//             c = aux->codigo;
+//             c = concat(c, gera_code(NULL_LABEL, op_storeAI, aux->local, NULL_REGIS, RSP, i, NULL), NULL);
+//         } else {
+//             c_aux = aux->codigo;
+//             c = concat(c, c_aux, gera_code(NULL_LABEL, op_storeAI, aux->local, NULL_REGIS, RSP, i, NULL));
+//         }
+//         aux = aux->prox;
+//     }
+//     return c;
+// }
+
+
+
 
 void print_code(operation_t* code){
     while(code){
