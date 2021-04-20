@@ -184,7 +184,7 @@ void enter_scope(int named){
             func->n_args = 0;
         }
     }
-
+    
     scope_tree_node_t* scope_node = (scope_tree_node_t *)malloc(sizeof(scope_tree_node_t));
     scope_node->scope = scope;
     scope_node->parent = scope_tree_current;

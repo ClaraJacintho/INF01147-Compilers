@@ -4,7 +4,6 @@
 #include "data.h"
 #include "symbol_table.h"
 #include "code_generation.h"
-#include "ast.h"
 
 // starting number for registers, labels (L0 is halt) 
 // and counter for number of instructions in program
@@ -335,11 +334,12 @@ operation_t* gen_func_call(node_t* node){
 }
 
 void save_return(node_t* node){
-    node->code = concat_code(node->children[0]->code, gen_code(STOREAI, NULL_INT, node->children[0]->reg, RFP, 4, NULL));
+    node->code = concat_code(concat_code(node->children[0]->code, gen_code(STOREAI, NULL_INT, node->children[0]->reg, RFP, 4, NULL)), gen_return(node));
 }
 
 operation_t* gen_return(node_t* node){
-    if(strcmp(node->lex_val->val.name, "main") ==0 ) {
+    symbol_t* f = get_current_function();
+    if( strcmp(f->data->val.name, "main") ==0 ) {
         return gen_code(JUMPI, NULL_INT, 0, NULL_INT, NULL_INT, NULL);
     }
     int reg = gen_reg();

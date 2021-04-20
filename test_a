@@ -1,18 +1,20 @@
+/* recursion: 720 in the bss address */
 int x;
 
-int clara(int n)
-{   
-    int i, r <= 0;
-    for(i = 0 : i < n : i = i + 1){
-        r = r + 2;
+int fatorial (int n)
+{
+    int temp;
+    if (n == 1) {
+       return n;
     }
-    return r;         
+    temp = fatorial(n-1) * n;
+    return temp;          
 }
 
 int main()
 {
   int y;
   y = 6;
-  x = clara(y);
+  x = fatorial(y);
   return 0;
 }
