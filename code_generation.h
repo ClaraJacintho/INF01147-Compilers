@@ -23,6 +23,18 @@ operation_t* gen_literal(node_t* lit);
 operation_t* gen_load_var(node_t* id);
 operation_t* gen_init(node_t* id, node_t* val);
 operation_t* gen_attribution(node_t* id, node_t* exp);
-operation_t* gen_binop(node_t* op);
+
+void gen_binop(node_t* op);
+void gen_unop(node_t* node);
+void gen_not(node_t* node);
+
+patch_t* make_patch(int *addr);
+void patch(node_t* n, int type, int label);
+void patch_val(patch_t* p, int label);
+patch_t* make_patch_list(patch_t* a, patch_t* b);
+void gen_bool_exp(node_t* node);
+void gen_and(node_t* node);
+void gen_or(node_t* node);
+
 
 void print_code(operation_t* code);

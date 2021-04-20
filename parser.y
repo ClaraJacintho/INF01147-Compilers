@@ -124,6 +124,8 @@ local_var_list
 var_attribution 
 vector_attribution
 str_and_char
+or_exp
+and_exp
 
 %type<symbol> 
 global_var_id
@@ -286,8 +288,8 @@ while : TK_PR_WHILE '('expression')'  TK_PR_DO code_block {$$ = create_cmd_node(
 // F → (E) | id
 // priority low to high: ternary logic compare +- /%* ^ ()
 
-expression : logic_exp {$$ = $1;}
-		| logic_exp '?' expression ':' expression {$$ = create_ternop_node( $1, $3, $5); free_lex_val($2);}; 
+expression : or_exp {$$ = $1;}
+		| or_exp '?' expression ':' expression {$$ = create_ternop_node( $1, $3, $5); free_lex_val($2);}; 
 
 
 
@@ -318,28 +320,27 @@ operand: operand_exp_a {$$ = $1;}
 
 // operators
 unary_op : '+' | '-' | '!' | '?' | '&'| '*' | '#';
-logic_ops : '|' | '&' | TK_OC_OR | TK_OC_AND;
+logic_ops : '|' | '&';
 compare_ops : '<' | '>' | TK_OC_LE | TK_OC_GE | TK_OC_EQ | TK_OC_NE;
 sum: '+' | '-';
 mul: '*' | '/' | '%';
 exponent: '^';
 
 // expression definition
+or_exp: or_exp TK_OC_OR and_exp {$$ = create_binop_node($1, $2, $3); gen_or($$);}
+	| and_exp {$$ = $1;};
+and_exp: and_exp TK_OC_AND logic_exp {$$ = create_binop_node($1, $2, $3); printf("fufufufufufck\n"); gen_and($$);}
+	| logic_exp {$$ = $1;};
 logic_exp : logic_exp logic_ops compare_exp {$$ = create_binop_node($1, $2, $3);}
 	| compare_exp {$$ = $1;};
-
-compare_exp : compare_exp compare_ops sum_exp {$$ = create_binop_node($1, $2, $3);}
+compare_exp : compare_exp compare_ops sum_exp {$$ = create_binop_node($1, $2, $3); gen_bool_exp($$);}
 	| sum_exp {$$ = $1;};
-
-sum_exp : sum_exp sum mul_exp {$$ = create_binop_node($1, $2, $3);}
+sum_exp : sum_exp sum mul_exp {$$ = create_binop_node($1, $2, $3); gen_binop($$);}
 	| mul_exp {$$ = $1;};
-
-mul_exp : mul_exp mul exponent_exp {$$ = create_binop_node($1, $2, $3);}
+mul_exp : mul_exp mul exponent_exp {$$ = create_binop_node($1, $2, $3); gen_binop($$);}
 	| exponent_exp {$$ = $1;};
-
 exponent_exp : exponent_exp exponent term {$$ = create_binop_node($1, $2, $3);}
 	| term {$$ = $1;};
-
 term : '(' expression ')' {$$ = $2;}
 	|  operand {$$ = $1;};
 

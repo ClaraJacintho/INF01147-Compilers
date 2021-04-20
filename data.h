@@ -95,7 +95,12 @@ typedef enum iloc_e{
     CMP_LE,
     CMP_GE,
     CMP_EQ,
-    CMP_NE
+    CMP_NE,
+    RSUBI,
+    AND,
+    OR,
+    NOT,
+    CBR,
    
 } iloc_code;
 

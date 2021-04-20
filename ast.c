@@ -480,6 +480,7 @@ node_t *create_ternop_node(node_t *opA, node_t *opB, node_t *opC){
 
 node_t *create_binop_node(node_t *opA, lex_val_t *lv, node_t *opB){
     node_t* node = create_node(lv, BIN_OP); 
+    printf("aaaaaaaaaaaaa %d\n", node->patch_true != NULL ? 1 : 0);
     add_child(&node, opA);
     node->type = type_inference(opA->type, opB->type);
     add_child(&node, opB);
@@ -493,15 +494,14 @@ node_t *create_binop_node(node_t *opA, lex_val_t *lv, node_t *opB){
             }
         }
     }
-    node->reg = gen_reg();
-    node->code = concat_code(concat_code(node->children[0]->code, node->children[1]->code), gen_binop(node));
-    return node;
+     return node;
 }
 
 node_t *create_unop_node(lex_val_t *lv, node_t *opA){
     node_t* node = create_node(lv, UN_OP); 
     add_child(&node, opA);
     node->type = opA->type;
+    gen_unop(node);
     return node;
 }
 

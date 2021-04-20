@@ -1,14 +1,5 @@
 int main(int x, int y){
     int a <= 6, b <= 9, c;
-    x = a + b;
-    y = 5 - a;
-    c = 14 / 2;
-    int aa, bb, cc, dd, ee, ff, gg;
-    aa = a * b;
-    bb = a > b;
-    cc = a < b;
-    dd = a == 6;
-    ff = a >= b;
-    gg = a <= b;
-
+    //y = a == 1 || b != 5;
+    x = (a < 5) && (b > 66);
 }

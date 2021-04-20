@@ -4,6 +4,7 @@
 #include "data.h"
 #include "symbol_table.h"
 #include "code_generation.h"
+#include "ast.h"
 
 // starting number for registers, labels (L0 is halt) 
 // and counter for number of instructions in program
@@ -86,6 +87,7 @@ operation_t* concat_code(operation_t* a, operation_t* b){
 
     operation_t* aux;
     aux = a;
+    
     while(aux->next != NULL){
         aux = aux->next;
     }
@@ -144,11 +146,106 @@ operation_t* gen_attribution(node_t* id, node_t* exp){
     return gen_code(STOREAI, NULL_INT, exp->reg, reg, address_scope.addr, NULL);
 }
 
-operation_t* gen_binop(node_t* node){
+void gen_binop(node_t* node){
+    node->reg = gen_reg();
     iloc_code operation = get_op(node->lex_val);
-    return gen_code(operation, NULL_INT, node->children[0]->reg, node->children[1]->reg, node->reg, NULL);
+    node->code = concat_code(node->children[0]->code,
+                gen_code(operation, NULL_INT, node->children[0]->reg, node->children[1]->reg, node->reg, NULL));
 }
 
+void gen_not(node_t* node){
+    node->code = node->children[0]->code;
+    node->patch_false = node->children[0]->patch_true;
+    node->patch_true = node->children[0]->patch_false;
+}
+
+void gen_unop(node_t* node){
+    char* op = node->lex_val->val.s;
+    if(strcmp(op, "+") == 0){
+        node->reg = node->children[0]->reg;
+        node->code = node->children[0]->code;
+    } else if(strcmp(op, "-") == 0){
+        node->code = concat_code( node->children[0]->code, gen_code(RSUBI, NULL_INT, node->children[0]->reg, 0, node->reg, NULL));
+    } else  if(strcmp(op, "!") == 0){
+       gen_not(node);
+    }
+}
+
+patch_t* make_patch(int *addr){
+    patch_t* patch = (patch_t *)malloc(sizeof(patch_t));
+    patch->addr = addr;
+    patch->next = NULL;
+
+    return patch;
+}
+
+void patch(node_t* n, int type, int label){
+    if(type == TRUE){
+        patch_val(n->patch_true, label);
+        return;
+    } else {
+        patch_val(n->patch_false, label);
+        return;
+    }
+}
+
+void patch_val(patch_t* p, int label){
+    if(p == NULL){
+        return;
+    }
+    *p->addr = label;
+    patch_val(p->next, label);
+}
+
+patch_t* make_patch_list(patch_t* a, patch_t* b){
+    if(a == NULL)
+        return b;
+    else if(b == NULL)
+        return a;
+    
+    patch_t* aux = a;
+    while(aux->next != NULL){
+        aux = aux->next;
+    }
+    aux->next = b;
+    return a;
+}
+
+/**
+ * generates the code for a boolean expression, and creates
+ * patches in the op node so it can be backpatched
+ * @param node node_t
+ * @returns a list of generated code
+ */
+void gen_bool_exp(node_t* node){
+    operation_t* conditional_branch = gen_code(CBR, NULL_INT, node->reg, 0, 0, NULL);
+    iloc_code op =  get_op(node->lex_val);
+    operation_t* code = gen_code(op, NULL_INT, node->children[0]->reg, node->children[1]->reg, node->reg, conditional_branch);
+
+    node->patch_true = make_patch(&conditional_branch->arg1);
+    node->patch_false = make_patch(&conditional_branch->arg2);
+
+    operation_t* inter = concat_code(node->children[0]->code, node->children[1]->code);
+    node->code = concat_code(inter, code);
+}
+
+void gen_and(node_t* node){
+    operation_t* placeholder = gen_code(NOP, gen_label(), NULL_INT, NULL_INT, NULL_INT, NULL);
+    patch(node, TRUE, placeholder->label);
+    node->patch_true = node->children[1]->patch_true;
+    node->patch_false = make_patch_list(node->children[0]->patch_false, node->children[1]->patch_false);
+    operation_t* inter = concat_code(node->children[0]->code, placeholder);
+    node->code = concat_code(inter, node->children[1]->code);
+}
+
+void gen_or(node_t* node){
+    operation_t* placeholder = gen_code(NOP, gen_label(), NULL_INT, NULL_INT, NULL_INT, NULL);
+    patch(node, FALSE, placeholder->label);
+    node->patch_false = node->children[1]->patch_false;
+    node->patch_true = make_patch_list(node->children[0]->patch_true, node->children[1]->patch_true);
+    operation_t* inter = concat_code(node->children[0]->code, placeholder);
+    node->code = concat_code(inter, node->children[1]->code);
+}
 
 void print_code(operation_t* code){
     while(code){
@@ -197,28 +294,35 @@ void print_code(operation_t* code){
                 printf("div r%s, r%s => r%s", get_reg(code->arg0), get_reg(code->arg1), get_reg(code->arg2));
                 break;
             case CMP_GT:
-                printf("cmp_GT r%s, r%s => r%s", get_reg(code->arg0), get_reg(code->arg1), get_reg(code->arg2));
+                printf("cmp_GT r%s, r%s -> r%s", get_reg(code->arg0), get_reg(code->arg1), get_reg(code->arg2));
                 break;
             case CMP_LT:
-                printf("cmp_LT r%s, r%s => r%s", get_reg(code->arg0), get_reg(code->arg1), get_reg(code->arg2));
+                printf("cmp_LT r%s, r%s -> r%s", get_reg(code->arg0), get_reg(code->arg1), get_reg(code->arg2));
                 break;
             case CMP_LE:
-                printf("cmp_LE r%s, r%s => r%s", get_reg(code->arg0), get_reg(code->arg1), get_reg(code->arg2));
+                printf("cmp_LE r%s, r%s -> r%s", get_reg(code->arg0), get_reg(code->arg1), get_reg(code->arg2));
                 break;
             case CMP_GE:
-                printf("cmp_GE r%s, r%s => r%s", get_reg(code->arg0), get_reg(code->arg1), get_reg(code->arg2));
+                printf("cmp_GE r%s, r%s -> r%s", get_reg(code->arg0), get_reg(code->arg1), get_reg(code->arg2));
                 break;
             case CMP_EQ:
-                printf("cmp_EQ r%s, r%s => r%s", get_reg(code->arg0), get_reg(code->arg1), get_reg(code->arg2));
+                printf("cmp_EQ r%s, r%s -> r%s", get_reg(code->arg0), get_reg(code->arg1), get_reg(code->arg2));
                 break;
             case CMP_NE:
-                printf("cmp_NE r%s, r%s => r%s", get_reg(code->arg0), get_reg(code->arg1), get_reg(code->arg2));
+                printf("cmp_NE r%s, r%s -> r%s", get_reg(code->arg0), get_reg(code->arg1), get_reg(code->arg2));
                 break;
+            
+            case RSUBI:
+                printf("rsubI r%s, %d => r%s", get_reg(code->arg0), code->arg1, get_reg(code->arg2));
+            break;
+            case CBR:
+                printf("cbr r%s -> L%d, L%d", get_reg(code->arg0), code->arg1, code->arg2);
+            break;
+            
+            
             case NOP:
                 printf("nop");
                 break;
-
-
             default: printf("%d", code->op_code);
                 break;
         }
