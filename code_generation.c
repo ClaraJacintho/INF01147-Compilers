@@ -307,24 +307,6 @@ void gen_while(node_t* node){
 
 }
 
-// struct code *gera_args(struct AST *params) {
-//     struct AST *aux = params;
-//     struct code *c=NULL, *c_aux=NULL;
-//     int i;
-//     for (i = INIT_ESC_NOMEADO; aux != NULL; i += 4) {
-//         if (i == INIT_ESC_NOMEADO) {
-//             c = aux->codigo;
-//             c = concat(c, gera_code(NULL_LABEL, op_storeAI, aux->local, NULL_REGIS, RSP, i, NULL), NULL);
-//         } else {
-//             c_aux = aux->codigo;
-//             c = concat(c, c_aux, gera_code(NULL_LABEL, op_storeAI, aux->local, NULL_REGIS, RSP, i, NULL));
-//         }
-//         aux = aux->prox;
-//     }
-//     return c;
-// }
-
-
 
 
 void print_code(operation_t* code){
