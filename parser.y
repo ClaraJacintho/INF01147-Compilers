@@ -274,12 +274,12 @@ continue : TK_PR_CONTINUE {$$ = create_cmd_node(CONTINUE);};
 
 // ------------------------------------ expressions ------------------------------------
 
-if : TK_PR_IF '(' expression ')' code_block {$$ = create_cmd_node(IF); add_child(&$$, $3); add_child(&$$, $5); }
-   | TK_PR_IF '(' expression ')' code_block else {$$ = create_cmd_node(IF); add_child(&$$, $3); add_child(&$$, $5);add_child(&$$, $6);};
+if : TK_PR_IF '(' expression ')' code_block {$$ = create_cmd_node(IF); add_child(&$$, $3); add_child(&$$, $5); gen_if($$);}
+   | TK_PR_IF '(' expression ')' code_block else {$$ = create_cmd_node(IF); add_child(&$$, $3); add_child(&$$, $5);add_child(&$$, $6); gen_if($$);};
 
 else: TK_PR_ELSE code_block {$$ = $2;}; 
 
-for : TK_PR_FOR '(' attribution ':' expression ':' attribution ')' code_block { $$ = create_cmd_node(FOR); add_child(&$$, $3); add_child(&$$, $5); add_child(&$$, $7);add_child(&$$, $9);}; 
+for : TK_PR_FOR '(' attribution ':' expression ':' attribution ')' code_block { $$ = create_cmd_node(FOR); add_child(&$$, $3); add_child(&$$, $5); add_child(&$$, $7);add_child(&$$, $9); gen_for($$);}; 
 
 while : TK_PR_WHILE '('expression')'  TK_PR_DO code_block {$$ = create_cmd_node(WHILE); add_child(&$$, $3); add_child(&$$, $6);};
 // for priority, follow the example:
@@ -289,7 +289,7 @@ while : TK_PR_WHILE '('expression')'  TK_PR_DO code_block {$$ = create_cmd_node(
 // priority low to high: ternary logic compare +- /%* ^ ()
 
 expression : or_exp {$$ = $1;}
-		| or_exp '?' expression ':' expression {$$ = create_ternop_node( $1, $3, $5); free_lex_val($2);}; 
+		| or_exp '?' expression ':' expression {$$ = create_ternop_node( $1, $3, $5); free_lex_val($2); gen_ternop($$);}; 
 
 
 

@@ -149,7 +149,7 @@ operation_t* gen_attribution(node_t* id, node_t* exp){
 void gen_binop(node_t* node){
     node->reg = gen_reg();
     iloc_code operation = get_op(node->lex_val);
-    node->code = concat_code(node->children[0]->code,
+    node->code = concat_code( concat_code(node->children[0]->code, node->children[1]->code),
                 gen_code(operation, NULL_INT, node->children[0]->reg, node->children[1]->reg, node->reg, NULL));
 }
 
@@ -179,22 +179,12 @@ patch_t* make_patch(int *addr){
     return patch;
 }
 
-void patch(node_t* n, int type, int label){
-    if(type == TRUE){
-        patch_val(n->patch_true, label);
-        return;
-    } else {
-        patch_val(n->patch_false, label);
-        return;
-    }
-}
-
-void patch_val(patch_t* p, int label){
+void patch(patch_t* p, int label){
     if(p == NULL){
         return;
     }
     *p->addr = label;
-    patch_val(p->next, label);
+    patch(p->next, label);
 }
 
 patch_t* make_patch_list(patch_t* a, patch_t* b){
@@ -218,6 +208,7 @@ patch_t* make_patch_list(patch_t* a, patch_t* b){
  * @returns a list of generated code
  */
 void gen_bool_exp(node_t* node){
+    node->reg = gen_reg();
     operation_t* conditional_branch = gen_code(CBR, NULL_INT, node->reg, 0, 0, NULL);
     iloc_code op =  get_op(node->lex_val);
     operation_t* code = gen_code(op, NULL_INT, node->children[0]->reg, node->children[1]->reg, node->reg, conditional_branch);
@@ -231,7 +222,7 @@ void gen_bool_exp(node_t* node){
 
 void gen_and(node_t* node){
     operation_t* placeholder = gen_code(NOP, gen_label(), NULL_INT, NULL_INT, NULL_INT, NULL);
-    patch(node, TRUE, placeholder->label);
+    patch(node->patch_true, placeholder->label);
     node->patch_true = node->children[1]->patch_true;
     node->patch_false = make_patch_list(node->children[0]->patch_false, node->children[1]->patch_false);
     operation_t* inter = concat_code(node->children[0]->code, placeholder);
@@ -240,11 +231,64 @@ void gen_and(node_t* node){
 
 void gen_or(node_t* node){
     operation_t* placeholder = gen_code(NOP, gen_label(), NULL_INT, NULL_INT, NULL_INT, NULL);
-    patch(node, FALSE, placeholder->label);
+    patch(node->patch_false, placeholder->label);
     node->patch_false = node->children[1]->patch_false;
     node->patch_true = make_patch_list(node->children[0]->patch_true, node->children[1]->patch_true);
     operation_t* inter = concat_code(node->children[0]->code, placeholder);
     node->code = concat_code(inter, node->children[1]->code);
+}
+
+void gen_if(node_t* node){
+    operation_t* if_true = gen_code(NOP, gen_label(), NULL_INT, NULL_INT, NULL_INT, NULL);
+    operation_t* if_false = gen_code(NOP, gen_label(), NULL_INT, NULL_INT, NULL_INT, NULL);
+    patch(node->children[0]->patch_true, if_true->label);
+    patch(node->children[0]->patch_false, if_false->label);
+
+    node->code = concat_code(concat_code(node->children[0]->code, if_true), node->children[1]->code);
+
+    // else
+    if(node->children[2] != NULL){
+        operation_t* if_else = gen_code(NOP, gen_label(), NULL_INT, NULL_INT, NULL_INT, NULL);
+        operation_t* else_jmp = gen_code(JUMPI, NULL_INT, if_else->label, NULL_INT, NULL_INT, if_false);
+        operation_t* else_end = gen_code(JUMPI, NULL_INT, if_else->label, NULL_INT, NULL_INT, if_else);
+        node->code = concat_code(node->code, concat_code(concat_code(else_jmp, node->children[2]->code), else_end));
+    } else {
+        node->code = concat_code(node->code, if_false);
+    }
+}
+
+void gen_ternop(node_t* node){
+    node->reg = gen_reg();
+    operation_t* if_true = gen_code(NOP, gen_label(), NULL_INT, NULL_INT, NULL_INT, NULL);
+    operation_t* if_false = gen_code(NOP, gen_label(), NULL_INT, NULL_INT, NULL_INT, NULL);
+    patch(node->children[0]->patch_true, if_true->label);
+    patch(node->children[0]->patch_false, if_false->label);
+
+    operation_t* res_v = gen_code(I2I, NULL_INT, node->children[1]->reg, node->reg, NULL_INT, NULL);
+    node->code = concat_code(concat_code(concat_code(node->children[0]->code, if_true), node->children[1]->code), res_v); //oh god   
+
+    operation_t* if_else = gen_code(NOP, gen_label(), NULL_INT, NULL_INT, NULL_INT, NULL);
+    operation_t* else_jmp = gen_code(JUMPI, NULL_INT, if_else->label, NULL_INT, NULL_INT, if_false);
+    operation_t* else_end = gen_code(JUMPI, NULL_INT, if_else->label, NULL_INT, NULL_INT, if_else);
+    operation_t* res_f = gen_code(I2I, NULL_INT, node->children[2]->reg, node->reg, NULL_INT, else_end);
+    node->code = concat_code(node->code, concat_code(concat_code(else_jmp, node->children[2]->code), res_f));
+}
+
+void gen_for(node_t* node){
+    int check_cond_lbl = gen_label();
+    int condition_true_lbl = gen_label();
+    operation_t* condition_false = gen_code(NOP, gen_label(), NULL_INT, NULL_INT, NULL_INT, NULL);
+
+    operation_t* jmp = gen_code(JUMPI, NULL_INT, check_cond_lbl, NULL_INT, NULL_INT, NULL);
+    
+    patch(node->children[1]->patch_true, condition_true_lbl);
+    patch(node->children[1]->patch_false, condition_false->label);
+
+    node->children[1]->code->label = check_cond_lbl;
+    node->children[2]->code->label = condition_true_lbl;
+    node->code = concat_code(concat_code(node->children[0]->code, node->children[1]->code), node->children[2]->code) ;
+    node->code = concat_code(concat_code(concat_code(node->code,node->children[3]->code), jmp), condition_false);
+
 }
 
 void print_code(operation_t* code){
@@ -318,7 +362,6 @@ void print_code(operation_t* code){
             case CBR:
                 printf("cbr r%s -> L%d, L%d", get_reg(code->arg0), code->arg1, code->arg2);
             break;
-            
             
             case NOP:
                 printf("nop");

@@ -1,5 +1,6 @@
 int main(int x, int y){
-    int a <= 6, b <= 9, c;
-    //y = a == 1 || b != 5;
-    x = (a < 5) && (b > 66);
+    int a <= 6, b <= 0;
+    for(a = 0 : a < 5 : a = a + 1){
+        b = b + 1;
+    }
 }

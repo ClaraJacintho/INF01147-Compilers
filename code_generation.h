@@ -29,12 +29,14 @@ void gen_unop(node_t* node);
 void gen_not(node_t* node);
 
 patch_t* make_patch(int *addr);
-void patch(node_t* n, int type, int label);
-void patch_val(patch_t* p, int label);
+void patch(patch_t* p, int label);
 patch_t* make_patch_list(patch_t* a, patch_t* b);
 void gen_bool_exp(node_t* node);
 void gen_and(node_t* node);
 void gen_or(node_t* node);
 
+void gen_if(node_t* node);
+void gen_ternop(node_t* node);
+void gen_for(node_t* node);
 
 void print_code(operation_t* code);
