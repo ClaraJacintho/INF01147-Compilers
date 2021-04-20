@@ -96,7 +96,6 @@ operation_t* concat_code(operation_t* a, operation_t* b){
     return a;
 }
 
-
 operation_t* gen_halt(){
     return gen_code(HALT, 0, NULL_INT, NULL_INT, NULL_INT, NULL);
 }
@@ -239,12 +238,13 @@ void gen_or(node_t* node){
 }
 
 void gen_if(node_t* node){
-    operation_t* if_true = gen_code(NOP, gen_label(), NULL_INT, NULL_INT, NULL_INT, NULL);
+    int if_true = gen_label();
     operation_t* if_false = gen_code(NOP, gen_label(), NULL_INT, NULL_INT, NULL_INT, NULL);
-    patch(node->children[0]->patch_true, if_true->label);
+    patch(node->children[0]->patch_true, if_true);
     patch(node->children[0]->patch_false, if_false->label);
 
-    node->code = concat_code(concat_code(node->children[0]->code, if_true), node->children[1]->code);
+    node->children[1]->code->label = if_true;
+    node->code = concat_code(node->children[0]->code, node->children[1]->code);
 
     // else
     if(node->children[2] != NULL){
@@ -288,6 +288,38 @@ void gen_for(node_t* node){
     node->children[2]->code->label = condition_true_lbl;
     node->code = concat_code(concat_code(node->children[0]->code, node->children[1]->code), node->children[2]->code) ;
     node->code = concat_code(concat_code(concat_code(node->code,node->children[3]->code), jmp), condition_false);
+
+}
+
+// struct code *gera_WHILE(struct AST *cond, struct AST *bloco) {
+//     struct code *x = rot();
+//     struct code *y = rot();
+//     struct code *z = rot();
+//     struct code *z_zump = gera_code(NULL_LABEL, op_jumpI, NULL_REGIS, NULL_REGIS, z->label, NULL_REGIS, NULL);
+
+//     remenda(cond, REMENDO_T, x->label);
+//     remenda(cond, REMENDO_F, y->label);
+
+//     struct code *c = concat(z, cond->codigo, x);
+//     c = concat(c, (bloco == NULL) ? NULL : bloco->codigo, z_zump);
+//     c = concat(c, y, NULL);
+
+//     return c;
+// }
+
+void gen_while(node_t* node){
+    int check_cond = gen_label();
+    int cond_true = gen_label();
+    operation_t* condition_false = gen_code(NOP, gen_label(), NULL_INT, NULL_INT, NULL_INT, NULL);
+    operation_t* jmp = gen_code(JUMPI, NULL_INT, check_cond, NULL_INT, NULL_INT, NULL);
+
+    patch(node->children[0]->patch_true, cond_true);
+    patch(node->children[0]->patch_false, condition_false->label);
+
+    node->children[0]->code->label = check_cond;
+    node->children[1]->code->label = cond_true;
+    node->code = concat_code(node->children[0]->code, node->children[1]->code);
+    node->code = concat_code(concat_code(node->code, jmp), condition_false);
 
 }
 

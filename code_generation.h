@@ -38,5 +38,6 @@ void gen_or(node_t* node);
 void gen_if(node_t* node);
 void gen_ternop(node_t* node);
 void gen_for(node_t* node);
+void gen_while(node_t* node);
 
 void print_code(operation_t* code);

@@ -1,6 +1,9 @@
+int a;
 int main(int x, int y){
-    int a <= 6, b <= 0;
-    for(a = 0 : a < 5 : a = a + 1){
-        b = b + 1;
+    int b <= 0;
+    a = 6;
+    while(a > 7) do {
+        b = b + 2;
+        a = a - 1;
     }
 }

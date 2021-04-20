@@ -281,7 +281,7 @@ else: TK_PR_ELSE code_block {$$ = $2;};
 
 for : TK_PR_FOR '(' attribution ':' expression ':' attribution ')' code_block { $$ = create_cmd_node(FOR); add_child(&$$, $3); add_child(&$$, $5); add_child(&$$, $7);add_child(&$$, $9); gen_for($$);}; 
 
-while : TK_PR_WHILE '('expression')'  TK_PR_DO code_block {$$ = create_cmd_node(WHILE); add_child(&$$, $3); add_child(&$$, $6);};
+while : TK_PR_WHILE '('expression')'  TK_PR_DO code_block {$$ = create_cmd_node(WHILE); add_child(&$$, $3); add_child(&$$, $6); gen_while($$);};
 // for priority, follow the example:
 // E → E+T | T
 // T → T*F | F
