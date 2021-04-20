@@ -307,7 +307,49 @@ void gen_while(node_t* node){
 
 }
 
+operation_t* gen_args(node_t* params){
+    operation_t* res = NULL;
+    node_t* aux = params;
+    int shift = 16; // since we have return addr, return content, RSF and RFP before
+    while(aux){
+        // save param in function scope
+        operation_t* store = gen_code(STOREAI, NULL_INT, aux->reg, RSP, shift, NULL);
+        res = concat_code(concat_code(res, aux->code), store);
+        shift += 4;
+        aux = aux->next;
+    }
+    return res;
+}
 
+operation_t* gen_func_call(node_t* node){
+    int reg = gen_reg();
+    operation_t* return_val = gen_code(LOADAI, NULL_INT, RSP, 4, node->reg, NULL);
+    operation_t* jmp = gen_code(JUMPI, NULL_INT, get_func_label(node->lex_val->val.name), NULL_INT, NULL_INT, return_val);
+    operation_t* store_return_pos = gen_code(STOREAI, NULL_INT, reg, RSP, 0, jmp);
+    operation_t* get_return_pos = gen_code(ADDI, NULL_INT, RPC, 3, reg , store_return_pos);
+    operation_t* args = concat_code(gen_args(node->children[0]), get_return_pos);
+    operation_t* store_rfp = gen_code(STOREAI, NULL_INT, RFP, RSP, 8, args);
+    operation_t* store_rsp = gen_code(STOREAI, NULL_INT, RSP, RSP, 12, store_rfp);
+
+    return store_rsp;
+}
+
+void save_return(node_t* node){
+    node->code = concat_code(node->children[0]->code, gen_code(STOREAI, NULL_INT, node->children[0]->reg, RFP, 4, NULL));
+}
+
+operation_t* gen_return(node_t* node){
+    if(strcmp(node->lex_val->val.name, "main") ==0 ) {
+        return gen_code(JUMPI, NULL_INT, 0, NULL_INT, NULL_INT, NULL);
+    }
+    int reg = gen_reg();
+    operation_t* jmp_back = gen_code(JUMP, NULL_INT, reg, NULL_INT, NULL_INT, NULL);
+    operation_t* load_rfp = gen_code(LOADAI, NULL_INT, RFP, 8, RFP, jmp_back);
+    operation_t* load_rsp = gen_code(LOADAI, NULL_INT, RFP, 12, RSP, load_rfp);
+    operation_t* load_return_addr = gen_code(LOADAI, NULL_INT, RFP, 0, reg, load_rsp);
+
+    return load_return_addr;
+}
 
 void print_code(operation_t* code){
     while(code){
@@ -379,6 +421,9 @@ void print_code(operation_t* code){
             break;
             case CBR:
                 printf("cbr r%s -> L%d, L%d", get_reg(code->arg0), code->arg1, code->arg2);
+            break;
+            case JUMP:
+                printf("jump -> r%s", get_reg(code->arg0));
             break;
             
             case NOP:

@@ -309,7 +309,7 @@ type_t type_inference(type_t a, type_t b){
 node_t* create_function_declaration(node_t* header, node_t* commands){
     add_child(&header, commands);
     operation_t* func_declaration_code = gen_function_declaration(header);
-    header->code = concat_code(func_declaration_code, commands->code);
+    header->code = concat_code(concat_code(func_declaration_code, commands->code), gen_return(header));
     return header;
 }
 
@@ -580,7 +580,8 @@ node_t* create_func_call_node(lex_val_t *lv, node_t *args){
     if(received_arg != NULL){
         throw_excess_args_error(lv->line, s->key, s->n_args);
     }
-    
+    node->reg = gen_reg();
+    node->code = gen_func_call(node);
     return node;
 }
 

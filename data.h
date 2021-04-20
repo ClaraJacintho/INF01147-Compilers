@@ -101,7 +101,7 @@ typedef enum iloc_e{
     OR,
     NOT,
     CBR,
-   
+    JUMP
 } iloc_code;
 
 typedef struct op_s {

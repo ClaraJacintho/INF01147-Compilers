@@ -96,11 +96,10 @@ symbol_table_t* create_symbol_table(int named){
     new_scope->named_scope = named;
     new_scope->global = FALSE;
     if(named == TRUE){
-        new_scope->current_address = 0;    
+        new_scope->current_address = 16;    
     } else {
         new_scope->current_address = current_scope == NULL ? 0 : current_scope->scope->current_address;
     }
-    //printf("new scope named? %d current address? %d\n", new_scope->named_scope, new_scope->current_address);
     return new_scope;
 }
 
@@ -108,7 +107,6 @@ void free_scope(symbol_table_t* scope){
     symbol_table_item_t* st = scope->top;
     while(st != NULL){
         symbol_t* s = st->item;
-        //printf("FREEING ST: %s\n", s->key);
         free(s->key);
         if(s->data && (s->data->type == LIT_STR_T || s->data->type == ID)){
             free(s->data->val.s);
@@ -321,7 +319,6 @@ void insert_symbol_table_item_in_scope(symbol_table_item_t *item ){
     symbol_t *symbol = item->item;
     symbol->address = current_scope->scope->current_address;
     current_scope->scope->current_address += symbol->size;
-    //printf("++ size: %d, current_address: %d\n", symbol->size, current_scope->scope->current_address);
     if(symbol->kind == K_FUNC){
         symbol->label = gen_label();
     } else {

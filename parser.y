@@ -267,7 +267,7 @@ shift : shift_left {$$ = $1;}
 	| shift_right {$$ = $1;};
 
 // PRs
-return : TK_PR_RETURN expression {$$ = create_return_node($2);}; 
+return : TK_PR_RETURN expression {$$ = create_return_node($2); save_return($$);}; 
 break : TK_PR_BREAK {$$ = create_cmd_node(BREAK);}; 
 continue : TK_PR_CONTINUE {$$ = create_cmd_node(CONTINUE);};
 
