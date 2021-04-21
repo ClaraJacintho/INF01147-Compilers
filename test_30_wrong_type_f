@@ -1,5 +1,0 @@
-int h[4];
-int main(){
-    char a;
-    a = h[2];
-}

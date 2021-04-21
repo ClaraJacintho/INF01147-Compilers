@@ -1,9 +1,11 @@
 %{
+	#include <stdio.h>
+	#include <stdlib.h>
 	#include "data.h"
 	#include "ast.h"
 	#include "symbol_table.h"
-	#include <stdio.h>
-	#include <stdlib.h>
+	#include "code_generation.h"
+
 
 	int yylex(void);
 	int yyerror (char const *s);
@@ -12,7 +14,8 @@
 	extern void *arvore;
 	// since local vars can be nodes on the tree, we can't just assign $$ a symbol table item
 	// we need to create a var to store all declarations so we can later attribute a type to them
-	symbol_table_item_t *local_list = NULL;
+	symbol_table_item_t *local_list_top = NULL;
+	symbol_table_item_t *local_list_bottom = NULL;
 %}
 
 %union{
@@ -121,6 +124,8 @@ local_var_list
 var_attribution 
 vector_attribution
 str_and_char
+or_exp
+and_exp
 
 %type<symbol> 
 global_var_id
@@ -163,14 +168,14 @@ global_declaration : type global_id_list ';' {insert_id($2, $1);}
 
 vector_declaration: TK_IDENTIFICADOR '['TK_LIT_INT']' {$$ = create_identifier($1, K_VEC, $3->val.n, TYPE_X); insert_literal($3);}
 
-global_var_id: TK_IDENTIFICADOR {$$ = create_identifier($1, K_ID, 0, TYPE_X);}
+global_var_id: TK_IDENTIFICADOR {$$ = create_identifier($1, K_ID, 1, TYPE_X);}
 			| vector_declaration {$$ = $1;};
 global_id_list : global_var_id ',' global_id_list {$$ = creates_st_item_list($1, $3);}
 				| global_var_id {$$ = creates_st_item_list($1, NULL);};
 
 
 // function declaration
-function : function_header code_block { $$ = $1; add_child(&$$, $2);}
+function : function_header '{' {enter_scope(TRUE);} commands '}'{$$ = create_function_declaration($1, $4); leave_scope();}
 function_header : type TK_IDENTIFICADOR '('params_list')' {$$ = create_node($2, FUNC); update_node_type($$, $1); create_function($2, $1, $4);}
 				| TK_PR_STATIC type TK_IDENTIFICADOR '('params_list')' {$$ = create_node($3, FUNC); update_node_type($$, $2); create_function($3, $2, $5);};
 params_list : params {$$ = $1;}
@@ -181,7 +186,7 @@ param: type TK_IDENTIFICADOR {$$ = create_identifier($2, K_ID, 1, $1);}
 params: param ',' params {$$ = creates_st_item_list($1, $3);}
 		| param {$$ = creates_st_item_list($1, NULL);};
 
-code_block : '{' {enter_scope();} commands '}'{leave_scope(); $$ = $3;}; 
+code_block : '{' {enter_scope(FALSE);} commands '}'{leave_scope(); $$ = $3;}; 
 
 // ------------------------------------ commands ------------------------------------
 commands : command commands {$$ = insert_node_next(&$1, $2);}
@@ -211,22 +216,25 @@ var_type : type 						{$$ = $1;}
 		| TK_PR_STATIC TK_PR_CONST type {$$ = $3;}; 
 
 var : TK_IDENTIFICADOR TK_OC_LE TK_IDENTIFICADOR {
-	local_list = creates_st_item_list(create_identifier($1, K_ID, get_size_from_identifier($3), TYPE_X), local_list);
+	local_list_bottom = creates_st_item_list_return_b(local_list_bottom, create_identifier($1, K_ID, get_size_from_identifier($3), TYPE_X));
+	if(local_list_top == NULL) local_list_top = local_list_bottom;
 	$$ = create_init_node(create_node($1, IDENT), $2, create_node_declared_identifier($3, IDENT, K_ID)); 
 }
 	| TK_IDENTIFICADOR TK_OC_LE literal {
-		local_list = creates_st_item_list(create_identifier($1, K_ID, get_size_from_literal($3->lex_val), TYPE_X), local_list);
+		local_list_bottom = creates_st_item_list_return_b(local_list_bottom, create_identifier($1, K_ID, get_size_from_literal($3->lex_val), TYPE_X));
+		if(local_list_top == NULL) local_list_top = local_list_bottom;
 		$$ = create_init_node(create_node($1, IDENT), $2, $3);
 };
 	| TK_IDENTIFICADOR {
-		local_list = creates_st_item_list(create_identifier($1, K_ID, 0, TYPE_X), local_list);
+		local_list_bottom = creates_st_item_list_return_b(local_list_bottom, create_identifier($1, K_ID, 1, TYPE_X));
+		if(local_list_top == NULL) local_list_top = local_list_bottom;
 		$$ = create_node($1, NOT_INIT);  // Creates a node that wont actually be on the tree
 }
 
 local_var_list: var ',' local_var_list {$$ = insert_node_next(&$1, $3);}
 			| var {$$ = $1;}; 
 
-local_var : var_type local_var_list {$$ = $2; update_node_init($$, $1); insert_id(local_list, $1); local_list = NULL;};
+local_var : var_type local_var_list {$$ = $2; insert_id(local_list_top, $1); update_node_init($$, $1);  local_list_top = NULL; local_list_bottom = NULL;};
 
 // attribution
 attribution : var_attribution {$$ = $1;}
@@ -259,29 +267,29 @@ shift : shift_left {$$ = $1;}
 	| shift_right {$$ = $1;};
 
 // PRs
-return : TK_PR_RETURN expression {$$ = create_return_node($2);}; 
+return : TK_PR_RETURN expression {$$ = create_return_node($2); save_return($$);}; 
 break : TK_PR_BREAK {$$ = create_cmd_node(BREAK);}; 
 continue : TK_PR_CONTINUE {$$ = create_cmd_node(CONTINUE);};
 
 
 // ------------------------------------ expressions ------------------------------------
 
-if : TK_PR_IF '(' expression ')' code_block {$$ = create_cmd_node(IF); add_child(&$$, $3); add_child(&$$, $5); }
-   | TK_PR_IF '(' expression ')' code_block else {$$ = create_cmd_node(IF); add_child(&$$, $3); add_child(&$$, $5);add_child(&$$, $6);};
+if : TK_PR_IF '(' expression ')' code_block {$$ = create_cmd_node(IF); add_child(&$$, $3); add_child(&$$, $5); gen_if($$);}
+   | TK_PR_IF '(' expression ')' code_block else {$$ = create_cmd_node(IF); add_child(&$$, $3); add_child(&$$, $5);add_child(&$$, $6); gen_if($$);};
 
 else: TK_PR_ELSE code_block {$$ = $2;}; 
 
-for : TK_PR_FOR '(' attribution ':' expression ':' attribution ')' code_block { $$ = create_cmd_node(FOR); add_child(&$$, $3); add_child(&$$, $5); add_child(&$$, $7);add_child(&$$, $9);}; 
+for : TK_PR_FOR '(' attribution ':' expression ':' attribution ')' code_block { $$ = create_cmd_node(FOR); add_child(&$$, $3); add_child(&$$, $5); add_child(&$$, $7);add_child(&$$, $9); gen_for($$);}; 
 
-while : TK_PR_WHILE '('expression')'  TK_PR_DO code_block {$$ = create_cmd_node(WHILE); add_child(&$$, $3); add_child(&$$, $6);};
+while : TK_PR_WHILE '('expression')'  TK_PR_DO code_block {$$ = create_cmd_node(WHILE); add_child(&$$, $3); add_child(&$$, $6); gen_while($$);};
 // for priority, follow the example:
 // E → E+T | T
 // T → T*F | F
 // F → (E) | id
 // priority low to high: ternary logic compare +- /%* ^ ()
 
-expression : logic_exp {$$ = $1;}
-		| logic_exp '?' expression ':' expression {$$ = create_ternop_node( $1, $3, $5); free_lex_val($2);}; 
+expression : or_exp {$$ = $1;}
+		| or_exp '?' expression ':' expression {$$ = create_ternop_node( $1, $3, $5); free_lex_val($2); gen_ternop($$);}; 
 
 
 
@@ -312,28 +320,27 @@ operand: operand_exp_a {$$ = $1;}
 
 // operators
 unary_op : '+' | '-' | '!' | '?' | '&'| '*' | '#';
-logic_ops : '|' | '&' | TK_OC_OR | TK_OC_AND;
+logic_ops : '|' | '&';
 compare_ops : '<' | '>' | TK_OC_LE | TK_OC_GE | TK_OC_EQ | TK_OC_NE;
 sum: '+' | '-';
 mul: '*' | '/' | '%';
 exponent: '^';
 
 // expression definition
+or_exp: or_exp TK_OC_OR and_exp {$$ = create_binop_node($1, $2, $3); gen_or($$);}
+	| and_exp {$$ = $1;};
+and_exp: and_exp TK_OC_AND logic_exp {$$ = create_binop_node($1, $2, $3); printf("fufufufufufck\n"); gen_and($$);}
+	| logic_exp {$$ = $1;};
 logic_exp : logic_exp logic_ops compare_exp {$$ = create_binop_node($1, $2, $3);}
 	| compare_exp {$$ = $1;};
-
-compare_exp : compare_exp compare_ops sum_exp {$$ = create_binop_node($1, $2, $3);}
+compare_exp : compare_exp compare_ops sum_exp {$$ = create_binop_node($1, $2, $3); gen_bool_exp($$);}
 	| sum_exp {$$ = $1;};
-
-sum_exp : sum_exp sum mul_exp {$$ = create_binop_node($1, $2, $3);}
+sum_exp : sum_exp sum mul_exp {$$ = create_binop_node($1, $2, $3); gen_binop($$);}
 	| mul_exp {$$ = $1;};
-
-mul_exp : mul_exp mul exponent_exp {$$ = create_binop_node($1, $2, $3);}
+mul_exp : mul_exp mul exponent_exp {$$ = create_binop_node($1, $2, $3); gen_binop($$);}
 	| exponent_exp {$$ = $1;};
-
 exponent_exp : exponent_exp exponent term {$$ = create_binop_node($1, $2, $3);}
 	| term {$$ = $1;};
-
 term : '(' expression ')' {$$ = $2;}
 	|  operand {$$ = $1;};
 

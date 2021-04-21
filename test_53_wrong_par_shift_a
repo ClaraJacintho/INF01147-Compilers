@@ -1,4 +1,0 @@
-char main(){
-   int a;
-   a << 17;
-}

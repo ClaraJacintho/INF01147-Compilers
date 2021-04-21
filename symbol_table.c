@@ -3,6 +3,8 @@
 #include <string.h>
 #include "data.h"
 #include "error_handling.h"
+#include "code_generation.h"
+
 // inits scope as NULL so that global scope will have ->next == NULL
 stack_item_t* current_scope = NULL;
 
@@ -57,13 +59,17 @@ void print_symbol(symbol_t* s){
         print_args(s->args, s->n_args);
     }
     printf("        count: %i\n", s->count); 
-    printf("        size: %i\n", s->size); 
+    printf("        size: %i\n", s->size);
+    printf("        address: %i\n", s->address); 
     printf("        #################################################\n");
 }
 
 void print_table(symbol_table_t *t){
     printf("    ------------------------ BEGIN TABLE %d --------------------------\n", n_scopes);
     printf("    size: %i\n", t->size);
+    printf("    current address: %i\n", t->current_address);
+    printf("    named?: %s\n", t->named_scope ? "true" : "false");
+    printf("    global?: %s\n", t->global ? "true" : "false");
     symbol_table_item_t *aux = t->top;
     while( aux != NULL){
         print_symbol(aux->item);
@@ -82,20 +88,25 @@ void print_stack(){
     }
 }
 
-symbol_table_t* create_symbol_table(){
+symbol_table_t* create_symbol_table(int named){
     symbol_table_t *new_scope = (symbol_table_t *)malloc(sizeof(symbol_table_t));
     new_scope->size = 0;
     new_scope->top = NULL;
     new_scope->bottom = NULL;
+    new_scope->named_scope = named;
+    new_scope->global = FALSE;
+    if(named == TRUE){
+        new_scope->current_address = 16;    
+    } else {
+        new_scope->current_address = current_scope == NULL ? 0 : current_scope->scope->current_address;
+    }
     return new_scope;
-
 }
 
 void free_scope(symbol_table_t* scope){
     symbol_table_item_t* st = scope->top;
     while(st != NULL){
         symbol_t* s = st->item;
-        //printf("FREEING ST: %s\n", s->key);
         free(s->key);
         if(s->data && (s->data->type == LIT_STR_T || s->data->type == ID)){
             free(s->data->val.s);
@@ -112,8 +123,6 @@ void free_scope(symbol_table_t* scope){
         st = aux;
     }
     free(scope);
-
-   
     
 }
 
@@ -156,15 +165,16 @@ symbol_t* get_current_function(){
 
 int insert_params(symbol_table_item_t *args);
 
-void enter_scope(){
-    symbol_table_t* scope = create_symbol_table();
+void enter_scope(int named){
+    symbol_table_t* scope = create_symbol_table(named);
+    if(current_scope == NULL)
+        scope->global = TRUE;
     stack_item_t *stack_item = (stack_item_t *)malloc(sizeof(stack_item_t));
     stack_item->scope = scope;
     stack_item->next = current_scope;
     current_scope = stack_item;
     n_scopes += 1;
     symbol_t* func  = get_current_function();
-
 
     if(func != NULL && func->n_args == -1){
         if(func->args != NULL){
@@ -174,7 +184,7 @@ void enter_scope(){
             func->n_args = 0;
         }
     }
-
+    
     scope_tree_node_t* scope_node = (scope_tree_node_t *)malloc(sizeof(scope_tree_node_t));
     scope_node->scope = scope;
     scope_node->parent = scope_tree_current;
@@ -200,6 +210,7 @@ void enter_scope(){
 void leave_scope(){
     // DEBUG
     //print_table(current_scope->scope);
+    //printf("left scope\n");
     stack_item_t *aux = current_scope;
     current_scope = current_scope->next;
     free(aux);
@@ -304,8 +315,15 @@ symbol_t* find_in_current_scope(lex_val_t *lv){
 
 void insert_symbol_table_item_in_scope(symbol_table_item_t *item ){
     if(current_scope == NULL)
-        enter_scope();
+        enter_scope(FALSE);
     symbol_t *symbol = item->item;
+    symbol->address = current_scope->scope->current_address;
+    current_scope->scope->current_address += symbol->size;
+    if(symbol->kind == K_FUNC){
+        symbol->label = gen_label();
+    } else {
+         symbol->label = -1;
+    }
     symbol_table_item_t *current_top = current_scope->scope->top;
     if(current_top != NULL){
         symbol_t* err = find_in_current_scope(symbol->data);
@@ -326,7 +344,7 @@ void insert_symbol_table_item_in_scope(symbol_table_item_t *item ){
 
 symbol_table_item_t* insert_symbol(symbol_t *symbol){
     symbol_table_item_t *item = (symbol_table_item_t *)malloc(sizeof(symbol_table_item_t));
-    item->item = symbol;    
+    item->item = symbol;
     item->next = NULL;
 
     insert_symbol_table_item_in_scope(item);
@@ -418,8 +436,25 @@ symbol_table_item_t* creates_st_item_list(symbol_table_item_t* a, symbol_table_i
         return a;
     }
 
+     if(a == NULL){
+        return b;
+    }
+
     a->next = b;
     return a;
+}
+
+symbol_table_item_t* creates_st_item_list_return_b(symbol_table_item_t* a, symbol_table_item_t* b){
+    if(b == NULL){
+        return a;
+    }
+
+     if(a == NULL){
+        return b;
+    }
+
+    a->next = b;
+    return b;
 }
 
 
@@ -445,14 +480,16 @@ void insert_id(symbol_table_item_t *first, type_t t){
 }
 
 int insert_params(symbol_table_item_t *args){
-    if(current_scope == NULL)
-        enter_scope();
+    if(current_scope == NULL){
+        enter_scope(TRUE);
+    }
     symbol_t* err = NULL;
     int count = 0;
     symbol_table_item_t *aux, *last;
     aux = args;
     last = args;
     symbol_table_t *scope = current_scope->scope;
+    int curr_addr = current_scope->scope->current_address;
     while(aux && err == NULL){
         err = find_in_current_scope(aux->item->data);
         if(err != NULL){
@@ -462,6 +499,8 @@ int insert_params(symbol_table_item_t *args){
         if(aux->item->type == TYPE_STRING){
             throw_func_string_error(aux->item->declaration_line);
         }
+        aux->item->address = curr_addr;
+        curr_addr += aux->item->size;
         count++;
         last = aux;
         aux = aux->next;
@@ -475,6 +514,7 @@ int insert_params(symbol_table_item_t *args){
         }
         scope->bottom = last;
         scope->size += count;
+        scope->current_address = curr_addr;
     }
     return count;
 }
@@ -513,4 +553,56 @@ int get_size_from_identifier(lex_val_t* lv){
         return s->count;
     }
     return 0;
+}
+
+symbol_t* find_function(char* key){
+    symbol_table_item_t *aux = scope_root->scope->top;
+    if(aux != NULL){
+        while(aux->next != NULL){
+            if(!strcmp(aux->item->key, key))
+                return aux->item;
+            aux = aux->next;
+        }
+
+        // check if the last one is == to the key
+        if(!strcmp(aux->item->key, key))
+            return aux->item;
+    }
+    return NULL;   
+}
+
+// returns how size of all local vars for the current function
+int get_func_size(){
+    return current_scope->scope->current_address;
+}
+
+struct var_addr_and_scope get_var_addr_and_scope(lex_val_t* lv){
+    char *key = get_key(lv);
+    stack_item_t *s = current_scope;
+    while(s != NULL){
+        symbol_table_item_t *aux = s->scope->top;
+        if(aux != NULL){
+            while(aux->next != NULL){
+                if(!strcmp(aux->item->key, key)){
+                    free(key);
+                    struct var_addr_and_scope res = { .addr =aux->item->address, .scope_type=s->scope->global};
+                    return res;
+                }
+                aux = aux->next;
+            }
+
+            // check if the last one is == to the key
+            if(!strcmp(aux->item->key, key)){
+                free(key);
+                struct var_addr_and_scope res = { .addr =aux->item->address, .scope_type=s->scope->global};
+                return res;
+            }
+
+        }
+        s = s->next;
+    }
+    free(key);
+    struct var_addr_and_scope res = {.addr = -1, .scope_type = 66};
+    return res; 
+
 }

@@ -1,5 +1,0 @@
-char vec[4];
-int main(){
-    vec[0] = 'a';
-    vec[1] = false || true ? 'e' : '2';
-}

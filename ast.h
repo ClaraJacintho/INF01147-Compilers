@@ -25,6 +25,7 @@ node_t* create_node(lex_val_t* val, node_type_t type);
 void add_child(node_t** node, node_t* child);
 type_t type_inference(type_t a, type_t b);
 
+node_t* create_function_declaration(node_t* header, node_t* commands);
 node_t* create_node_literal(lex_val_t* val, node_type_t node_type);
 node_t *create_node_declared_identifier(lex_val_t *val, node_type_t node_type, kind_t k);
 node_t* create_vector_node(node_t* id, node_t* exp);
@@ -42,6 +43,6 @@ node_t *create_cmd_node(node_type_t node_type);
 
 int is_convertible_type(type_t t);
 void update_node_type(node_t *node, type_t t);
-void update_node_init(node_t *node, type_t t);
+node_t* update_node_init(node_t *node, type_t t);
 
 #endif

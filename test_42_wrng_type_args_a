@@ -1,4 +1,0 @@
-int clara(int a){}
-int main(){
-    clara('c');
-}

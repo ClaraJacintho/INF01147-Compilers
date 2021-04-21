@@ -1,6 +1,0 @@
-//ERR_FUNCTION_STRING
-int g(char a) { return 0; }
-int f() {
-    g("universo");
-    return 0;
-}

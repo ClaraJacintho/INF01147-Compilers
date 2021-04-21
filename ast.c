@@ -1,8 +1,10 @@
+#include <stdio.h>
+#include <stdlib.h>
 #include "ast.h"
 #include "symbol_table.h"
 #include "error_handling.h"
-#include <stdio.h>
-#include <stdlib.h>
+#include "code_generation.h"
+
 
 /**
  * Creates a lexical value from a literal
@@ -36,8 +38,10 @@ lex_val_t *get_lex_val(int line, token_t type, char *name){
 }
 
 void exporta (void *arvore) {
-    print_edges(arvore);
-    print_node_labels(arvore);
+    // print_edges(arvore);
+    // print_node_labels(arvore);
+    operation_t* ops = concat_code(init(), ((node_t*)arvore)->code);
+    print_code(ops);
 }
 
 void libera (void *arvore){
@@ -219,6 +223,11 @@ node_t* create_node(lex_val_t *val, node_type_t type){
     memset(node, 0, sizeof(node_t));
     node->lex_val = val;
     node->node_type = type;
+
+    node->code = NULL;
+    node->patch_true = NULL;
+    node->patch_false = NULL;
+
     return node;
 }
 
@@ -251,6 +260,10 @@ node_t* insert_node_next(node_t** n1, node_t *n2){
         } else {
             (*n1)->next = n2;
         }
+        if(n2 != NULL){
+            (*n1)->code = concat_code((*n1)->code, n2->code);
+        }
+        
         return *n1;
     } else {
         if(*n1 != NULL){
@@ -293,6 +306,12 @@ type_t type_inference(type_t a, type_t b){
     return TYPE_BOOL;
 }
 
+node_t* create_function_declaration(node_t* header, node_t* commands){
+    add_child(&header, commands);
+    operation_t* func_declaration_code = gen_function_declaration(header);
+    header->code = concat_code(concat_code(func_declaration_code, commands->code), gen_return(header));
+    return header;
+}
 
 /**
  * Creates an AST node for a literal and inserts it in the symbol table;
@@ -303,6 +322,8 @@ type_t type_inference(type_t a, type_t b){
 node_t* create_node_literal(lex_val_t *val, node_type_t node_type){
     node_t *node = create_node(val, node_type);
     node->type = get_type(val->type);
+    node->reg = gen_reg();
+    node->code = gen_literal(node);
     insert_literal(val);
     return node;
 }
@@ -335,6 +356,8 @@ node_t *create_node_declared_identifier(lex_val_t *val, node_type_t node_type, k
     } else {
         throw_undeclared_error(val->line, get_key(val));
     }
+    node->reg = gen_reg();
+    node->code = gen_load_var(node);
     return node;
 }
 
@@ -350,6 +373,7 @@ node_t *create_init_node(node_t *id, lex_val_t *lv, node_t *val){
     node_t* node = create_node(lv, INIT); 
     add_child(&node, id);
     add_child(&node, val);
+    
     return node;
 }
 
@@ -359,12 +383,12 @@ node_t *create_init_node(node_t *id, lex_val_t *lv, node_t *val){
  * @param node init node
  * @param type new node type
  */
-void update_node_init(node_t *node, type_t t){
+node_t* update_node_init(node_t *node, type_t t){
     if(node == NULL)
-        return;
+        return NULL;
     if(node->node_type == NOT_INIT){
-        update_node_init(node->next, t);
-        return;
+        node_t* next = update_node_init(node->next, t);
+        return next;
     }
     node->type = t;
 
@@ -381,9 +405,12 @@ void update_node_init(node_t *node, type_t t){
             throw_wrong_type_error(child->lex_val->line, node->children[0]->lex_val->val.s, t, child->type);
     }
     node->children[1]->type = t;
-    update_node_init(node->next, t);
-
+    node->code = concat_code(node->children[1]->code, gen_init(node->children[0], node->children[1]));
+    node_t* next = update_node_init(node->next, t);
+    node->code = concat_code(node->code, next == NULL ? NULL : next->code);
+    return node;
 }
+
 
 int is_convertible_type(type_t t){
     if((t == TYPE_BOOL || t == TYPE_INT || t == TYPE_FLOAT ))
@@ -422,6 +449,7 @@ node_t *create_attrib_node(node_t *id, lex_val_t *lv, node_t *val){
     add_child(&node, id);
     node->type = type_inference(id->type, val->type);
     add_child(&node, val);
+    node->code = concat_code(val->code, gen_attribution(id, val));
     return node;
 }
 
@@ -465,7 +493,6 @@ node_t *create_binop_node(node_t *opA, lex_val_t *lv, node_t *opB){
             }
         }
     }
-
     return node;
 }
 
@@ -473,6 +500,7 @@ node_t *create_unop_node(lex_val_t *lv, node_t *opA){
     node_t* node = create_node(lv, UN_OP); 
     add_child(&node, opA);
     node->type = opA->type;
+    gen_unop(node);
     return node;
 }
 
@@ -552,7 +580,8 @@ node_t* create_func_call_node(lex_val_t *lv, node_t *args){
     if(received_arg != NULL){
         throw_excess_args_error(lv->line, s->key, s->n_args);
     }
-    
+    node->reg = gen_reg();
+    node->code = gen_func_call(node);
     return node;
 }
 

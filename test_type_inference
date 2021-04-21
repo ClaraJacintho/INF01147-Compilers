@@ -1,8 +1,0 @@
-int main(int a, int b){
-    a = 5 + 5;  //int
-    a = 5.0 + 5.0;  //float
-    a = true + false;   //bool
-    b = 5 + 5.0;    //float
-    b = true + 5.0; //float
-    b = true + 5;   //int
-}
