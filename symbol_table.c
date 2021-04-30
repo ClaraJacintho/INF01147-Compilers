@@ -4,6 +4,7 @@
 #include "data.h"
 #include "error_handling.h"
 #include "code_generation.h"
+#include "symbol_table.h"
 
 // inits scope as NULL so that global scope will have ->next == NULL
 stack_item_t* current_scope = NULL;
@@ -236,11 +237,11 @@ char* get_key(lex_val_t *lv){
     char *key;
     switch (lv->type){
         case LIT_INT_T: 
-            key = calloc(20, 1);
+            key = (char *)calloc(20, 1);
             sprintf(key, "\"%d\"", lv->val.n);
             break;
         case LIT_FLOAT_T:
-            key = calloc(20, 1);
+            key = (char *)calloc(20, 1);
             sprintf(key, "\"%f\"", lv->val.f);
             break;
         case LIT_BOOL_T:
@@ -458,7 +459,7 @@ symbol_table_item_t* creates_st_item_list_return_b(symbol_table_item_t* a, symbo
 }
 
 
-symbol_table_item_t* create_identifier(lex_val_t *lv, kind_t k, int count, type_t t, lex_val_t* size){
+symbol_table_item_t* create_identifier(lex_val_t *lv, kind_t k, int count, type_t t){
     char *name = get_key(lv);
     symbol_t *symbol = create_symbol(name, lv, t , k, count);
     return create_symbol_table_item(symbol);

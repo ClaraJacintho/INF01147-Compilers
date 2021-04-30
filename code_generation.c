@@ -15,13 +15,13 @@ int gen_reg(){
 
 char* get_reg(int reg){
     switch(reg){
-        case RFP: return "fp";
-        case RBSS: return "bss";
-        case RSP: return "sp";
-        case RPC: return "pc";
-        case -1: return "OHNO";
+        case RFP: return (char*)"fp";
+        case RBSS: return (char*)"bss";
+        case RSP: return (char*)"sp";
+        case RPC: return (char*)"pc";
+        case -1: return (char*)"OHNO";
         default:{
-            char *key = calloc(20, 1);
+            char *key = (char*)calloc(20, 1);
             sprintf(key, "%d", reg);
             return key;
         }
@@ -101,7 +101,7 @@ operation_t* gen_halt(){
 
 operation_t* init(){
     operation_t* halt = gen_halt();
-    operation_t* main = gen_code(JUMPI, NULL_INT, get_func_label("main"), NULL_INT, NULL_INT, halt);
+    operation_t* main = gen_code(JUMPI, NULL_INT, get_func_label((char*)"main"), NULL_INT, NULL_INT, halt);
     operation_t* init_rsp = gen_code(LOADI, NULL_INT, 1024, RSP, NULL_INT, main);
     operation_t* init_rfp = gen_code(LOADI, NULL_INT, 1024, RFP, NULL_INT, init_rsp);
     operation_t* init_rbss = gen_code(LOADI, NULL_INT, gen_instructions+1, RBSS, NULL_INT, init_rfp);

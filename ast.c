@@ -4,7 +4,7 @@
 #include "symbol_table.h"
 #include "error_handling.h"
 #include "code_generation.h"
-
+#include "assembly.h"
 
 /**
  * Creates a lexical value from a literal
@@ -42,6 +42,8 @@ void exporta (void *arvore) {
     // print_node_labels(arvore);
     operation_t* ops = concat_code(init(), ((node_t*)arvore)->code);
     print_code(ops);
+    generate_asm(ops);
+    
 }
 
 void libera (void *arvore){

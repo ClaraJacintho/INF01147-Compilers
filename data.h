@@ -18,7 +18,7 @@ typedef enum token_t{
     LIT_STR_T,
 } token_t;
 
-typedef union val_s{
+typedef union val_t{
         int   n;
         float f; 
         char  c;  
@@ -27,14 +27,14 @@ typedef union val_s{
         char *name;
 } val_t;
 
-typedef struct lex_val_s {
+typedef struct lex_val_t {
     int line;
     token_t type;
     val_t val;
 
 } lex_val_t;
 
-typedef enum node_type_s {
+typedef enum node_type_t {
     FUNC,
     COMMANDS,
     IDENT,
@@ -62,7 +62,7 @@ typedef enum node_type_s {
     NOT_INIT,
 } node_type_t;
 
-typedef enum types_e{
+typedef enum type_t{
     TYPE_X,
     TYPE_CMD,
     TYPE_INT,    
@@ -131,7 +131,7 @@ typedef struct node_s{
 
 } node_t;
 
-typedef enum kind_s{
+typedef enum kind_t{
     K_ID, 
     K_VEC,
     K_FUNC,
@@ -189,5 +189,13 @@ struct var_addr_and_scope{
     int addr;
     int scope_type;
 };
+
+typedef struct interval_s{
+    int reg;
+    int start;
+    int end;
+    int count;
+    struct interval_s* next;
+} interval_t;
 
 #endif

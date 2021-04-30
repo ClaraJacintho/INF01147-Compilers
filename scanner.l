@@ -7,6 +7,7 @@
     int line_number = 1;
     int get_line_number(void);
     char* unquote(char *str);
+    val_t value; // I hate C SO MUCH
 %}
 
 num [0-9]+
@@ -61,12 +62,12 @@ alphanumeric [a-zA-Z0-9_]
 ">>"            {yylval.lex_val = get_lex_val(get_line_number(), OP, strdup(yytext));return TK_OC_SR;}
 "<<"            {yylval.lex_val = get_lex_val(get_line_number(), OP, strdup(yytext));return TK_OC_SL;}
 
-{num}                            {yylval.lex_val =  get_lit_lex_val(get_line_number(), (val_t)atoi(yytext), LIT_INT_T); return TK_LIT_INT;}
-{num}\.{single_num}+([eE]{num})? {yylval.lex_val =  get_lit_lex_val(get_line_number(), (val_t)(float)atof(yytext), LIT_FLOAT_T); return TK_LIT_FLOAT;} // This is bad. Im sorry
-"false"                          {yylval.lex_val =  get_lit_lex_val(get_line_number(), (val_t)0, LIT_BOOL_T); return TK_LIT_FALSE;}
-"true"                           {yylval.lex_val =  get_lit_lex_val(get_line_number(), (val_t)1, LIT_BOOL_T); return TK_LIT_TRUE;}
-\'.\'                            {yylval.lex_val =  get_lit_lex_val(get_line_number(), (val_t)yytext[1], LIT_CHAR_T); return TK_LIT_CHAR;}
-\"[^"]+\"                           {yylval.lex_val =  get_lit_lex_val(get_line_number(), (val_t)unquote(strdup(yytext)), LIT_STR_T); return TK_LIT_STRING;}
+{num}                            {value.n = atoi(yytext); yylval.lex_val =  get_lit_lex_val(get_line_number(), value, LIT_INT_T); return TK_LIT_INT;}
+{num}\.{single_num}+([eE]{num})? {value.f = (float)atof(yytext); yylval.lex_val =  get_lit_lex_val(get_line_number(), value, LIT_FLOAT_T); return TK_LIT_FLOAT;} // This is bad. Im sorry
+"false"                          {value.b = 0; yylval.lex_val =  get_lit_lex_val(get_line_number(), value, LIT_BOOL_T); return TK_LIT_FALSE;}
+"true"                           {value.b = 1; yylval.lex_val =  get_lit_lex_val(get_line_number(), value, LIT_BOOL_T); return TK_LIT_TRUE;}
+\'.\'                            {value.c = yytext[1]; yylval.lex_val =  get_lit_lex_val(get_line_number(), value, LIT_CHAR_T); return TK_LIT_CHAR;}
+\"[^"]+\"                           {value.s = unquote(strdup(yytext)); yylval.lex_val =  get_lit_lex_val(get_line_number(),value, LIT_STR_T); return TK_LIT_STRING;}
 
 {num}+{alphabetic}{alphanumeric}+         { printf("Erro id st num %c", yytext[0]);  return TOKEN_ERRO;} // identifier that starts w/ num
 {num}+\.{num}*{alphabetic}{alphanumeric}* { printf("Erro id start flo %c", yytext[0]); return TOKEN_ERRO;} // identifier that starts w/ num

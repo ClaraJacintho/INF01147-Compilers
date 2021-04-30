@@ -8,24 +8,24 @@
 
 char* get_type_name(type_t t){
     switch (t){
-        case TYPE_INT: return "int";
-        case TYPE_FLOAT: return "float";
-        case TYPE_BOOL: return "bool";
-        case TYPE_CHAR: return "char";
-        case TYPE_STRING: return "string";
-        case TYPE_X: return "x";
-        case TYPE_CMD: return "command";
-        default: return "";
+        case TYPE_INT: return (char*)"int";
+        case TYPE_FLOAT: return (char*)"float";
+        case TYPE_BOOL: return (char*)"bool";
+        case TYPE_CHAR: return (char*)"char";
+        case TYPE_STRING: return (char*)"string";
+        case TYPE_X: return (char*)"x";
+        case TYPE_CMD: return (char*)"command";
+        default: return (char*)"";
     }
 }
 
 char* get_kind_name(kind_t k){
     switch (k){
-        case K_ID: return "variable";
-        case K_LIT: return "literal";
-        case K_VEC: return "vector";
-        case K_FUNC: return "function";
-        default: return "";
+        case K_ID: return (char*)"variable";
+        case K_LIT: return (char*)"literal";
+        case K_VEC: return (char*)"vector";
+        case K_FUNC: return (char*)"function";
+        default: return (char*)"";
     }
 }
 
