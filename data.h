@@ -190,12 +190,21 @@ struct var_addr_and_scope{
     int scope_type;
 };
 
-typedef struct interval_s{
+typedef enum asm_registers{
+    EAX, 
+    EBX, 
+    ECX, 
+    EDX,
+    SPILL,
+} asm_registers_t;
+
+typedef struct reg_s{
     int reg;
     int start;
     int end;
     int count;
-    struct interval_s* next;
-} interval_t;
+    asm_registers_t asm_reg;
+    struct reg_s* next;
+} reg_t;
 
 #endif
