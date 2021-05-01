@@ -1,13 +1,13 @@
-int main(){
-  int a <= 1, b, c , d, e, f, g, h, i;
-  b = a + 4;
-  c = a * 8;
-  d = a - 4;
-  for(a = 5: a < 1 : a = a + 1){
-    b = 6 * d;
+// O comando for de fluxo de controle
+int c, d;
+int main()
+{
+  int i;
+  int a;
+  a = 0;
+  for(i = 0 : i < 24 : i = i + 2) {
+    a = a + 1;
+    c = a + i;
   }
-  e = a /2;
-  f = b * c;
-  g = d - e - b;
-  h = f * g + a + d + e+ f;
+  return 0;
 }

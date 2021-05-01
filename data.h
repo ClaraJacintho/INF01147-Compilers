@@ -97,11 +97,9 @@ typedef enum iloc_e{
     CMP_EQ,
     CMP_NE,
     RSUBI,
-    AND,
-    OR,
-    NOT,
     CBR,
-    JUMP
+    JUMP,
+    FUNC_DECL,
 } iloc_code;
 
 typedef struct op_s {
@@ -110,6 +108,7 @@ typedef struct op_s {
     int arg0;
     int arg1;
     int arg2;
+    char *name;
     struct op_s* next;
 } operation_t;
 

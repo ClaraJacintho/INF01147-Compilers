@@ -413,9 +413,9 @@ def main():
    # Enquanto o tamanho do código do simulador for maior que o PC
    while len(sim.code) > sim.ip:
       # Realiza um passo de simulação
-      #input()
+      input()
       sim.step()
-      #sim.show_memory()
+      sim.show_memory()
 
    # Relata contagem de instruções executadas
    if (args.instructions):

@@ -8,6 +8,8 @@
 // starting number for registers, labels (L0 is halt) 
 // and counter for number of instructions in program
 int reg = 0, label = 1, gen_instructions = 0;
+char* current_func_name = "";
+
 
 int gen_reg(){
     return reg++;
@@ -71,8 +73,16 @@ operation_t* gen_code(iloc_code op, int label, int arg0, int arg1, int arg2, ope
     code->arg1 = arg1;
     code->arg2 = arg2;
     code->next = next;
+    code->name = "",
     gen_instructions++;
     return code;
+}
+
+operation_t* gen_special_code(iloc_code op, char* name, operation_t* next){
+    operation_t* code = gen_code(FUNC_DECL, NULL_INT, NULL_INT, NULL_INT, NULL_INT, next);
+    code->name = name;
+    return code;
+
 }
 
 operation_t* concat_code(operation_t* a, operation_t* b){
@@ -113,8 +123,9 @@ operation_t* gen_function_declaration(node_t* func){
     int s = get_func_size();
     operation_t* update_rsp = gen_code(ADDI, NULL_INT, RSP, s, RSP, NULL); 
     operation_t* update_rfp = gen_code(I2I, get_func_label(func->lex_val->val.name), RSP, RFP, NULL_INT, update_rsp);
-    
-    return update_rfp;
+    operation_t* dummy_code = gen_special_code(FUNC_DECL, func->lex_val->val.name, update_rfp);
+    current_func_name = func->lex_val->val.name;
+    return dummy_code;
 }
 
 
@@ -429,7 +440,7 @@ void print_code(operation_t* code){
             case NOP:
                 printf("nop");
                 break;
-            default: printf("%d", code->op_code);
+            default: //printf("%d", code->op_code);
                 break;
         }
 
