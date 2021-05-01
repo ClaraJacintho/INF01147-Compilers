@@ -6,12 +6,14 @@
 #include "symbol_table.h"
 #include "assembly.h"
 
+// why not ¯\_(ツ)_/¯
 extern scope_tree_node_t* scope_root;
 reg_t* root = NULL;
 operation_t* current_op;
-int func_count = 0; // why not ¯\_(ツ)_/¯
+int func_count = 0;
 asm_registers_t arg_regs[6] = {RDI, RSI, EDX, ECX, R8, R9};
 int current_arg_index = 0;
+char* current_func = "";
 
 void print_program_info(char *name){
     printf("\t.file\t\"%s\"\n", name);
@@ -207,32 +209,36 @@ void translate_loadI(operation_t* code){
 }
 
 void translate_func_decl(operation_t* code){
-    char *func_name = code->name;
-    printf("\t.globl\t%s\n", func_name);
-    printf("\t.type\t%s, @function\n", func_name);
-    printf("%s:\n", func_name);
-    printf(".LFB%i\n", func_count);
+    current_func = code->name;
+    printf("\t.globl\t%s\n", current_func);
+    printf("\t.type\t%s, @function\n", current_func);
+    printf("%s:\n", current_func);
+    printf(".LFB%i:\n", func_count);
     printf("\t.cfi_startproc\n\tendbr64\n\tpushq\t%%rbp\n\t.cfi_def_cfa_offset 16\n\t.cfi_offset 6, -16\n\tmovq\t%%rsp, %%rbp\n");
     skip_ops(2);
+    //printf("NEXT OP %i\n", current_op->op_code);
 }
 
 void translate_return(operation_t* code){
-    char *func_name = code->name;
-    if(!strcmp(func_name, "main")){
+    if(!strcmp(current_func, "main")){
         printf("\tleave\n");
     } else {
         printf("\tpopq\t%%rbp\n");
     }
     printf("\t.cfi_def_cfa 7, 8\n\tret\n\t.cfi_endproc\n");
-    printf(".LFE%i\n", func_count++);
-    printf("\t.size\t%s, .-%s\n", func_name,func_name);
+    printf(".LFE%i:\n", func_count++);
+    printf("\t.size\t%s, .-%s\n", current_func, current_func);
     skip_ops(4); // trust the process
 }
 
 void translate_val_ret(operation_t* code){
     char* r = get_asm_reg(code->next->arg0); // trust the process
-    printf("\tmovl\t%s, %%eax\n", r);
-    skip_ops(6); // trust the process
+    printf("\tmovl\t%%%s, %%eax\n", r);
+    if(strcmp(current_func, "main")){
+        skip_ops(6); // trust the process
+    }
+
+    
 }
 
 void translate_storeAI(operation_t* code){
@@ -245,7 +251,7 @@ void translate_storeAI(operation_t* code){
 }
 
 void translate_func_call(operation_t* code){
-    skip_ops(2);
+    skip_ops(3);
     //printf("FIRST NEXT OP %i\n", current_op->op_code);
     if(!(current_op->op_code == ADDI && current_op->arg0 == RPC && current_op->arg1 == 3)){
         while(current_op->op_code != ARG_FIN){
@@ -256,6 +262,8 @@ void translate_func_call(operation_t* code){
     printf("\tcall\t%s\n", code->name);
     skip_ops(4);
     //printf("NEXT OP %i\n", current_op->op_code);
+    printf("\tmovl\t%%eax, %%%s\n",get_asm_reg(current_op->arg2));
+   
 }
 
 void translate_arg_declaration(operation_t* code){
@@ -263,15 +271,13 @@ void translate_arg_declaration(operation_t* code){
     asm_registers_t arg_regs[6] = {RDI, RSI, EDX, ECX, R8, R9};
     int i = 0;
     while(current_op->op_code != ARG_FIN){
-        printf("\tmovl\t%%%s, -%d(rbp)\n", return_reg_name(arg_regs[i]), current_op->arg0);
+        printf("\tmovl\t%%%s, -%d(%%rbp)\n", return_reg_name(arg_regs[i]), current_op->arg0);
         i++;
         current_op = current_op->next;
     }
-    skip_ops(1);
 }
 
 void translate_arg_passage(operation_t* code){
-    //printf("qskdkjhlsqdkjflsqkjhflsqkdjhlqkjdfhlswkdjhflskdkjhflqsdfjh\n");
     current_op = code->next;
     if(current_arg_index < 6){
         printf("\tmovl\t%%%s, %%%s\n", get_asm_reg(current_op->arg0), return_reg_name(arg_regs[current_arg_index]));
@@ -314,6 +320,8 @@ void translate_iloc(operation_t* code){
         case ARG_DECL: translate_arg_declaration(current_op); break;
         case ARG_PASS: translate_arg_passage(current_op); break;
         case ARG_FIN: reset_current_arg_index(); break;
+        case PROGRAM_INIT: skip_ops(5); break;
+
 
         case NOP: printf("\tnop\n"); break;
         case JUMPI: 
@@ -334,7 +342,6 @@ void translate_iloc(operation_t* code){
         case CMP_EQ:
         case CMP_NE:
         case RSUBI:
-        case CBR:
         case JUMP:
             /* code */
             break;
@@ -347,9 +354,11 @@ void translate_iloc(operation_t* code){
 void translate_code(operation_t* code){
     current_op = code;
     while(current_op){
+        //printf("\tNEXT OP %i\n", current_op->op_code);
         translate_iloc(current_op);
         current_op = current_op != NULL ? current_op->next : NULL;
     }
+    printf("\n");
 }
 
 extern void generate_asm(operation_t* code){

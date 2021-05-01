@@ -107,6 +107,7 @@ typedef enum iloc_e{
     ARG_DECL,
     ARG_PASS,
     ARG_FIN,
+    PROGRAM_INIT,
 } iloc_code;
 
 typedef struct op_s {

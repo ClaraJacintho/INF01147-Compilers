@@ -114,8 +114,8 @@ operation_t* init(){
     operation_t* init_rsp = gen_code(LOADI, NULL_INT, 1024, RSP, NULL_INT, main);
     operation_t* init_rfp = gen_code(LOADI, NULL_INT, 1024, RFP, NULL_INT, init_rsp);
     operation_t* init_rbss = gen_code(LOADI, NULL_INT, gen_instructions+1, RBSS, NULL_INT, init_rfp);
-
-    return init_rbss;
+    operation_t* dummy = gen_special_code(PROGRAM_INIT, "", init_rbss);
+    return dummy;
 }
 
 operation_t* gen_function_declaration(node_t* func){
@@ -343,12 +343,14 @@ operation_t* gen_args_declaration(node_t* func){
     symbol_t* f =  find_symbol(func->lex_val);
     if(f == NULL){ return NULL;}
     symbol_table_item_t* arg = f->args;
-    while(arg){
-        res = concat_code(res, gen_code(LOADAI, NULL_INT, arg->item->address, NULL_INT, NULL_INT, NULL));
-        arg = arg->next;
+    if(arg != NULL){
+        while(arg){
+            res = concat_code(res, gen_code(LOADAI, NULL_INT, arg->item->address, NULL_INT, NULL_INT, NULL));
+            arg = arg->next;
+        }
+        res = concat_code(gen_special_code(ARG_DECL, "", NULL), res);
+        res = concat_code(res, gen_special_code(ARG_FIN, "", NULL));
     }
-    res = concat_code(gen_special_code(ARG_DECL, "", NULL), res);
-    res = concat_code(res, gen_special_code(ARG_FIN, "", NULL));
     return res;
 }
 operation_t* gen_func_call(node_t* node){

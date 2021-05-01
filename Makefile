@@ -34,6 +34,12 @@ suber_debug: etapa6
 
 debug: etapa6
 	valgrind ./etapa6 < test_a	
+
+asm: etapa6
+	./etapa6 < test_a > out.s
+	gcc out.s -o out
+	./out
+
 	
 clean:
 	rm -f lex.yy.* main.o ast.o symbol_table.o assembly.o error_handling.o code_generation.o parser.tab.* parser.output etapa6
