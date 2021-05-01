@@ -110,7 +110,7 @@ void register_allocation(operation_t *code){
     // 0 == FREE
     // otherwise, counts operations untill it is free
     // if there are no free regs, spill
-    int asm_register[3] = {0, 0, 0};
+    int asm_register[13] = {0,0,0,0,0,0,0,0,0,0,0,0,0};
     reg_t* aux = root;
     while(aux){
         for(int i = 0; i < 4; i++){
@@ -123,7 +123,7 @@ void register_allocation(operation_t *code){
         aux = aux->next;
     }
 
-    // DEBUG
+    // // DEBUG
     // aux = root;
     // while(aux){
     //     printf("r%i: start: %i end:%i count: %i ", aux->reg, aux->start, aux->end, aux->count);
@@ -133,7 +133,7 @@ void register_allocation(operation_t *code){
 }
 
 void spil(reg_t* reg){
-     
+    // no thanks
 }
 
 char* get_asm_reg(int reg){
@@ -153,6 +153,14 @@ char* get_asm_reg(int reg){
                 case EBX: return "ebx";
                 case ECX: return "ecx";
                 case EDX: return "edx";
+                case  R8: return "r8d";
+                case  R9: return "r9d";
+                case R10: return "r10d";
+                case R11: return "r11d";
+                case R12: return "r12d";
+                case R13: return "r13d";
+                case R14: return "r14d";
+                case R15: return "r15d";
                 case SPILL: spil(r);
                 default:
                     break;
@@ -160,6 +168,12 @@ char* get_asm_reg(int reg){
         }// else { printf("Frick! %i\n", reg);}
     }
     return "FUCK";
+}
+
+void skip_ops(int n){
+    for(int i = 0; i < n && current_op != NULL; i++){
+        current_op = current_op->next;
+    }
 }
 
 void translate_loadI(operation_t* code){
@@ -174,20 +188,40 @@ void translate_func_decl(operation_t* code){
     printf("%s:\n", func_name);
     printf(".LFB%i\n", func_count);
     printf("\t.cfi_startproc\n\tendbr64\n\tpushq\t%%rbp\n\t.cfi_def_cfa_offset 16\n\t.cfi_offset 6, -16\n\tmovq\t%%rsp, %%rbp\n");
-    current_op = current_op->next->next;
+    skip_ops(2);
 }
 
+void translate_return(operation_t* code){
+    char *func_name = code->name;
+    if(!strcmp(func_name, "main")){
+        printf("\tleave\n");
+    } else {
+        printf("\tpopq\t%%rbp\n");
+    }
+    printf("\t.cfi_def_cfa 7, 8\n\tret\n\t.cfi_endproc\n");
+    printf(".LFE%i\n", func_count++);
+    printf("\t.size\t%s, .-%s\n", func_name,func_name);
+    skip_ops(4); // trust the process
+}
 
+void translate_val_ret(operation_t* code){
+    char* r = get_asm_reg(code->next->arg0); // trust the process
+    printf("\tmovl\t%s, %%eax\n", r);
+    skip_ops(6); // trust the process
+}
 void translate_iloc(operation_t* code){
     current_op = code;
     while(current_op){
+        //printf("CODE: %i\n",current_op->op_code);
         switch (current_op->op_code)
-        {
+        {   
+            case FUNC_DECL: translate_func_decl(current_op); break;
+            case FUNC_RET: translate_return(current_op); break;
+            case VAL_RET: translate_val_ret(current_op); break;
             case NOP: printf("\tnop\n"); break;
             case JUMPI: 
                 printf("\tjmp\t.L%d\n", current_op->arg0); break;
             case LOADI: translate_loadI(current_op); break;
-            case FUNC_DECL: translate_func_decl(current_op); break;
             case I2I:  printf("\tmovq\t%%%s, %%%s\n", get_asm_reg(current_op->arg0), get_asm_reg(current_op->arg1)); break;
             case ADDI: printf("\taddl\t%s, %i\n", get_asm_reg(current_op->arg0), current_op->arg1); break;
             case STOREAI:
@@ -212,7 +246,7 @@ void translate_iloc(operation_t* code){
                 break;
             }
 
-            current_op = current_op->next;
+            current_op = current_op != NULL ? current_op->next : NULL;
     }
 }
 

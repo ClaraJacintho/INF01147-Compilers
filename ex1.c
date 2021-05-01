@@ -6,15 +6,15 @@ int clara(){
 
 int FOFOFOFOFOF;
 
-int peepee(int x){
-}
-
 int poopoo(int r, int e){
-    return 5 +5;
+    int x = r + e;
+    return x;
 }
 
 
 int main(){
     int a = 4;
-    clara();
+    if(a == 4 || a+1 < 56){
+        clara();
+    }
 }

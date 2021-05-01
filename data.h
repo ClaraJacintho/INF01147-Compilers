@@ -99,7 +99,10 @@ typedef enum iloc_e{
     RSUBI,
     CBR,
     JUMP,
+    // DUMMIES
     FUNC_DECL,
+    FUNC_RET,
+    VAL_RET
 } iloc_code;
 
 typedef struct op_s {
@@ -190,10 +193,18 @@ struct var_addr_and_scope{
 };
 
 typedef enum asm_registers{
-    EAX, 
     EBX, 
     ECX, 
     EDX,
+    R8,
+    R9,
+    R10,
+    R11,
+    R12,
+    R13,
+    R14,
+    R15,
+    EAX, // reserverd for return values? I guess?
     SPILL,
 } asm_registers_t;
 

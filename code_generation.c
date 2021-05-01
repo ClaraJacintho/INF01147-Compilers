@@ -79,7 +79,7 @@ operation_t* gen_code(iloc_code op, int label, int arg0, int arg1, int arg2, ope
 }
 
 operation_t* gen_special_code(iloc_code op, char* name, operation_t* next){
-    operation_t* code = gen_code(FUNC_DECL, NULL_INT, NULL_INT, NULL_INT, NULL_INT, next);
+    operation_t* code = gen_code(op, NULL_INT, NULL_INT, NULL_INT, NULL_INT, next);
     code->name = name;
     return code;
 
@@ -345,21 +345,25 @@ operation_t* gen_func_call(node_t* node){
 }
 
 void save_return(node_t* node){
-    node->code = concat_code(concat_code(node->children[0]->code, gen_code(STOREAI, NULL_INT, node->children[0]->reg, RFP, 4, NULL)), gen_return(node));
+    operation_t* store =  gen_code(STOREAI, NULL_INT, node->children[0]->reg, RFP, 4, NULL);
+    operation_t* dummy =  gen_special_code(VAL_RET, current_func_name, store);
+    node->code = concat_code(concat_code(node->children[0]->code, dummy), gen_return(node));
 }
 
 operation_t* gen_return(node_t* node){
     symbol_t* f = get_current_function();
     if( strcmp(f->data->val.name, "main") ==0 ) {
-        return gen_code(JUMPI, NULL_INT, 0, NULL_INT, NULL_INT, NULL);
+        operation_t* jump = gen_code(JUMPI, NULL_INT, 0, NULL_INT, NULL_INT, NULL);
+        return gen_special_code(FUNC_RET, current_func_name, jump);
     }
     int reg = gen_reg();
     operation_t* jmp_back = gen_code(JUMP, NULL_INT, reg, NULL_INT, NULL_INT, NULL);
     operation_t* load_rfp = gen_code(LOADAI, NULL_INT, RFP, 8, RFP, jmp_back);
     operation_t* load_rsp = gen_code(LOADAI, NULL_INT, RFP, 12, RSP, load_rfp);
     operation_t* load_return_addr = gen_code(LOADAI, NULL_INT, RFP, 0, reg, load_rsp);
+    operation_t* dummy_return = gen_special_code(FUNC_RET, current_func_name, load_return_addr);
 
-    return load_return_addr;
+    return dummy_return;
 }
 
 void print_code(operation_t* code){
@@ -440,7 +444,7 @@ void print_code(operation_t* code){
             case NOP:
                 printf("nop");
                 break;
-            default: //printf("%d", code->op_code);
+            default: printf("code %d", code->op_code);
                 break;
         }
 
