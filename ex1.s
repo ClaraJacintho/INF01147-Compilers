@@ -1,9 +1,8 @@
 	.file	"ex1.c"
 	.text
-	.comm	GLOBAL,4,4
-	.globl	clara
-	.type	clara, @function
-clara:
+	.globl	main
+	.type	main, @function
+main:
 .LFB0:
 	.cfi_startproc
 	endbr64
@@ -12,65 +11,18 @@ clara:
 	.cfi_offset 6, -16
 	movq	%rsp, %rbp
 	.cfi_def_cfa_register 6
+	movl	$2, -12(%rbp)
+	movl	$5, -8(%rbp)
+	movl	-12(%rbp), %eax
+	cltd
+	idivl	-8(%rbp)
+	movl	%eax, -4(%rbp)
 	movl	$0, %eax
 	popq	%rbp
 	.cfi_def_cfa 7, 8
 	ret
 	.cfi_endproc
 .LFE0:
-	.size	clara, .-clara
-	.comm	FOFOFOFOFOF,4,4
-	.globl	poopoo
-	.type	poopoo, @function
-poopoo:
-.LFB1:
-	.cfi_startproc
-	endbr64
-	pushq	%rbp
-	.cfi_def_cfa_offset 16
-	.cfi_offset 6, -16
-	movq	%rsp, %rbp
-	.cfi_def_cfa_register 6
-	movl	%edi, -20(%rbp)
-	movl	%esi, -24(%rbp)
-	movl	-20(%rbp), %edx
-	movl	-24(%rbp), %eax
-	addl	%edx, %eax
-	movl	%eax, -4(%rbp)
-	movl	-4(%rbp), %eax
-	popq	%rbp
-	.cfi_def_cfa 7, 8
-	ret
-	.cfi_endproc
-.LFE1:
-	.size	poopoo, .-poopoo
-	.globl	main
-	.type	main, @function
-main:
-.LFB2:
-	.cfi_startproc
-	endbr64
-	pushq	%rbp
-	.cfi_def_cfa_offset 16
-	.cfi_offset 6, -16
-	movq	%rsp, %rbp
-	.cfi_def_cfa_register 6
-	subq	$16, %rsp
-	movl	$4, -4(%rbp)
-	cmpl	$4, -4(%rbp)
-	je	.L6
-	cmpl	$54, -4(%rbp)
-	jg	.L7
-.L6:
-	movl	$0, %eax
-	call	clara
-.L7:
-	movl	$0, %eax
-	leave
-	.cfi_def_cfa 7, 8
-	ret
-	.cfi_endproc
-.LFE2:
 	.size	main, .-main
 	.ident	"GCC: (Ubuntu 9.3.0-17ubuntu1~20.04) 9.3.0"
 	.section	.note.GNU-stack,"",@progbits

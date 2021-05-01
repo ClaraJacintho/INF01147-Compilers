@@ -40,6 +40,8 @@ void gen_ternop(node_t* node);
 void gen_for(node_t* node);
 void gen_while(node_t* node);
 
+
+operation_t* gen_args_declaration(node_t* params);
 operation_t* gen_args(node_t* params);
 operation_t* gen_func_call(node_t* node);
 void save_return(node_t* node);

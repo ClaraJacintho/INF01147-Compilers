@@ -1,9 +1,9 @@
 %{
 	#include <stdio.h>
 	#include <stdlib.h>
-	#include "symbol_table.h"
 	#include "data.h"
 	#include "ast.h"
+	#include "symbol_table.h"
 	#include "code_generation.h"
 
 
@@ -350,4 +350,4 @@ term : '(' expression ')' {$$ = $2;}
 int yyerror(char const *s){
 	printf("%s on line %d\n", s, get_line_number());
 	return 1;
-}	
+}

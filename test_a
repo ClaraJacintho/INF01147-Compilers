@@ -1,19 +1,13 @@
 int GLOBAL;
-
-int clara(){
-    return 0;
+int clara(int a, int b, int c, int d, int e){
+    return a + b;
 }
-
-int FOFOFOFOFOF;
-
-int poopoo(int r, int e){
-    return 5 +5;
-}
-
 
 int main(){
-    int a <= 4;
-    if(a == 4 || a+1 < 56){
-        clara();
-    }
+    GLOBAL = 69;
+    int x <= 1;
+    int y <= 2;
+    int c <= GLOBAL;
+    c = clara(x, y, 1, 2, 3);
+    return c;
 }

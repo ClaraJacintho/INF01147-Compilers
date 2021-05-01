@@ -102,7 +102,11 @@ typedef enum iloc_e{
     // DUMMIES
     FUNC_DECL,
     FUNC_RET,
-    VAL_RET
+    VAL_RET,
+    CALL_FUNC,
+    ARG_DECL,
+    ARG_PASS,
+    ARG_FIN,
 } iloc_code;
 
 typedef struct op_s {
@@ -194,16 +198,20 @@ struct var_addr_and_scope{
 
 typedef enum asm_registers{
     EBX, 
-    ECX, 
-    EDX,
-    R8,
-    R9,
     R10,
     R11,
     R12,
     R13,
     R14,
     R15,
+    // args go here??
+    // https://stackoverflow.com/questions/52214531/x86-64-order-of-passing-parameters-in-registers
+    RDI,
+    RSI,
+    EDX,
+    ECX, 
+    R8,
+    R9,
     EAX, // reserverd for return values? I guess?
     SPILL,
 } asm_registers_t;

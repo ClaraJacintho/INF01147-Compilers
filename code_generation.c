@@ -94,8 +94,7 @@ operation_t* concat_code(operation_t* a, operation_t* b){
         return a;
     }
 
-    operation_t* aux;
-    aux = a;
+    operation_t* aux = a;
     
     while(aux->next != NULL){
         aux = aux->next;
@@ -121,10 +120,11 @@ operation_t* init(){
 
 operation_t* gen_function_declaration(node_t* func){
     int s = get_func_size();
+    current_func_name = func->lex_val->val.name;
     operation_t* update_rsp = gen_code(ADDI, NULL_INT, RSP, s, RSP, NULL); 
     operation_t* update_rfp = gen_code(I2I, get_func_label(func->lex_val->val.name), RSP, RFP, NULL_INT, update_rsp);
-    operation_t* dummy_code = gen_special_code(FUNC_DECL, func->lex_val->val.name, update_rfp);
-    current_func_name = func->lex_val->val.name;
+    operation_t* arg = gen_args_declaration(func);
+    operation_t* dummy_code = gen_special_code(FUNC_DECL, func->lex_val->val.name, concat_code(update_rfp, arg));
     return dummy_code;
 }
 
@@ -137,7 +137,9 @@ operation_t* gen_load_var(node_t* id){
     struct var_addr_and_scope address_scope = get_var_addr_and_scope(id->lex_val);
     int reg = address_scope.scope_type == 1 ? RBSS : RFP;
 
-    return gen_code(LOADAI, NULL_INT, reg, address_scope.addr, id->reg, NULL);
+    operation_t* op = gen_code(LOADAI, NULL_INT, reg, address_scope.addr, id->reg, NULL);
+    op->name = id->lex_val->val.s;
+    return op;
 }
 
 operation_t* gen_init(node_t* id, node_t* val){
@@ -152,7 +154,9 @@ operation_t* gen_attribution(node_t* id, node_t* exp){
     struct var_addr_and_scope address_scope = get_var_addr_and_scope(id->lex_val);
 
     int reg = address_scope.scope_type == 1 ? RBSS : RFP;
-    return gen_code(STOREAI, NULL_INT, exp->reg, reg, address_scope.addr, NULL);
+    operation_t* attr = gen_code(STOREAI, NULL_INT, exp->reg, reg, address_scope.addr, NULL);
+    attr->name = id->lex_val->val.s;
+    return attr;
 }
 
 void gen_binop(node_t* node){
@@ -323,14 +327,30 @@ operation_t* gen_args(node_t* params){
     int shift = 16; // since we have return addr, return content, RSF and RFP before
     while(aux){
         // save param in function scope
-        operation_t* store = gen_code(STOREAI, NULL_INT, aux->reg, RSP, shift, NULL);
-        res = concat_code(concat_code(res, aux->code), store);
+        operation_t* store = concat_code(gen_special_code(ARG_PASS, "", NULL), gen_code(STOREAI, NULL_INT, aux->reg, RSP, shift, NULL));
+        operation_t* resA = concat_code(res, aux->code);
+        aux->code->next = NULL;
+        res = concat_code(resA, store);
         shift += 4;
         aux = aux->next;
     }
+    res = concat_code(res, gen_special_code(ARG_FIN, "", NULL));
     return res;
 }
 
+operation_t* gen_args_declaration(node_t* func){
+    operation_t* res = NULL;
+    symbol_t* f =  find_symbol(func->lex_val);
+    if(f == NULL){ return NULL;}
+    symbol_table_item_t* arg = f->args;
+    while(arg){
+        res = concat_code(res, gen_code(LOADAI, NULL_INT, arg->item->address, NULL_INT, NULL_INT, NULL));
+        arg = arg->next;
+    }
+    res = concat_code(gen_special_code(ARG_DECL, "", NULL), res);
+    res = concat_code(res, gen_special_code(ARG_FIN, "", NULL));
+    return res;
+}
 operation_t* gen_func_call(node_t* node){
     int reg = gen_reg();
     operation_t* return_val = gen_code(LOADAI, NULL_INT, RSP, 4, node->reg, NULL);
@@ -340,8 +360,9 @@ operation_t* gen_func_call(node_t* node){
     operation_t* args = concat_code(gen_args(node->children[0]), get_return_pos);
     operation_t* store_rfp = gen_code(STOREAI, NULL_INT, RFP, RSP, 8, args);
     operation_t* store_rsp = gen_code(STOREAI, NULL_INT, RSP, RSP, 12, store_rfp);
+    operation_t* dummy_call = gen_special_code(CALL_FUNC, node->lex_val->val.name, store_rsp);
 
-    return store_rsp;
+    return dummy_call;
 }
 
 void save_return(node_t* node){
@@ -374,81 +395,82 @@ void print_code(operation_t* code){
         switch (code->op_code)
         {
             case JUMPI:
-                printf("jumpI -> L%d", code->arg0);
+                printf("jumpI -> L%d\n", code->arg0);
                 break;
             
             case HALT:
-                printf("halt");
+                printf("halt\n");
                 break;
 
             case LOADI:
-                printf("loadI %d => r%s", code->arg0, get_reg(code->arg1));
+                printf("loadI %d => r%s\n", code->arg0, get_reg(code->arg1));
                 break;
             
             case I2I:
-                printf("i2i r%s => r%s", get_reg(code->arg0),  get_reg(code->arg1));
+                printf("i2i r%s => r%s\n", get_reg(code->arg0),  get_reg(code->arg1));
                 break;
             
             case ADDI:
-                printf("addI r%s, %d => r%s", get_reg(code->arg0), code->arg1, get_reg(code->arg2));
+                printf("addI r%s, %d => r%s\n", get_reg(code->arg0), code->arg1, get_reg(code->arg2));
                 break;
 
             case STOREAI:
-                printf("storeAI r%s => r%s, %d", get_reg(code->arg0), get_reg(code->arg1), code->arg2);
+                printf("storeAI r%s => r%s, %d\n", get_reg(code->arg0), get_reg(code->arg1), code->arg2);
                 break;
             
             case LOADAI:
-                printf("loadAI r%s, %d => r%s", get_reg(code->arg0), code->arg1, get_reg(code->arg2));
+                printf("loadAI r%s, %d => r%s\n", get_reg(code->arg0), code->arg1, get_reg(code->arg2));
                 break;
             case  ADD: 
-                printf("add r%s, r%s => r%s", get_reg(code->arg0), get_reg(code->arg1), get_reg(code->arg2));
+                printf("add r%s, r%s => r%s\n", get_reg(code->arg0), get_reg(code->arg1), get_reg(code->arg2));
                 break;
             case SUB:
-                printf("sub r%s, r%s => r%s", get_reg(code->arg0), get_reg(code->arg1), get_reg(code->arg2));
+                printf("sub r%s, r%s => r%s\n", get_reg(code->arg0), get_reg(code->arg1), get_reg(code->arg2));
                 break;
             case MULT:
-                printf("mult r%s, r%s => r%s", get_reg(code->arg0), get_reg(code->arg1), get_reg(code->arg2));
+                printf("mult r%s, r%s => r%s\n", get_reg(code->arg0), get_reg(code->arg1), get_reg(code->arg2));
                 break;
             case DIV:
-                printf("div r%s, r%s => r%s", get_reg(code->arg0), get_reg(code->arg1), get_reg(code->arg2));
+                printf("div r%s, r%s => r%s\n", get_reg(code->arg0), get_reg(code->arg1), get_reg(code->arg2));
                 break;
             case CMP_GT:
-                printf("cmp_GT r%s, r%s -> r%s", get_reg(code->arg0), get_reg(code->arg1), get_reg(code->arg2));
+                printf("cmp_GT r%s, r%s -> r%s\n", get_reg(code->arg0), get_reg(code->arg1), get_reg(code->arg2));
                 break;
             case CMP_LT:
-                printf("cmp_LT r%s, r%s -> r%s", get_reg(code->arg0), get_reg(code->arg1), get_reg(code->arg2));
+                printf("cmp_LT r%s, r%s -> r%s\n", get_reg(code->arg0), get_reg(code->arg1), get_reg(code->arg2));
                 break;
             case CMP_LE:
-                printf("cmp_LE r%s, r%s -> r%s", get_reg(code->arg0), get_reg(code->arg1), get_reg(code->arg2));
+                printf("cmp_LE r%s, r%s -> r%s\n", get_reg(code->arg0), get_reg(code->arg1), get_reg(code->arg2));
                 break;
             case CMP_GE:
-                printf("cmp_GE r%s, r%s -> r%s", get_reg(code->arg0), get_reg(code->arg1), get_reg(code->arg2));
+                printf("cmp_GE r%s, r%s -> r%s\n", get_reg(code->arg0), get_reg(code->arg1), get_reg(code->arg2));
                 break;
             case CMP_EQ:
-                printf("cmp_EQ r%s, r%s -> r%s", get_reg(code->arg0), get_reg(code->arg1), get_reg(code->arg2));
+                printf("cmp_EQ r%s, r%s -> r%s\n", get_reg(code->arg0), get_reg(code->arg1), get_reg(code->arg2));
                 break;
             case CMP_NE:
-                printf("cmp_NE r%s, r%s -> r%s", get_reg(code->arg0), get_reg(code->arg1), get_reg(code->arg2));
+                printf("cmp_NE r%s, r%s -> r%s\n", get_reg(code->arg0), get_reg(code->arg1), get_reg(code->arg2));
                 break;
             
             case RSUBI:
-                printf("rsubI r%s, %d => r%s", get_reg(code->arg0), code->arg1, get_reg(code->arg2));
+                printf("rsubI r%s, %d => r%s\n", get_reg(code->arg0), code->arg1, get_reg(code->arg2));
             break;
             case CBR:
-                printf("cbr r%s -> L%d, L%d", get_reg(code->arg0), code->arg1, code->arg2);
+                printf("cbr r%s -> L%d, L%d\n", get_reg(code->arg0), code->arg1, code->arg2);
             break;
             case JUMP:
-                printf("jump -> r%s", get_reg(code->arg0));
+                printf("jump -> r%s\n", get_reg(code->arg0));
             break;
-            
             case NOP:
-                printf("nop");
+                printf("nop\n");
                 break;
-            default: printf("code %d", code->op_code);
+            case ARG_DECL: {
+                while(code->op_code != ARG_FIN){code = code->next;}
+            }
+            default: //printf("code %d", code->op_code);
                 break;
         }
 
-        printf("\n");
         code = code->next;
     }
 
