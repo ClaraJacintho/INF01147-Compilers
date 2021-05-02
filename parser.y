@@ -329,7 +329,7 @@ exponent: '^';
 // expression definition
 or_exp: or_exp TK_OC_OR and_exp {$$ = create_binop_node($1, $2, $3); gen_or($$);}
 	| and_exp {$$ = $1;};
-and_exp: and_exp TK_OC_AND logic_exp {$$ = create_binop_node($1, $2, $3); printf("fufufufufufck\n"); gen_and($$);}
+and_exp: and_exp TK_OC_AND logic_exp {$$ = create_binop_node($1, $2, $3); gen_and($$);}
 	| logic_exp {$$ = $1;};
 logic_exp : logic_exp logic_ops compare_exp {$$ = create_binop_node($1, $2, $3);}
 	| compare_exp {$$ = $1;};

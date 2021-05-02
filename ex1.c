@@ -1,9 +1,15 @@
-int clara(int a, int b, int c, int d, int e){
-    return a + b;
-}
-
-int main(){
-    int x = 1;
-    int y = 2;
-    return clara(2, 3, 4, 5, 6);
+//Os seguintes comandos de fluxo de controle: do-while
+int main()
+{
+  int a;
+  int b;
+  int c;
+  a = 10;
+  b = 2;
+  c = 0;
+  while (b == 2 && a > 5) {
+    a = a - 1;
+    c = c + 123;
+  }
+  return 0;
 }

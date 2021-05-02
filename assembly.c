@@ -310,6 +310,12 @@ void translate_binop(char* op, operation_t* code){
     
 }
 
+void translate_jumps(char* op, operation_t* code){
+    printf("\tcmpl\t%%%s, %%%s\n", get_asm_reg(code->arg0),get_asm_reg(code->arg1));
+    printf("\t%s\t.L%d\n", op, code->next->arg2);
+    skip_ops(1);
+}
+
 void translate_iloc(operation_t* code){
     switch (current_op->op_code)
     {   
@@ -335,15 +341,18 @@ void translate_iloc(operation_t* code){
         case SUB:  translate_binop("subl", current_op); break;
         case MULT: translate_binop("imull", current_op); break;
         case DIV:  translate_binop("idivl", current_op); break;
-        case CMP_GT:
-        case CMP_LT:
-        case CMP_LE:
-        case CMP_GE:
-        case CMP_EQ:
-        case CMP_NE:
-        case RSUBI:
+        case CMP_GT: translate_jumps("jle", current_op); break; 
+        case CMP_LT: translate_jumps("jge", current_op); break;
+        case CMP_LE: translate_jumps("jg", current_op); break;
+        case CMP_GE: translate_jumps("jl", current_op); break;
+        case CMP_EQ: translate_jumps("jne", current_op); break;
+        case CMP_NE: translate_jumps("je", current_op); break;
+        case RSUBI:{ 
+            printf("\tnegl\t%%%s\n", get_asm_reg(current_op->arg0)); 
+            printf("\tmovq\t%%%s, %%%s\n", get_asm_reg(current_op->arg0), get_asm_reg(current_op->arg2));
+            break;}
         case JUMP:
-            /* code */
+            printf("\tjmp\t.L%d\n", current_op->label);
             break;
         
         default:
@@ -355,6 +364,9 @@ void translate_code(operation_t* code){
     current_op = code;
     while(current_op){
         //printf("\tNEXT OP %i\n", current_op->op_code);
+        if(current_op->label != NULL_INT){
+            printf(".L%d: ", current_op->label);
+        }
         translate_iloc(current_op);
         current_op = current_op != NULL ? current_op->next : NULL;
     }

@@ -41,7 +41,7 @@ void exporta (void *arvore) {
     // print_edges(arvore);
     // print_node_labels(arvore);
     operation_t* ops = concat_code(init(), ((node_t*)arvore)->code);
-    print_code(ops);
+    //print_code(ops);
     generate_asm(ops);
     
 }

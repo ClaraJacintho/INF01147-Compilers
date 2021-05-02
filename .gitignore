@@ -69,3 +69,6 @@ parser.tab.*
 E2/
 .vscode
 tests
+E5_res/
+E5/
+.s
